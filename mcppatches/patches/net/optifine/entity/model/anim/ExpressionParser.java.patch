@@ -1,0 +1,72 @@
+--- a/net/optifine/entity/model/anim/ExpressionParser.java
++++ b/net/optifine/entity/model/anim/ExpressionParser.java
+@@ -211,7 +211,7 @@
+         }
+     }
+ 
+-    private EnumFunctionType getFunctionType(Token token, Deque<Token> deque) throws ParseException
++    private EnumFunctionType getFunctionType(Token token2, Deque<Token> deque) throws ParseException
+     {
+         Token token = (Token)deque.peek();
+ 
+@@ -249,8 +249,8 @@
+         else
+         {
+             Token token = (Token)deque.poll();
+-            Deque<Token> deque = getGroup(deque, EnumTokenType.BRACKET_CLOSE, true);
+-            IExpression[] aiexpression = this.parseExpressions(deque);
++            Deque<Token> deque2 = getGroup(deque, EnumTokenType.BRACKET_CLOSE, true);
++            IExpression[] aiexpression = this.parseExpressions(deque2);
+             return makeFunction(type, aiexpression);
+         }
+     }
+@@ -261,8 +261,8 @@
+ 
+         while (true)
+         {
+-            Deque<Token> deque = getGroup(deque, EnumTokenType.COMMA, false);
+-            IExpression iexpression = this.parseInfix(deque);
++            Deque<Token> deque2 = getGroup(deque, EnumTokenType.COMMA, false);
++            IExpression iexpression = this.parseInfix(deque2);
+ 
+             if (iexpression == null)
+             {
+@@ -309,13 +309,13 @@
+ 
+     private IExpression makeBracketed(Token token, Deque<Token> deque) throws ParseException
+     {
+-        Deque<Token> deque = getGroup(deque, EnumTokenType.BRACKET_CLOSE, true);
+-        return this.parseInfix(deque);
++        Deque<Token> deque2 = getGroup(deque, EnumTokenType.BRACKET_CLOSE, true);
++        return this.parseInfix(deque2);
+     }
+ 
+     private static Deque<Token> getGroup(Deque<Token> deque, EnumTokenType tokenTypeEnd, boolean tokenEndRequired) throws ParseException
+     {
+-        Deque<Token> deque = new ArrayDeque();
++        Deque<Token> deque2 = new ArrayDeque();
+         int i = 0;
+         Iterator iterator = deque.iterator();
+ 
+@@ -326,10 +326,10 @@
+ 
+             if (i == 0 && token.getType() == tokenTypeEnd)
+             {
+-                return deque;
++                return deque2;
+             }
+ 
+-            deque.add(token);
++            deque2.add(token);
+ 
+             if (token.getType() == EnumTokenType.BRACKET_OPEN)
+             {
+@@ -348,7 +348,7 @@
+         }
+         else
+         {
+-            return deque;
++            return deque2;
+         }
+     }
+ 

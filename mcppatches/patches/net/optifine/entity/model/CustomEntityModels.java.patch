@@ -1,0 +1,10 @@
+--- a/net/optifine/entity/model/CustomEntityModels.java
++++ b/net/optifine/entity/model/CustomEntityModels.java
+@@ -14,6 +14,7 @@
+ import net.minecraft.client.renderer.entity.RenderManager;
+ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
++import net.minecraft.entity.Entity;
+ import net.minecraft.src.Config;
+ import net.minecraft.src.Reflector;
+ import net.minecraft.src.ReflectorField;

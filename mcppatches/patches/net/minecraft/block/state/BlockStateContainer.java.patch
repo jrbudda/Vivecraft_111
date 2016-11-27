@@ -1,0 +1,37 @@
+--- a/net/minecraft/block/state/BlockStateContainer.java
++++ b/net/minecraft/block/state/BlockStateContainer.java
+@@ -82,20 +82,20 @@
+         }
+ 
+         this.properties = ImmutableSortedMap. < String, IProperty<? >> copyOf(map);
+-        Map < Map < IProperty<?>, Comparable<? >> , BlockStateContainer.StateImplementation > map2 = Maps. < Map < IProperty<?>, Comparable<? >> , BlockStateContainer.StateImplementation > newLinkedHashMap();
+-        List<BlockStateContainer.StateImplementation> list = Lists.<BlockStateContainer.StateImplementation>newArrayList();
++        Map < Map < IProperty<?>, Comparable<? >> , IBlockState> map2 = Maps. < Map < IProperty<?>, Comparable<? >> , IBlockState> newLinkedHashMap();
++        List<IBlockState> list = Lists.<IBlockState>newArrayList();
+ 
+         for (List < Comparable<? >> list1 : Cartesian.cartesianProduct(this.getAllowedValues()))
+         {
+             Map < IProperty<?>, Comparable<? >> map1 = MapPopulator. < IProperty<?>, Comparable<? >> createMap(this.properties.values(), list1);
+-            BlockStateContainer.StateImplementation blockstatecontainer$stateimplementation = this.createState(p_i3_1_, ImmutableMap. < IProperty<?>, Comparable<? >> copyOf(map1), p_i3_3_);
++            IBlockState blockstatecontainer$stateimplementation = this.createState(p_i3_1_, ImmutableMap. < IProperty<?>, Comparable<? >> copyOf(map1), p_i3_3_);
+             map2.put(map1, blockstatecontainer$stateimplementation);
+             list.add(blockstatecontainer$stateimplementation);
+         }
+ 
+-        for (BlockStateContainer.StateImplementation blockstatecontainer$stateimplementation1 : list)
++        for (IBlockState blockstatecontainer$stateimplementation1 : list)
+         {
+-            blockstatecontainer$stateimplementation1.buildPropertyValueTable(map2);
++            ((StateImplementation) blockstatecontainer$stateimplementation1).buildPropertyValueTable(map2);
+         }
+ 
+         this.validStates = ImmutableList.copyOf(list);
+@@ -305,7 +305,7 @@
+             return this.properties.hashCode();
+         }
+ 
+-        public void buildPropertyValueTable(Map < Map < IProperty<?>, Comparable<? >> , BlockStateContainer.StateImplementation > map)
++        public void buildPropertyValueTable(Map < Map < IProperty<?>, Comparable<? >> , IBlockState > map)
+         {
+             if (this.propertyValueTable != null)
+             {

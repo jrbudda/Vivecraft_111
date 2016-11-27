@@ -1,0 +1,20 @@
+--- a/net/minecraft/init/Items.java
++++ b/net/minecraft/init/Items.java
+@@ -220,6 +220,8 @@
+     public static final Item BEETROOT_SEEDS;
+     public static final Item BEETROOT;
+     public static final Item BEETROOT_SOUP;
++    public static final Item EATME_CAKE;
++    public static final Item DRIINKME_BOTTLE;
+     public static final Item TOTEM;
+     public static final Item SHULKER_SHELL;
+ 
+@@ -451,6 +453,8 @@
+             BEETROOT_SEEDS = getRegisteredItem("beetroot_seeds");
+             BEETROOT = getRegisteredItem("beetroot");
+             BEETROOT_SOUP = getRegisteredItem("beetroot_soup");
++            EATME_CAKE = getRegisteredItem("eatme_cake");
++            DRIINKME_BOTTLE = getRegisteredItem("drinkme_bottle");
+             TOTEM = getRegisteredItem("totem");
+             SHULKER_SHELL = getRegisteredItem("shulker_shell");
+         }

@@ -1,0 +1,45 @@
+--- a/net/minecraft/client/renderer/entity/RenderManager.java
++++ b/net/minecraft/client/renderer/entity/RenderManager.java
+@@ -120,7 +120,7 @@
+ 
+ public class RenderManager
+ {
+-    private final Map < Class <? extends Entity > , Render <? extends Entity >> entityRenderMap = Maps. < Class <? extends Entity > , Render <? extends Entity >> newHashMap();
++    private final Map<Class, Render> entityRenderMap = Maps. < Class ,Render> newHashMap();
+     private final Map<String, RenderPlayer> skinMap = Maps.<String, RenderPlayer>newHashMap();
+     private final RenderPlayer playerRenderer;
+ 
+@@ -260,11 +260,11 @@
+ 
+         if (render == null && entityClass != Entity.class)
+         {
+-            render = this.<Entity>getEntityClassRenderObject(entityClass.getSuperclass());
++            render = this.getEntityClassRenderObject((Class<? extends Entity>) entityClass.getSuperclass());
+             this.entityRenderMap.put(entityClass, render);
+         }
+ 
+-        return render;
++        return (Render<T>) render;
+     }
+ 
+     @Nullable
+@@ -274,7 +274,7 @@
+         {
+             String s = ((AbstractClientPlayer)entityIn).getSkinType();
+             RenderPlayer renderplayer = (RenderPlayer)this.skinMap.get(s);
+-            return renderplayer != null ? renderplayer : this.playerRenderer;
++            return (Render<T>) (renderplayer != null ? renderplayer : this.playerRenderer);
+         }
+         else
+         {
+@@ -311,8 +311,8 @@
+         }
+         else
+         {
+-            this.playerViewY = livingPlayerIn.prevRotationYaw + (livingPlayerIn.rotationYaw - livingPlayerIn.prevRotationYaw) * partialTicks;
+-            this.playerViewX = livingPlayerIn.prevRotationPitch + (livingPlayerIn.rotationPitch - livingPlayerIn.prevRotationPitch) * partialTicks;
++        		this.playerViewY = livingPlayerIn.prevRotationYaw + (livingPlayerIn.rotationYaw - livingPlayerIn.prevRotationYaw) * partialTicks;
++        		this.playerViewX = livingPlayerIn.prevRotationPitch + (livingPlayerIn.rotationPitch - livingPlayerIn.prevRotationPitch) * partialTicks;
+         }
+ 
+         if (optionsIn.thirdPersonView == 2)

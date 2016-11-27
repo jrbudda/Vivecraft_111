@@ -1,0 +1,27 @@
+--- a/net/minecraft/entity/projectile/EntityFishHook.java
++++ b/net/minecraft/entity/projectile/EntityFishHook.java
+@@ -5,6 +5,7 @@
+ import net.minecraft.block.BlockLiquid;
+ import net.minecraft.block.material.Material;
+ import net.minecraft.block.state.IBlockState;
++import net.minecraft.client.Minecraft;
+ import net.minecraft.enchantment.EnchantmentHelper;
+ import net.minecraft.entity.Entity;
+ import net.minecraft.entity.MoverType;
+@@ -80,7 +81,15 @@
+         double d0 = this.angler.prevPosX + (this.angler.posX - this.angler.prevPosX) - (double)f3 * 0.3D;
+         double d1 = this.angler.prevPosY + (this.angler.posY - this.angler.prevPosY) + (double)this.angler.getEyeHeight();
+         double d2 = this.angler.prevPosZ + (this.angler.posZ - this.angler.prevPosZ) - (double)f2 * 0.3D;
+-        this.setLocationAndAngles(d0, d1, d2, f1, f);
++        
++    	//VIVE USE CONTROLLER
++        float yaw = Minecraft.getMinecraft().roomScale.getControllerYaw_World(0);
++        float pitch = -Minecraft.getMinecraft().roomScale.getControllerPitch_World(0);
++        Vec3d aimSource = Minecraft.getMinecraft().roomScale.getControllerPos_World(0);
++        this.setLocationAndAngles(aimSource.xCoord, aimSource.yCoord, aimSource.zCoord, yaw, pitch);
++        //END VIVE
++        
++       // this.setLocationAndAngles(d0, d1, d2, f1, f);
+         this.motionX = (double)(-f3);
+         this.motionY = (double)MathHelper.clamp(-(f5 / f4), -5.0F, 5.0F);
+         this.motionZ = (double)(-f2);
