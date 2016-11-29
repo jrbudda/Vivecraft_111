@@ -326,6 +326,17 @@
 -        GlStateManager.rotate((float)i * f3 * 90.0F, 0.0F, 1.0F, 0.0F);
 -        GlStateManager.rotate(f3 * 10.0F, 1.0F, 0.0F, 0.0F);
 -        GlStateManager.rotate((float)i * f3 * 30.0F, 0.0F, 0.0F, 1.0F);
+-    }
+-
+-    private void transformFirstPerson(EnumHandSide p_187453_1_, float p_187453_2_)
+-    {
+-        int i = p_187453_1_ == EnumHandSide.RIGHT ? 1 : -1;
+-        float f = MathHelper.sin(p_187453_2_ * p_187453_2_ * (float)Math.PI);
+-        GlStateManager.rotate((float)i * (45.0F + f * -20.0F), 0.0F, 1.0F, 0.0F);
+-        float f1 = MathHelper.sin(MathHelper.sqrt(p_187453_2_) * (float)Math.PI);
+-        GlStateManager.rotate((float)i * f1 * -20.0F, 0.0F, 0.0F, 1.0F);
+-        GlStateManager.rotate(f1 * -80.0F, 1.0F, 0.0F, 0.0F);
+-        GlStateManager.rotate((float)i * -45.0F, 0.0F, 1.0F, 0.0F);
 +	    if(!Minecraft.getMinecraft().autoFood.isEating()) {
 +		    float f3 = 1.0F - (float) Math.pow((double) f1, 27.0D);
 +		    int i = side == EnumHandSide.RIGHT ? 1 : -1;
@@ -362,17 +373,6 @@
 +//        GlStateManager.translate((float)i * 0.56F, -0.52F + equippingprogress * -0.6F, -0.72F);
      }
  
--    private void transformFirstPerson(EnumHandSide p_187453_1_, float p_187453_2_)
--    {
--        int i = p_187453_1_ == EnumHandSide.RIGHT ? 1 : -1;
--        float f = MathHelper.sin(p_187453_2_ * p_187453_2_ * (float)Math.PI);
--        GlStateManager.rotate((float)i * (45.0F + f * -20.0F), 0.0F, 1.0F, 0.0F);
--        float f1 = MathHelper.sin(MathHelper.sqrt(p_187453_2_) * (float)Math.PI);
--        GlStateManager.rotate((float)i * f1 * -20.0F, 0.0F, 0.0F, 1.0F);
--        GlStateManager.rotate(f1 * -80.0F, 1.0F, 0.0F, 0.0F);
--        GlStateManager.rotate((float)i * -45.0F, 0.0F, 1.0F, 0.0F);
--    }
--
 -    private void transformSideFirstPerson(EnumHandSide p_187459_1_, float p_187459_2_)
 -    {
 -        int i = p_187459_1_ == EnumHandSide.RIGHT ? 1 : -1;
@@ -419,7 +419,7 @@
              }
          }
  
-@@ -343,200 +408,460 @@
+@@ -343,200 +408,461 @@
          this.rotateArm(partialTicks);
          GlStateManager.enableRescaleNormal();
  
@@ -483,7 +483,9 @@
 -        else
 -        {
 -            boolean flag1 = enumhandside == EnumHandSide.RIGHT;
--
++    	boolean mainHand = hand == EnumHand.MAIN_HAND;
++    	EnumHandSide enumhandside = mainHand ? player.getPrimaryHand() : player.getPrimaryHand().opposite();
+ 
 -            if (p_187457_1_.isHandActive() && p_187457_1_.getItemInUseCount() > 0 && p_187457_1_.getActiveHand() == p_187457_4_)
 -            {
 -                int j = flag1 ? 1 : -1;
@@ -542,9 +544,7 @@
 -                this.transformSideFirstPerson(enumhandside, p_187457_7_);
 -                this.transformFirstPerson(enumhandside, p_187457_5_);
 -            }
-+    	boolean mainHand = hand == EnumHand.MAIN_HAND;
-+    	EnumHandSide enumhandside = mainHand ? player.getPrimaryHand() : player.getPrimaryHand().opposite();
- 
+-
 -            this.renderItemSide(p_187457_1_, p_187457_6_, flag1 ? ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND : ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND, !flag1);
 -        }
 -
@@ -987,6 +987,7 @@
 +    }
 +    public boolean isInsideOpaqueBlock(Vec3d pos)
 +    {
++    	if (mc.world == null) return false;
 +    	BlockPos bp = new BlockPos(pos);
 +    	return mc.world.getBlockState(bp).isViewBlocking();
 +    }
@@ -1019,7 +1020,7 @@
          vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
          vertexbuffer.pos(-1.0D, -1.0D, -0.5D).tex((double)f7, (double)f9).endVertex();
          vertexbuffer.pos(1.0D, -1.0D, -0.5D).tex((double)f6, (double)f9).endVertex();
-@@ -560,17 +885,14 @@
+@@ -560,17 +886,14 @@
              VertexBuffer vertexbuffer = tessellator.getBuffer();
              float f = this.mc.player.getBrightness(partialTicks);
              GlStateManager.color(f, f, f, 0.5F);

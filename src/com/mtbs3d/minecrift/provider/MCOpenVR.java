@@ -1058,7 +1058,7 @@ private static void processGui() {
 			// read new state
 			if (controllerDeviceIndex[c] != -1)
 			{			
-				vrsystem.GetControllerState.apply(controllerDeviceIndex[c], inputStateRefernceArray[c]);
+				vrsystem.GetControllerState.apply(controllerDeviceIndex[c], inputStateRefernceArray[c], inputStateRefernceArray[c].size());
 				inputStateRefernceArray[c].read();
 				controllerStateReference[c] = inputStateRefernceArray[c];			
 			} else
@@ -1750,7 +1750,7 @@ private static void processGui() {
 		}
 		
 		// main menu/win game/
-		if (mc.world==null || mc.currentScreen instanceof GuiWinGame ) {
+		if (mc.world==null || newScreen instanceof GuiWinGame ) {
 			//TODO reset scale things
 			MCOpenVR.guiScale = 2.0f;
 			mc.vrPlayer.worldScale = 1;

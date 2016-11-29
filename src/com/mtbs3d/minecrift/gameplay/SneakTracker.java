@@ -32,6 +32,7 @@ public class SneakTracker {
 
 	public void doProcess(Minecraft minecraft, EntityPlayerSP player){
 		if(!isActive(player)) {
+			sneakOverride = false;
 			return;
 		}
 

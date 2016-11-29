@@ -57,7 +57,7 @@
 +       	this.buttonList.add(new GuiButton(102, this.width / 2 - 100,this.height / 4 + 120 + var1, 49, 20, "Overlay"));
 +       	this.buttonList.add(new GuiButton(103, this.width / 2 - 50,this.height / 4 + 120 + var1, 49, 20, "Profiler"));
 +       	this.buttonList.add(new GuiButton(104, this.width / 2 + 2,this.height / 4 + 120 + var1, 98,	 20, "Screenshot"));
-+       	this.buttonList.add(new GuiButton(999, this.width / 2 + 100,this.height / 4 + 72 + var1, 98,	 20, "DEMO MODE"));
++       //	this.buttonList.add(new GuiButton(999, this.width / 2 + 100,this.height / 4 + 72 + var1, 98,	 20, "DEMO MODE"));
 +       	
 +       	if(mc.vrSettings.seated == false)
 +       		this.buttonList.add(new GuiButton(105, this.width / 2 - 100, this.height / 4 + 144 + var1, "Calibrate Height"));

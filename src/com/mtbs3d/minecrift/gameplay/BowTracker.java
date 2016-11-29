@@ -146,7 +146,7 @@ public class BowTracker {
 
 		} else if((Minecraft.getSystemTime() - tsNotch) > 500) {
 			canDraw = false;
-			player.setItemInUseClient(null);//client draw only
+			player.setItemInUseClient(ItemStack.EMPTY);//client draw only
 		}
 			
 		if (!isDrawing && canDraw  && pressed && !lastpressed) {

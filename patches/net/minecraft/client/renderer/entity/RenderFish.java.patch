@@ -1,18 +1,20 @@
 --- a/net/minecraft/client/renderer/entity/RenderFish.java
 +++ b/net/minecraft/client/renderer/entity/RenderFish.java
-@@ -105,11 +105,20 @@
+@@ -105,11 +105,22 @@
                  d5 = entityplayer.prevPosY + (entityplayer.posY - entityplayer.prevPosY) * (double)partialTicks + vec3d.yCoord;
                  d6 = entityplayer.prevPosZ + (entityplayer.posZ - entityplayer.prevPosZ) * (double)partialTicks + vec3d.zCoord;
                  d7 = (double)entityplayer.getEyeHeight();
++                
 +                // VIVE START - use controller for fishing rod start point
-+
-+                Vec3d aimSource = Minecraft.getMinecraft().roomScale.getControllerPos_World(0);
-+                Vec3d aimRotation = Minecraft.getMinecraft().roomScale.getControllerDir_World(0);
++                int c = 1;
++                if (entityplayer.getHeldItemMainhand().getItem() == Items.FISHING_ROD) c = 0;
++                Vec3d aimSource = Minecraft.getMinecraft().roomScale.getControllerPos_World(c);
++                Vec3d aimRotation = Minecraft.getMinecraft().roomScale.getControllerDir_World(c);
 +                d4= aimSource.xCoord + aimRotation.xCoord * 0.4f;
 +                d5= aimSource.yCoord + aimRotation.yCoord * 0.4f;
 +                d6 = aimSource.zCoord + aimRotation.zCoord * 0.4f;
 +                d7=0;
-+                // VIVE END - use controller for fishing rod start point
++                // VIVE END
              }
              else
              {

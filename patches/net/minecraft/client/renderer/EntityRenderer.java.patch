@@ -2419,7 +2419,7 @@
      public boolean setFxaaShader(int p_setFxaaShader_1_)
      {
          if (!OpenGlHelper.isFramebufferEnabled())
-@@ -2922,4 +2982,2055 @@
+@@ -2922,4 +2982,2064 @@
              GlStateManager.disableDepth();
          }
      }
@@ -2970,6 +2970,7 @@
 +			{
 +				Project.gluPerspective(this.mc.gameSettings.fovSetting, this.mc.vrSettings.displayMirrorMode == VRSettings.MIRROR_MIXED_REALITY ? this.mc.vrSettings.mixedRealityAspectRatio : (float)this.mc.displayWidth / (float) this.mc.displayHeight, minClipDistance, clipDistance);
 +			}
++			
 +			if (mc.currentPass == renderPass.Third && this.mc.world == null) {
 +				GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, matrixBuffer);
 +				matrixBuffer.rewind();
@@ -2981,7 +2982,7 @@
 +			GL11.glLoadIdentity();
 +			// VIVE START - custom GUI position
 +			GL11.glPushMatrix();
-+				applyGUIModelView(this.mc.currentPass); 
++				applyGUIModelView(this.mc.currentPass, inMenuRoom); 
 +	
 +					///JRBUDDA MAIN MENU ROOM            
 +					if(inMenuRoom){		
@@ -3014,7 +3015,9 @@
 +						GlStateManager.disableAlpha();
 +					}
 +
-+					if (this.mc.vrSettings.hudOcclusion == false || this.mc.currentScreen != null){
++			        Vec3d pos = mc.entityRenderer.getEyeRenderPos(mc.currentPass);
++			        	        
++					if (this.mc.vrSettings.hudOcclusion == false || itemRenderer.isInsideOpaqueBlock(pos)){
 +						// Never use depth test for in game menu - so you can always see it!
 +						GlStateManager.disableDepth();	
 +					} else {
@@ -4124,14 +4127,14 @@
 +		}
 +	}
 +    
-+    private  void applyGUIModelView(renderPass currentPass)
++    private  void applyGUIModelView(renderPass currentPass, boolean inMenuRoom)
 +	{
 +   		mc.mcProfiler.startSection("applyGUIModelView");
 +	
-+   			if(mc.world == null)	mc.vrPlayer.worldRotationRadians = 0;
++   			if(inMenuRoom)	mc.vrPlayer.worldRotationRadians = 0;
 +		
 +			Vec3d eye =mc.entityRenderer.getEyeRenderPos(currentPass);
-+			if (mc.world==null || mc.currentScreen instanceof GuiWinGame ) {
++			if (mc.world==null ) {
 +				eye = mc.roomScale.getEyePos_Room(currentPass);
 +			}
 +			Vector3f guipos = MCOpenVR.guiPos_World;
@@ -4276,9 +4279,15 @@
 +					}
 +				} 
 +			} else {
-+				guipos = guipos.add(new Vector3f((float)interPolatedRoomOrigin.xCoord,
++				if (inMenuRoom){
++				}
++				else {
++					guipos = guipos.add(new Vector3f((float)interPolatedRoomOrigin.xCoord,
 +						(float) interPolatedRoomOrigin.yCoord, (float) interPolatedRoomOrigin.zCoord));
++				}
 +			}
++			
++			
 +			// otherwise, looking at inventory screen. use pose calculated when screen was opened
 +			//where is this set up... should be here....
 +			

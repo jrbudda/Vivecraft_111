@@ -216,7 +216,7 @@ public class OpenVRStereoRenderer implements IStereoProvider
 				JOpenVRLibrary.EVREye.EVREye_Eye_Right,
 				MCOpenVR.texType1, null,
 				JOpenVRLibrary.EVRSubmitFlags.EVRSubmitFlags_Submit_Default);
-
+	
 		MCOpenVR.vrCompositor.PostPresentHandoff.apply();
 	}
 

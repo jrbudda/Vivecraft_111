@@ -719,38 +719,41 @@ public class Installer extends JPanel  implements PropertyChangeListener
 
 			String osFolder = "win32";		
 			String resource = "win32/openvr_api.dll";
-			
+				
 			if (osname.contains("windows")){	
-				if (osarch.contains("64"))
-				{
+
+				installFile(osFolder, resource);
 					osFolder = "win64";
 					resource = "win64/openvr_api.dll";
-				}
+					installFile(osFolder, resource);
 			}
 			else if( osname.contains("linux")){
 				osFolder = "linux32";
 				resource = "linux32/libopenvr_api.so";
-				if (osarch.contains("64"))
-				{
+					installFile(osFolder, resource);
 					osFolder = "linux64";
 					resource = "linux64/libopenvr_api.so";
-				}
+					installFile(osFolder, resource);
 			}
 			else if( osname.contains("mac")){
 				osFolder = "osx32";
 				resource = "osx32/libopenvr_api.dylib";			
-			}
+				installFile(osFolder, resource);
+			}	
+		return true;
+        }
 		
+		private boolean installFile(String osFolder, String resource){
 			File win32_dir = new File (targetDir, osFolder);
 			win32_dir.mkdirs();
-			
 			InputStream openvrdll = Installer.class.getResourceAsStream(resource);
 			File dll_out = new File (targetDir, resource);
 			if (!copyInputStreamToFile(openvrdll, dll_out))
 				return false;
 				
-			return true;
-        }
+			return true;		
+		}
+		
         // VIVE END - install openVR dll
 
         private void sleep(int millis)

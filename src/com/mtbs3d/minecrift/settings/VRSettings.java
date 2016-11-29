@@ -101,7 +101,7 @@ public class VRSettings
     public float crosshairScale = 1.0f;
     public int renderInGameCrosshairMode = RENDER_CROSSHAIR_MODE_ALWAYS;
     public int renderBlockOutlineMode = RENDER_BLOCK_OUTLINE_MODE_ALWAYS;
-    public boolean hudOcclusion = false;
+    public boolean hudOcclusion = true;
     public int inertiaFactor = INERTIA_NORMAL;
     public boolean storeDebugAim = false;
     public int smoothRunTickCount = 20;
