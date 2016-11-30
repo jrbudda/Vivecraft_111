@@ -30,7 +30,7 @@ public class RunTracker {
 		return true;
 	}
 
-	public double direction = 0;
+	private double direction = 0;
 	private double speed = 0;
 	private Vec3d movedir;
 	
@@ -52,8 +52,8 @@ public class RunTracker {
 
 		//Vec3d middle= controllerL.subtract(controllerR).scale(0.5).add(controllerR);
 
-		double c0move = MCOpenVR.controllerHistory[0].averageSpeed(.5);
-		double c1move = MCOpenVR.controllerHistory[1].averageSpeed(.5);
+		double c0move = MCOpenVR.controllerHistory[0].averageSpeed(.33);
+		double c1move = MCOpenVR.controllerHistory[1].averageSpeed(.33);
 
 		if(speed > 0) {
 			if(c0move < 0.1 && c1move < 0.1){
@@ -101,8 +101,8 @@ public class RunTracker {
 //		movedir = movedir.normalize();
 		
 		//todo: skip entries? is this computationally expensive?
-		Vec3d r = MCOpenVR.controllerHistory[0].averagePosition(.5);
-		Vec3d l = MCOpenVR.controllerHistory[1].averagePosition(.5);
+		Vec3d r = MCOpenVR.controllerHistory[0].averagePosition(.25);
+		Vec3d l = MCOpenVR.controllerHistory[1].averagePosition(.25);
 		
 		Vec3d diff = l.subtract(r).rotateYaw(minecraft.getMinecraft().vrPlayer.worldRotationRadians);
 		
@@ -112,8 +112,9 @@ public class RunTracker {
 	
 		double spd = (c0move + c1move) / 2;	
 		this.speed = spd * 1 * 1.3;
-		if(this.speed > 1.3) this.speed = 1.3f;
-		
+		if(this.speed > .1) this.speed = 1.0f;
+		if(this.speed > 1.0) this.speed = 1.3f;
+	
 	}
 
 }

@@ -44,7 +44,7 @@ public class ClimbTracker {
 			return false;
 		if(p.isRiding())
 			return false;
-		if(p.moveForward > 0) 
+		if(p.moveForward > 0 && Minecraft.getMinecraft().vrSettings.vrFreeMove ) 
 			return false;
 		return true;
 	}
