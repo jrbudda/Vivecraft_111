@@ -1,0 +1,30 @@
+--- a/net/minecraft/entity/monster/EntityEnderman.java
++++ b/net/minecraft/entity/monster/EntityEnderman.java
+@@ -11,6 +11,8 @@
+ import net.minecraft.block.Block;
+ import net.minecraft.block.material.Material;
+ import net.minecraft.block.state.IBlockState;
++import net.minecraft.client.Minecraft;
++import net.minecraft.client.entity.EntityPlayerSP;
+ import net.minecraft.entity.Entity;
+ import net.minecraft.entity.EntityLiving;
+ import net.minecraft.entity.EntityLivingBase;
+@@ -208,8 +210,16 @@
+             return false;
+         }
+         else
+-        {
+-            Vec3d vec3d = player.getLook(1.0F).normalize();
++        {      	
++        	//VIVE FIX
++            Vec3d vec3d;
++        	if(Minecraft.getMinecraft().isSingleplayer()){
++                vec3d = Minecraft.getMinecraft().vrPlayer.getHMDDir_World();
++        	}else {
++                vec3d = player.getLook(1.0F).normalize();        		
++        	}
++        	//
++        	
+             Vec3d vec3d1 = new Vec3d(this.posX - player.posX, this.getEntityBoundingBox().minY + (double)this.getEyeHeight() - (player.posY + (double)player.getEyeHeight()), this.posZ - player.posZ);
+             double d0 = vec3d1.lengthVector();
+             vec3d1 = vec3d1.normalize();

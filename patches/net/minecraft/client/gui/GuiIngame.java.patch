@@ -19,7 +19,16 @@
  import net.minecraft.client.renderer.texture.TextureAtlasSprite;
  import net.minecraft.client.renderer.texture.TextureMap;
  import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-@@ -148,6 +153,7 @@
+@@ -60,6 +65,8 @@
+     private static final ResourceLocation VIGNETTE_TEX_PATH = new ResourceLocation("textures/misc/vignette.png");
+     private static final ResourceLocation WIDGETS_TEX_PATH = new ResourceLocation("textures/gui/widgets.png");
+     private static final ResourceLocation PUMPKIN_BLUR_TEX_PATH = new ResourceLocation("textures/misc/pumpkinblur.png");
++    public static final ResourceLocation INVENTORY_BACKGROUND = new ResourceLocation("textures/gui/container/inventory.png");
++
+     private final Random rand = new Random();
+     private final Minecraft mc;
+     private final RenderItem itemRenderer;
+@@ -148,6 +155,7 @@
          FontRenderer fontrenderer = this.getFontRenderer();
          GlStateManager.enableBlend();
  
@@ -27,7 +36,7 @@
          if (Config.isVignetteEnabled())
          {
              this.renderVignette(this.mc.player.getBrightness(partialTicks), scaledresolution);
-@@ -165,15 +171,6 @@
+@@ -165,15 +173,6 @@
              this.renderPumpkinOverlay(scaledresolution);
          }
  
@@ -43,7 +52,7 @@
  
          if (this.mc.playerController.isSpectator())
          {
-@@ -183,15 +180,21 @@
+@@ -183,20 +182,47 @@
          {
              this.renderHotbar(scaledresolution, partialTicks);
          }
@@ -55,6 +64,7 @@
 -        this.renderAttackIndicator(partialTicks, scaledresolution);
 -        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 +        
++       
 +        //VIVE NOPE
 +        //this.renderAttackIndicator(partialTicks, scaledresolution);
 +        //NOPE
@@ -66,10 +76,36 @@
 +        	this.overlayBoss.renderBossHealth();
          this.mc.mcProfiler.endSection();
 +        
++
++        
++        //VIVE SPRINTDICATOR
++        if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
++        {
++            EntityPlayer entityplayer = (EntityPlayer)this.mc.getRenderViewEntity();
++            int iconp = 0;
++            if(entityplayer.isSprinting()) iconp = 10;
++            if(entityplayer.isSneaking()) iconp = 13;
++            if(iconp>0){
++            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
++            this.mc.getTextureManager().bindTexture(INVENTORY_BACKGROUND);
++            int w = scaledresolution.getScaledWidth() / 2 - 109;
++            int h = scaledresolution.getScaledHeight() -39;
++            this.drawTexturedModalRect(w, h, 0 + iconp % 8 * 18, 198 + iconp / 8 * 18, 18, 18);
++            }
++        }
++        //
++        
          GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
          this.mc.getTextureManager().bindTexture(ICONS);
  
-@@ -557,6 +560,7 @@
++        
+         if (this.mc.playerController.shouldDrawHUD())
+-        {
++        {      	
+             this.renderPlayerStats(scaledresolution);
+         }
+ 
+@@ -557,6 +583,7 @@
              int j = 182;
              int k = 91;
              this.zLevel = -90.0F;
@@ -77,7 +113,7 @@
              this.drawTexturedModalRect(i - 91, sr.getScaledHeight() - 22, 0, 0, 182, 22);
              this.drawTexturedModalRect(i - 91 - 1 + entityplayer.inventory.currentItem * 20, sr.getScaledHeight() - 22 - 1, 0, 22, 24, 22);
  
-@@ -575,7 +579,7 @@
+@@ -575,7 +602,7 @@
              this.zLevel = f;
              GlStateManager.enableRescaleNormal();
              GlStateManager.enableBlend();
@@ -86,7 +122,25 @@
              RenderHelper.enableGUIStandardItemLighting();
  
              for (int l = 0; l < 9; ++l)
-@@ -1111,6 +1115,11 @@
+@@ -811,7 +838,7 @@
+     {
+         if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
+         {
+-            EntityPlayer entityplayer = (EntityPlayer)this.mc.getRenderViewEntity();
++            EntityPlayer entityplayer = (EntityPlayer)this.mc.getRenderViewEntity();           
+             int i = MathHelper.ceil(entityplayer.getHealth());
+             boolean flag = this.healthUpdateCounter > (long)this.updateCounter && (this.healthUpdateCounter - (long)this.updateCounter) / 3L % 2L == 1L;
+ 
+@@ -966,7 +993,7 @@
+                     }
+                 }
+             }
+-
++           
+             Entity entity = entityplayer.getRidingEntity();
+ 
+             if (entity == null || !(entity instanceof EntityLivingBase))
+@@ -1111,6 +1138,11 @@
       */
      private void renderVignette(float lightLevel, ScaledResolution scaledRes)
      {
@@ -98,7 +152,7 @@
          if (Config.isVignetteEnabled())
          {
              lightLevel = 1.0F - lightLevel;
-@@ -1159,39 +1168,6 @@
+@@ -1159,39 +1191,6 @@
          }
      }
  
@@ -138,7 +192,7 @@
  
      private void renderHotbarItem(int p_184044_1_, int p_184044_2_, float p_184044_3_, EntityPlayer player, ItemStack stack)
      {
-@@ -1368,4 +1344,42 @@
+@@ -1368,4 +1367,42 @@
      {
          return this.overlayBoss;
      }

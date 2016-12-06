@@ -155,11 +155,13 @@ public class MCOpenVR
 	private static int k_EAxis_TouchPad = 0;
 
 	// Controls
-
 	private static long k_buttonTouchpad = (1L << JOpenVRLibrary.EVRButtonId.EVRButtonId_k_EButton_SteamVR_Touchpad);
 	private static long k_buttonTrigger = (1L << JOpenVRLibrary.EVRButtonId.EVRButtonId_k_EButton_SteamVR_Trigger);
 	private static long k_buttonAppMenu = (1L << JOpenVRLibrary.EVRButtonId.EVRButtonId_k_EButton_ApplicationMenu);
 	private static long k_buttonGrip =  (1L << JOpenVRLibrary.EVRButtonId.EVRButtonId_k_EButton_Grip);
+	private static long k_button_A =  (1L << JOpenVRLibrary.EVRButtonId.EVRButtonId_k_EButton_A);
+	private static long k_button_HandTrigger =  (1L << JOpenVRLibrary.EVRButtonId.EVRButtonId_k_EButton_Axis2);
+	
 
 	private static float triggerThreshold = .25f;
 
@@ -409,8 +411,7 @@ public class MCOpenVR
 
 				if (Type.equals("Float")) {
 					out += i.getName() + " " + vrsystem.GetFloatTrackedDeviceProperty.apply(JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd, i.getInt(null), hmdErrorStore);
-				}
-				if (Type.equals("String")) {
+				}				else if (Type.equals("String")) {
 					Pointer pointer = new Memory(JOpenVRLibrary.k_unMaxPropertyStringSize);
 					int len = vrsystem.GetStringTrackedDeviceProperty.apply(JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd, i.getInt(null), pointer, JOpenVRLibrary.k_unMaxPropertyStringSize - 1, hmdErrorStore);
 					out += i.getName() + " " + pointer.getString(0);
@@ -418,7 +419,7 @@ public class MCOpenVR
 					out += i.getName() + " " + vrsystem.GetBoolTrackedDeviceProperty.apply(JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd, i.getInt(null), hmdErrorStore);
 				} else if (Type.equals("Int32")) {
 					out += i.getName() + " " + vrsystem.GetInt32TrackedDeviceProperty.apply(JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd, i.getInt(null), hmdErrorStore);
-				} else if (Type.equals("UInt64")) {
+				} else if (Type.equals("Uint64")) {
 					out += i.getName() + " " + vrsystem.GetUint64TrackedDeviceProperty.apply(JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd, i.getInt(null), hmdErrorStore);
 				}
 
@@ -477,12 +478,12 @@ public class MCOpenVR
 				vrsystem.GetStringTrackedDeviceProperty.apply(JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd,JOpenVRLibrary.ETrackedDeviceProperty.ETrackedDeviceProperty_Prop_ManufacturerName_String,s,buffsize,hmdErrorStore);
 				String id=s.getString(0);
 				System.out.println("Device manufacturer is: "+id);
+			
 				if(!id.equals("HTC")) {
 					isVive=false;
-					resetPosition();
+					//resetPosition();
+					mc.vrSettings.loadOptions();
 				}
-
-
 
 			} else {
 				throw new Exception(jopenvr.JOpenVRLibrary.VR_GetVRInitErrorAsEnglishDescription(hmdErrorStore.get(0)).getString(0));			 
@@ -498,9 +499,6 @@ public class MCOpenVR
 				vsyncToPhotons = 0f;
 			}
 		}
-
-
-
 
 		// left eye
 		texBounds.uMax = 1f;
@@ -563,12 +561,23 @@ public class MCOpenVR
 		updateTouchpadSampleBuffer();
 		updateSmoothedVelocity();
 
-		processControllerButtons();
-		processTouchpadSampleBuffer();
-
+		boolean gui = (mc.currentScreen != null);
+		
+		if(mc.world != null){
+			boolean sleeping = (mc.player != null && mc.player.isPlayerSleeping());
+			if(MCOpenVR.isVive){
+				processControllerButtons(sleeping, gui);
+				processTouchpadSampleBuffer();
+			}else {
+				processControllerButtonsOculus(sleeping, gui);
+				processTouchpadSampleBufferOculus();
+			}
+			processVRFunctions(sleeping, gui);
+		}
+		
 		// GUI controls
 		Minecraft.getMinecraft().mcProfiler.endStartSection("gui");
-		if( mc.currentScreen != null )
+		if(gui)
 		{
 			processGui();
 		}
@@ -681,17 +690,17 @@ public class MCOpenVR
 	
 	//TODO: to hell with all these conversions.
 	//sets mouse position for currentscreen
-private static void processGui() {
-		
+	private static void processGui() {
+
 		if(guiRotationPose == null) return;
-		
+
 		Vector3f controllerPos = new Vector3f();
 		//OpenVRUtil.convertMatrix4ftoTranslationVector(controllerPose[0]);
 		Vec3d con = mc.vrPlayer.getControllerPos_World(0);
 		controllerPos.x	= (float) con.xCoord;
 		controllerPos.y	= (float) con.yCoord;
 		controllerPos.z	= (float) con.zCoord;
-			
+
 		Vec3d controllerdir = mc.roomScale.getControllerDir_World(0);
 		Vector3f cdir = new Vector3f((float)controllerdir.xCoord,(float) controllerdir.yCoord,(float) controllerdir.zCoord);
 		Vector3f forward = new Vector3f(0,0,1);
@@ -706,12 +715,12 @@ private static void processGui() {
 		float guiHalfHeight = guiHeight * 0.5f;
 
 		Vector3f gp = new Vector3f();
-		
+
 		gp.x = (float) (guiPos_World.x + mc.entityRenderer.interPolatedRoomOrigin.xCoord ) ;
 		gp.y = (float) (guiPos_World.y + mc.entityRenderer.interPolatedRoomOrigin.yCoord ) ;
 		gp.z = (float) (guiPos_World.z + mc.entityRenderer.interPolatedRoomOrigin.zCoord ) ;
-					
-	
+
+
 		Vector3f guiTopLeft = gp.subtract(guiUp.divide(1.0f / guiHalfHeight)).subtract(guiRight.divide(1.0f/guiHalfWidth));
 		Vector3f guiTopRight = gp.subtract(guiUp.divide(1.0f / guiHalfHeight)).add(guiRight.divide(1.0f / guiHalfWidth));
 
@@ -728,7 +737,7 @@ private static void processGui() {
 			float u = relativePoint.dot(guiRight.divide(1.0f/guiWidth));
 			float v = relativePoint.dot(guiUp.divide(1.0f/guiWidth));
 
-					
+
 			// adjust vertical for aspect ratio
 			v = ( (v - 0.5f) * ((float)mc.displayWidth / (float)mc.displayHeight) ) + 0.5f;
 
@@ -779,12 +788,36 @@ private static void processGui() {
 		mc.currentScreen.mouseOffsetX = -1;
 		mc.currentScreen.mouseOffsetY = -1;
 
+		boolean lastpressedShift,pressedshift,lastpressedleftclick,
+		lastpressedrightclick,lastpressedmiddleclick,pressedleftclick,pressedrightclick,pressedmiddleclick;
+
+		if(MCOpenVR.isVive){
+			//left controller
+			lastpressedShift = (lastControllerState[LEFT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0;			
+			pressedshift = (controllerStateReference[LEFT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0;
+			//right controller
+			lastpressedleftclick = lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;
+			lastpressedrightclick = (lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) == 0 ;
+			lastpressedmiddleclick= (lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) == 0 ;
+			pressedleftclick = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;
+			pressedrightclick = (controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) > 0;
+			pressedmiddleclick = (controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0;
+		} else {
+			//left controller
+			lastpressedShift = (lastControllerState[LEFT_CONTROLLER].ulButtonPressed & k_button_HandTrigger) > 0;			
+			pressedshift = (controllerStateReference[LEFT_CONTROLLER].ulButtonPressed & k_button_HandTrigger) > 0;
+			//right controller
+			lastpressedleftclick = lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;
+			lastpressedrightclick = (lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) == 0 ;
+			lastpressedmiddleclick= (lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_button_A) == 0 ;
+			pressedleftclick = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;
+			pressedrightclick = (controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0;
+			pressedmiddleclick = (controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_button_A) > 0;	
+		}
+
 		if (controllerDeviceIndex[LEFT_CONTROLLER] != -1) {
 			//Shift
-			if (mc.currentScreen != null &&
-					(controllerStateReference[LEFT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0 &&
-					(lastControllerState[LEFT_CONTROLLER].ulButtonPressed & k_buttonGrip) == 0 
-					)				
+			if (mc.currentScreen != null && pressedshift && !lastpressedShift)				
 			{
 				//press Shift
 				mc.currentScreen.pressShiftFake = true;
@@ -792,11 +825,7 @@ private static void processGui() {
 			}
 
 
-			if(mc.currentScreen != null &&
-					(
-					controllerStateReference[LEFT_CONTROLLER].ulButtonPressed & k_buttonGrip) == 0 &&
-					(lastControllerState[LEFT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0 
-					)
+			if (mc.currentScreen != null && !pressedshift && lastpressedShift)			
 			{
 				//release Shift
 				mc.currentScreen.pressShiftFake = false;
@@ -804,11 +833,11 @@ private static void processGui() {
 			}	
 			//end Shift
 		}
-		
+
 		if (controllerMouseX >= 0 && controllerMouseX < mc.displayWidth
 				&& controllerMouseY >=0 && controllerMouseY < mc.displayHeight)
 		{
-			// clamp to screen
+			// mouse on screen
 			int mouseX = Math.min(Math.max((int) controllerMouseX, 0), mc.displayWidth);
 			int mouseY = Math.min(Math.max((int) controllerMouseY, 0), mc.displayHeight);
 
@@ -816,30 +845,20 @@ private static void processGui() {
 			{
 				Mouse.setCursorPosition(mouseX, mouseY);
 				controllerMouseValid = true;
+
 				//LMB
-				if (mc.currentScreen != null &&
-						controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold && 
-						lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x <= triggerThreshold 
-						)
-				{
-					//press left mouse button
+				if (mc.currentScreen != null && pressedleftclick && !lastpressedleftclick)
+				{ //press left mouse button
 					if (Display.isActive()) 
 						KeyboardSimulator.robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 					else mc.currentScreen.mouseDown(mouseX, mouseY, 0);
 				}	
 
-				if (mc.currentScreen != null &&
-						controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold) {					
+				if (mc.currentScreen != null && pressedleftclick)				
 					mc.currentScreen.mouseDrag(mouseX, mouseY);//Signals mouse move
 
-				}
 
-
-				if (mc.currentScreen != null &&
-						controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x <= triggerThreshold && 
-						lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold 
-						)
-				{
+				if (mc.currentScreen != null && !pressedleftclick && lastpressedleftclick) {
 					//release left mouse button
 					if (Display.isActive()) KeyboardSimulator.robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 					else mc.currentScreen.mouseUp(mouseX, mouseY, 0);
@@ -847,29 +866,17 @@ private static void processGui() {
 				//end LMB
 
 				//RMB
-				if (mc.currentScreen != null &&
-						(controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) > 0 &&
-						(lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) == 0 
-						)				
-				{
+				if (mc.currentScreen != null && pressedrightclick && !lastpressedrightclick) {
 					//press right mouse button
 					if (Display.isActive()) KeyboardSimulator.robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
 					else mc.currentScreen.mouseDown(mouseX, mouseY, 1);
 				}	
 
-				if (mc.currentScreen != null &&
-						(controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) > 0)
-				{
+				if (mc.currentScreen != null && pressedrightclick)
 					mc.currentScreen.mouseDrag(mouseX, mouseY);//Signals mouse move
-				}
 
 
-				if(mc.currentScreen != null &&
-						(
-						controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) == 0 &&
-						(lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) > 0 
-						)
-				{
+				if (mc.currentScreen != null && !pressedrightclick && lastpressedrightclick) {
 					//release right mouse button
 					if (Display.isActive()) KeyboardSimulator.robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
 					else mc.currentScreen.mouseUp(mouseX, mouseY, 1);
@@ -877,29 +884,16 @@ private static void processGui() {
 				//end RMB	
 
 				//MMB
-				if (mc.currentScreen != null &&
-						(controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0 &&
-						(lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) == 0 
-						)				
-				{
+				if (mc.currentScreen != null && pressedmiddleclick && !lastpressedmiddleclick) {
 					//press middle mouse button
 					if (Display.isActive()) KeyboardSimulator.robot.mousePress(InputEvent.BUTTON2_DOWN_MASK);
 					else mc.currentScreen.mouseDown(mouseX, mouseY, 2);
 				}	
 
-				if (mc.currentScreen != null &&
-						(controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0)
-				{
+				if (mc.currentScreen != null && pressedmiddleclick) 
 					mc.currentScreen.mouseDrag(mouseX, mouseY);//Signals mouse move
-				}
 
-
-				if(mc.currentScreen != null &&
-						(
-						controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) == 0 &&
-						(lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0 
-						)
-				{
+				if (mc.currentScreen != null && !pressedmiddleclick && lastpressedmiddleclick) {
 					//release middle mouse button
 					if (Display.isActive()) KeyboardSimulator.robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
 					else mc.currentScreen.mouseUp(mouseX, mouseY, 2);
@@ -907,7 +901,7 @@ private static void processGui() {
 				//end MMB
 
 			}
-		} else {
+		} else { //mouse off screen
 			if(controllerMouseTicks == 0)
 				controllerMouseValid = false;
 
@@ -915,11 +909,8 @@ private static void processGui() {
 
 			if (mc.player != null && !(mc.currentScreen instanceof GuiWinGame))
 			{
-				boolean pressedRMB = ((controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) > 0)
-						&& ((lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) == 0);
-
-				boolean pressedLMB = (controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold)
-						&& (lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x <= triggerThreshold);
+				boolean pressedRMB = pressedrightclick && !lastpressedrightclick;
+				boolean pressedLMB = pressedleftclick && !lastpressedleftclick;
 
 				if (pressedLMB || pressedRMB)
 				{
@@ -1090,14 +1081,9 @@ private static void processGui() {
 	//This means we should only set keys as pressed when they change state, or they will repeat.
 	//And we should still unpress the key when released.
 	//TODO: make a new class that polls more quickly and provides Minecraft.java with a HTCController.next() event queue. (unless openVR has one?)
-	private static void processControllerButtons()
+	private static void processControllerButtons(boolean gui, boolean sleeping)
 	{
-		if (mc.world == null)
-			return;
-
-		boolean sleeping = (mc.player != null && mc.player.isPlayerSleeping());
-
-		// right controller
+	// right controller
 		//last
 		boolean lastpressedRGrip = (lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0;		
 		boolean lastpressedRtouchpadBottomLeft = (lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonTouchpad) > 0 &&
@@ -1135,9 +1121,6 @@ private static void processGui() {
 
 		rtbX = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x;
 		rtbY = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y;
-
-
-		boolean gui = (mc.currentScreen != null);
 			
 		if(!gui){ 
 			//R GRIP
@@ -1269,7 +1252,6 @@ private static void processGui() {
 			mc.vrSettings.buttonMappings[ViveButtons.BUTTON_LEFT_TRIGGER_FULLCLICK.ordinal()].press();
 		}	
 
-
 		if(!pressedLGrip && lastpressedLGrip) {
 			mc.vrSettings.buttonMappings[ViveButtons.BUTTON_LEFT_GRIP.ordinal()].unpress();
 		}
@@ -1295,10 +1277,275 @@ private static void processGui() {
 			mc.vrSettings.buttonMappings[ViveButtons.BUTTON_LEFT_TRIGGER_FULLCLICK.ordinal()].unpress();
 		}			
 
+		if(pressedLAppMenu  && !lastpressedLAppMenu) { //handle menu directly		
+			if(pressedLGrip){				
+				setKeyboardOverlayShowing(!keyboardShowing, null);			
+			} else{
+				if(gui || keyboardShowing){
+					if(mc.currentScreen instanceof GuiWinGame){ //from 'esc' key on guiwingame since we cant push it.
+						mc.getConnection().sendPacket(new CPacketClientStatus(State.PERFORM_RESPAWN));
+						mc.displayGuiScreen((GuiScreen)null);		
+					}else {
+						mc.player.closeScreen();
+						setKeyboardOverlayShowing(false, null);
+					}
+				}else
+					
+				if(!DEMO)mc.displayInGameMenu();				
+			}
+		}
+		
+		if(pressedRAppMenu  && !lastpressedRAppMenu) { //handle menu directly
+			if(mc.gameSettings.keyBindSneak.isKeyDown() && mc.vrSettings.displayMirrorMode == mc.vrSettings.MIRROR_MIXED_REALITY){				
+				VRHotkeys.snapMRCam(mc);	
+			}
+		}
+	}
+
+	//TODO: move somewhere else.
+	private static void processControllerButtonsOculus(boolean sleeping, boolean gui)
+	{
+		// right controller
+		//last
+		boolean lastpressedRHandTrigger = (lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_button_HandTrigger) > 0;		
+		boolean lastpressedB = (lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_buttonAppMenu) > 0;
+		boolean lastpressedA = (lastControllerState[RIGHT_CONTROLLER].ulButtonPressed & k_button_A) > 0;
+		boolean lastpressedRTrigger = lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;		
+
+		boolean lastTouchedRHandTrigger = (lastControllerState[RIGHT_CONTROLLER].ulButtonTouched & k_button_HandTrigger) > 0;		
+		boolean lastTouchedB = (lastControllerState[RIGHT_CONTROLLER].ulButtonTouched & k_buttonAppMenu) > 0;
+		boolean lastTouchedA = (lastControllerState[RIGHT_CONTROLLER].ulButtonTouched & k_button_A) > 0;
+		boolean lastTouchedRTrigger = lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;	
+		
+		//current
+		boolean pressedRHandTrigger = (controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_button_HandTrigger) > 0;		
+		boolean pressedB = (controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonAppMenu) > 0;
+		boolean pressedA = (controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_button_A) > 0;
+		boolean pressedRTrigger = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;	
+
+		//current
+		boolean TouchedRHandTrigger = (controllerStateReference[RIGHT_CONTROLLER].ulButtonTouched & k_button_HandTrigger) > 0;		
+		boolean TouchedB = (controllerStateReference[RIGHT_CONTROLLER].ulButtonTouched & k_buttonAppMenu) > 0;
+		boolean TouchedA = (controllerStateReference[RIGHT_CONTROLLER].ulButtonTouched & k_button_A) > 0;
+		boolean TouchedRTrigger = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;	
+		
+		rtbX = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x;
+		rtbY = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y;
+
+		if(!gui){ 
+			//R GRIP
+			if (pressedRHandTrigger && !lastpressedRHandTrigger) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_HAND_TRIGGER_PRESS.ordinal()].press();
+			}			
+			//R TRIGGER
+			if (pressedRTrigger && !lastpressedRTrigger) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_INDEX_TRIGGER_PRESS.ordinal()].press();
+			}
+			//R B
+			if (pressedB && !lastpressedB) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_B_PRESS.ordinal()].press();
+			}				
+			//R A
+			if (pressedA && !lastpressedA) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_A_PRESS.ordinal()].press();
+			}	
+			
+			//R GRIP
+			if (TouchedRHandTrigger && !lastTouchedRHandTrigger) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_HAND_TRIGGER_TOUCH.ordinal()].press();
+			}			
+			//R TRIGGER
+			if (TouchedRTrigger && !lastTouchedRTrigger) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_INDEX_TRIGGER_TOUCH.ordinal()].press();
+			}
+			//R B
+			if (TouchedB && !lastTouchedB) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_B_TOUCH.ordinal()].press();
+			}				
+			//R A
+			if (TouchedA && !lastTouchedA) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_A_TOUCH.ordinal()].press();
+			}		
+		}
+		
+		//R GRIP
+		if (!pressedRHandTrigger && lastpressedRHandTrigger) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_HAND_TRIGGER_PRESS.ordinal()].unpress();
+		}			
+		//R TRIGGER
+		if (!pressedRTrigger && lastpressedRTrigger) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_INDEX_TRIGGER_PRESS.ordinal()].unpress();
+		}
+		//R B
+		if (!pressedB && lastpressedB) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_B_PRESS.ordinal()].unpress();
+		}				
+		//R A
+		if (!pressedA && lastpressedA) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_A_PRESS.ordinal()].unpress();
+		}	
+
+		//R GRIP
+		if (!TouchedRHandTrigger && lastTouchedRHandTrigger) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_HAND_TRIGGER_TOUCH.ordinal()].unpress();
+		}			
+		//R TRIGGER
+		if (!TouchedRTrigger && lastTouchedRTrigger) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_INDEX_TRIGGER_TOUCH.ordinal()].unpress();
+		}
+		//R B
+		if (!TouchedB && lastTouchedB) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_B_TOUCH.ordinal()].unpress();
+		}				
+		//R A
+		if (!TouchedA && lastTouchedA) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_A_TOUCH.ordinal()].unpress();
+		}	
+
+		// LEFT controller
+		//last
+		boolean lastpressedLHandTrigger = (lastControllerState[LEFT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0;		
+		boolean lastpressedY = (lastControllerState[LEFT_CONTROLLER].ulButtonPressed & k_buttonAppMenu) > 0;
+		boolean lastpressedX = (lastControllerState[LEFT_CONTROLLER].ulButtonPressed & k_button_A) > 0;
+		boolean lastpressedLTrigger = lastControllerState[LEFT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;		
+
+		boolean lastTouchedLHandTrigger = (lastControllerState[LEFT_CONTROLLER].ulButtonTouched & k_buttonGrip) > 0;		
+		boolean lastTouchedY = (lastControllerState[LEFT_CONTROLLER].ulButtonTouched & k_buttonAppMenu) > 0;
+		boolean lastTouchedX = (lastControllerState[LEFT_CONTROLLER].ulButtonTouched & k_button_A) > 0;
+		boolean lastTouchedLTrigger = lastControllerState[LEFT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;	
+		
+		//current
+		boolean pressedLHandTrigger = (controllerStateReference[LEFT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0;		
+		boolean pressedY = (controllerStateReference[LEFT_CONTROLLER].ulButtonPressed & k_buttonAppMenu) > 0;
+		boolean pressedX = (controllerStateReference[LEFT_CONTROLLER].ulButtonPressed & k_button_A) > 0;
+		boolean pressedLTrigger = controllerStateReference[LEFT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;	
+
+		//current
+		boolean TouchedLHandTrigger = (controllerStateReference[LEFT_CONTROLLER].ulButtonTouched & k_buttonGrip) > 0;		
+		boolean TouchedY = (controllerStateReference[LEFT_CONTROLLER].ulButtonTouched & k_buttonAppMenu) > 0;
+		boolean TouchedX = (controllerStateReference[LEFT_CONTROLLER].ulButtonTouched & k_button_A) > 0;
+		boolean TouchedLTrigger = controllerStateReference[LEFT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;	
+		
+		rtbX = controllerStateReference[LEFT_CONTROLLER].rAxis[k_EAxis_TouchPad].x;
+		rtbY = controllerStateReference[LEFT_CONTROLLER].rAxis[k_EAxis_TouchPad].y;
+
+		if(!gui){ 
+			//L GRIP
+			if (pressedLHandTrigger && !lastpressedLHandTrigger) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_HAND_TRIGGER_PRESS.ordinal()].press();
+			}	
+		}
+		
+			//L TRIGGER
+			if (pressedLTrigger && !lastpressedLTrigger) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_INDEX_TRIGGER_PRESS.ordinal()].press();
+			}
+			//L B
+			if (pressedY && !lastpressedY) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_Y_PRESS.ordinal()].press();
+			}				
+			//L A
+			if (pressedX && !lastpressedX) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_X_PRESS.ordinal()].press();
+			}	
+			
+			//L GRIP
+			if (TouchedLHandTrigger && !lastTouchedLHandTrigger) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_HAND_TRIGGER_TOUCH.ordinal()].press();
+			}			
+			//L TRIGGER
+			if (TouchedLTrigger && !lastTouchedLTrigger) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_INDEX_TRIGGER_TOUCH.ordinal()].press();
+			}
+			//L B
+			if (TouchedY && !lastTouchedY) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_Y_TOUCH.ordinal()].press();
+			}				
+			//L A
+			if (TouchedX && !lastTouchedX) {
+				mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_X_TOUCH.ordinal()].press();
+			}		
+
+		
+		//L GRIP
+		if (!pressedLHandTrigger && lastpressedLHandTrigger) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_HAND_TRIGGER_PRESS.ordinal()].unpress();
+		}			
+		//L TRIGGER
+		if (!pressedLTrigger && lastpressedLTrigger) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_INDEX_TRIGGER_PRESS.ordinal()].unpress();
+		}
+		//L B
+		if (!pressedY && lastpressedY) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_Y_PRESS.ordinal()].unpress();
+		}				
+		//L A
+		if (!pressedX && lastpressedX) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_X_PRESS.ordinal()].unpress();
+		}	
+
+		//L GRIP
+		if (!TouchedLHandTrigger && lastTouchedLHandTrigger) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_HAND_TRIGGER_TOUCH.ordinal()].unpress();
+		}			
+		//L TRIGGER
+		if (!TouchedLTrigger && lastTouchedLTrigger) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_INDEX_TRIGGER_TOUCH.ordinal()].unpress();
+		}
+		//L B
+		if (!TouchedY && lastTouchedY) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_Y_TOUCH.ordinal()].unpress();
+		}				
+		//L A
+		if (!TouchedX && lastTouchedX) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_LEFT_X_TOUCH.ordinal()].unpress();
+		}	
+
+
+		if(pressedY  && !lastpressedY) { //handle menu directly		
+			if(pressedLHandTrigger){				
+				setKeyboardOverlayShowing(!keyboardShowing, null);			
+			} else{
+				if(gui || keyboardShowing){
+					if(mc.currentScreen instanceof GuiWinGame){ //from 'esc' key on guiwingame since we cant push it.
+						mc.getConnection().sendPacket(new CPacketClientStatus(State.PERFORM_RESPAWN));
+						mc.displayGuiScreen((GuiScreen)null);		
+					}else {
+						mc.player.closeScreen();
+						setKeyboardOverlayShowing(false, null);
+					}
+				}else
+					
+				if(!DEMO)mc.displayInGameMenu();				
+			}
+		}
+		
+		if(pressedA  && !lastpressedA) { //handle menu directly
+			if(mc.gameSettings.keyBindSneak.isKeyDown() && mc.vrSettings.displayMirrorMode == mc.vrSettings.MIRROR_MIXED_REALITY){				
+				VRHotkeys.snapMRCam(mc);	
+			}
+		}
+		
+	}
+
+	private static void processVRFunctions(boolean sleeping, boolean gui) {
 		//VIVE SPECIFIC FUNCTIONALITY
-		//TODO: Find a better home for these in Minecraft.java		
+		//TODO: Find a better home for these.	
 
 		if(	Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) return;
+		
+		//handle movementtoggle
+		if (mc.gameSettings.keyBindPickBlock.isKeyDown()) {
+			if(mc.vrSettings.vrAllowLocoModeSwotch){
+				moveModeSwitchcount++;
+				if (moveModeSwitchcount >= 20 * 4) {
+					moveModeSwitchcount = 0;					
+					mc.vrPlayer.setFreeMoveMode(!mc.vrPlayer.getFreeMoveMode());
+				}				
+			}
+		} else {
+			moveModeSwitchcount = 0;
+		}
 		
 		//no jump key if cant.Not a good place for this check.
 		if(mc.gameSettings.keyBindJump.isPressed()) {
@@ -1400,19 +1647,6 @@ private static void processGui() {
 			mc.player.closeScreen();
 		}
 
-		//handle movementtoggle
-		if (pressedRGrip) {
-			if(mc.vrSettings.vrAllowLocoModeSwotch){
-				moveModeSwitchcount++;
-				if (moveModeSwitchcount >= 20 * 4) {
-					moveModeSwitchcount = 0;					
-					mc.vrPlayer.setFreeMoveMode(!mc.vrPlayer.getFreeMoveMode());
-				}				
-			}
-		} else {
-			moveModeSwitchcount = 0;
-		}
-
 		if(!mc.gameSettings.keyBindInventory.isKeyDown()){
 			startedOpeningInventory = 0;
 		}
@@ -1423,32 +1657,9 @@ private static void processGui() {
 			mc.gameSettings.keyBindInventory.unpressKey(); //minecraft.java will open a new window otherwise.
 		}
 
-		if(pressedLAppMenu  && !lastpressedLAppMenu) { //handle menu directly
-				
-			if(pressedLGrip){				
-				setKeyboardOverlayShowing(!keyboardShowing, null);			
-			} else{
-				if(gui || keyboardShowing){
-					if(mc.currentScreen instanceof GuiWinGame){ //from 'esc' key on guiwingame since we cant push it.
-						mc.getConnection().sendPacket(new CPacketClientStatus(State.PERFORM_RESPAWN));
-						mc.displayGuiScreen((GuiScreen)null);		
-					}else {
-						mc.player.closeScreen();
-						setKeyboardOverlayShowing(false, null);
-					}
-				}else
-					
-				if(!DEMO)mc.displayInGameMenu();				
-			}
-		}
-		
-		if(pressedRAppMenu  && !lastpressedRAppMenu) { //handle menu directly
-			if(pressedRGrip && mc.vrSettings.displayMirrorMode == mc.vrSettings.MIRROR_MIXED_REALITY){				
-				VRHotkeys.snapMRCam(mc);	
-			}
-		}
 	}
 
+	
 	public static boolean DEMO;
 	
 	private static void changeHotbar(int dir){
@@ -1590,6 +1801,41 @@ private static void processGui() {
 		}
 	}
 
+	private static void processTouchpadSampleBufferOculus()
+	{
+		if (mc.player == null)
+			return;
+
+		if (mc.currentScreen != null){
+			// right touchpad controls mousewheel
+			if (controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y > 0.5){
+				KeyboardSimulator.robot.mouseWheel(1);
+			}
+
+			if (controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y < -0.5){
+				KeyboardSimulator.robot.mouseWheel(-1);
+			}
+
+		} else 	{
+			// left touchpad controls inventory
+			if (controllerStateReference[LEFT_CONTROLLER].rAxis[k_EAxis_TouchPad].x > 0.5 &&
+					lastControllerState[LEFT_CONTROLLER].rAxis[k_EAxis_TouchPad].x < 0.5 
+					){
+				mc.player.inventory.changeCurrentItem(1);
+				short duration = 250;
+				vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[1], 0, duration);
+			}	
+
+			if (controllerStateReference[LEFT_CONTROLLER].rAxis[k_EAxis_TouchPad].x < -0.5 &&
+					lastControllerState[LEFT_CONTROLLER].rAxis[k_EAxis_TouchPad].x > -0.5 
+					){
+				mc.player.inventory.changeCurrentItem(-1);
+				short duration = 250;
+				vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[1], 0, duration);
+			}			
+		}
+	}
+	
 	private static void updatePose()
 	{
 		if ( vrsystem == null || vrCompositor == null )

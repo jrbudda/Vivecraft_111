@@ -1355,7 +1355,14 @@
      }
  
      private void createWorldIcon()
-@@ -1478,6 +1471,9 @@
+@@ -1472,12 +1465,15 @@
+ 
+     private boolean isDrawBlockOutline()
+     {
+-        if (!this.drawBlockOutline)
++        if (!this.drawBlockOutline || mc.vrSettings.hideGui)  //VIVE ADD THIS ONE
+         {
+             return false;
          }
          else
          {
@@ -2950,8 +2957,7 @@
 +	private void renderGuiLayer(float par1)
 +	{
 +		if (this.guiScreenShowingThisFrame || this.inWorldGuiScreenShowingThisFrame || this.mc.showSplashScreen)
-+		{
-+			
++		{		
 +			boolean shaders = Config.isShaders();
 +					
 +			boolean inMenuRoom = this.mc.world == null || mc.currentScreen instanceof GuiWinGame || mc.integratedServerLaunchInProgress ;
@@ -3081,9 +3087,10 @@
 +		final ScaledResolution var15 = new ScaledResolution(this.mc);
 +
 +		
-+		if (false)//this.mc.showSplashScreen)
++		if (this.mc.showSplashScreen)
 +		{
-+    		this.mc.showSplash(this.mc.getFramebuffer());
++			mc.showSplashScreen = false;
++    		//this.mc.showSplash(this.mc.getFramebuffer());
 +		}
 +		else if (false)//(this.mc.isIntegratedServerLaunching())
 +		{
