@@ -81,7 +81,6 @@ public static boolean serverWantsData = false;
 			buffer.rewind();
 			Matrix4f matrix = new Matrix4f();
 			matrix.load(buffer);
-			matrix.transpose();
 
 			Vec3d headPosition = player.getHMDPos_World();
 			Quaternion headRotation = new Quaternion(matrix);
@@ -100,6 +99,7 @@ public static boolean serverWantsData = false;
 			a = out;
 			CPacketCustomPayload pack = getVivecraftClientPacket(PacketDiscriminators.HEADDATA,out);
 			Minecraft.getMinecraft().getConnection().sendPacket(pack);
+			
 		}	
 		
 		for (int i = 0; i < 2; i++) {

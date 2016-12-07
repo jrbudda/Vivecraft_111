@@ -50,7 +50,7 @@
              this.mc.displayGuiScreen((GuiScreen)null);
  
              if (this.mc.currentScreen == null)
-@@ -558,6 +571,12 @@
+@@ -558,7 +571,18 @@
          {
              while (Mouse.next())
              {
@@ -61,9 +61,20 @@
 +				}}
 +            	
                  this.handleMouseInput();
++                
++            	if(mc.currentScreen == null){
++            		int a = 9;
++            	}
++            	
              }
          }
-@@ -580,6 +599,24 @@
+ 
+@@ -576,10 +600,29 @@
+      */
+     public void handleMouseInput() throws IOException
+     {
++
+         int i = Mouse.getEventX() * this.width / this.mc.displayWidth;
          int j = this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1;
          int k = Mouse.getEventButton();
  
@@ -79,16 +90,16 @@
 +        // Reset mouse offset
 +        mouseOffsetX = -1;
 +        mouseOffsetY = -1;
-+
-+        int var1 = getMouseX();
-+        int var2 = getMouseY();
-+        int var3 = Mouse.getEventButton();
++        
++//        int var1 = getMouseX();
++//        int var2 = getMouseY();
++//        int var3 = Mouse.getEventButton();
 +		/** END MINECRIFT */
 +        
          if (Mouse.getEventButtonState())
          {
              if (this.mc.gameSettings.touchscreen && this.touchValue++ > 0)
-@@ -613,13 +650,20 @@
+@@ -613,13 +656,20 @@
       */
      public void handleKeyboardInput() throws IOException
      {
@@ -110,7 +121,7 @@
          this.mc.dispatchKeypresses();
      }
  
-@@ -649,7 +693,16 @@
+@@ -649,7 +699,16 @@
      {
          if (this.mc.world != null)
          {
@@ -128,7 +139,7 @@
          }
          else
          {
-@@ -727,7 +780,7 @@
+@@ -727,7 +786,7 @@
       */
      public static boolean isShiftKeyDown()
      {
@@ -137,7 +148,7 @@
      }
  
      /**
-@@ -765,4 +818,93 @@
+@@ -765,4 +824,93 @@
      {
          this.setWorldAndResolution(mcIn, w, h);
      }

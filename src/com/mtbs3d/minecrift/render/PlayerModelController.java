@@ -104,9 +104,11 @@ public class PlayerModelController {
 		//Vector3f sLV3f=MCOpenVR.hmdRotation.transform(new Vector3f((float) shoulderL.xCoord,(float) shoulderL.yCoord,(float) shoulderL.zCoord));
 		//Vector3f sRV3f=MCOpenVR.hmdRotation.transform(new Vector3f((float) shoulderR.xCoord,(float) shoulderR.yCoord,(float) shoulderR.zCoord));
 
-		 Angle eu = hmdq.toEuler();
-		 float yaw1 = eu.getYaw();
-		 float pitch1 = eu.getPitch();
+	    Vector3 forward = new Vector3(0,0,-1);
+		Vector3 dir = hmdq.multiply(forward);
+
+		 float yaw1 = (float) Math.atan2(-dir.getX(), dir.getZ()); 
+		 float pitch1 = (float) Math.asin(dir.getY()/dir.length()); 
 				 
 		//Quaternion qua=new Quaternion(Vector3.up(),yaw1);
 
@@ -136,7 +138,7 @@ public class PlayerModelController {
 		if(out == null) out = new RotInfo();
 		out.leftArm=vecs[1];
 		out.rightArm=vecs[0];
-		out.head = new Vec2f((float)Math.toRadians(pitch1), (float)Math.toRadians(yaw1));
+		out.head = new Vec2f((float)(pitch1), (float)(yaw1));
 		vivePlayers.put(uuid, out);
 	}
 	

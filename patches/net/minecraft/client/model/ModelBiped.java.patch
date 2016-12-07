@@ -59,8 +59,8 @@
 +            PlayerModelController.RotInfo rotInfo=PlayerModelController.getInstance().getRotationsForPlayer(playerUuid);
 +            float yaw = (float) Math.toRadians(entityIn.rotationYaw);
 +            
-+            this.bipedHead.rotateAngleX = (float)  rotInfo.head.x;
-+          //  this.bipedHead.rotateAngleY = (float) rotInfo.head.y  - yaw;
++            this.bipedHead.rotateAngleX = (float) -rotInfo.head.x;
++            this.bipedHead.rotateAngleY = (float) rotInfo.head.y - yaw;
 +
 +            this.bipedLeftArm.rotateAngleX=(float) -rotInfo.leftArm.x;
 +            this.bipedLeftArm.rotateAngleY=(float) rotInfo.leftArm.y - yaw;
