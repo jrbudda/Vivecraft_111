@@ -1,16 +1,9 @@
 package com.mtbs3d.minecrift.render;
 
-import com.mtbs3d.minecrift.api.IRoomscaleAdapter;
-import com.mtbs3d.minecrift.provider.MCOpenVR;
-import com.mtbs3d.minecrift.provider.OpenVRPlayer;
 import com.mtbs3d.minecrift.utils.Angle;
 import com.mtbs3d.minecrift.utils.Quaternion;
 import com.mtbs3d.minecrift.utils.Utils;
 import com.mtbs3d.minecrift.utils.Vector3;
-import de.fruitfly.ovr.structs.EulerOrient;
-import de.fruitfly.ovr.structs.Quatf;
-import de.fruitfly.ovr.structs.Vector3f;
-import jopenvr.OpenVRUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
@@ -29,8 +22,8 @@ import java.util.UUID;
 public class PlayerModelController {
 	
 	public Map<UUID, RotInfo> vivePlayers = new HashMap<UUID, RotInfo>();
-
 	
+
 	static PlayerModelController instance;
 	public static PlayerModelController getInstance(){
 		if(instance==null)
@@ -38,13 +31,20 @@ public class PlayerModelController {
 		return instance;
 	}
 
-	public class RotInfo{ public Vec2f leftArm, rightArm, head; }
+	public static class RotInfo{ 
+		public RotInfo(){
+			
+		}
+		public boolean seated;
+		public Vec3d leftArmRot, rightArmRot, headRot; 
+		public Vec3d leftArmPos, rightArmPos, Headpos;
+	}
 
 	public void Update(UUID uuid, byte[] hmddata, byte[] c0data, byte[] c1data){
 	
 		Vec3d hmdpos = null, c0pos = null, c1pos = null;
 		Quaternion hmdq = null, c0q = null, c1q = null;
-	
+		boolean seated = false;
 		for (int i = 0; i <= 2; i++) {
 			try {
 				byte[]arr = null;
@@ -77,8 +77,7 @@ public class PlayerModelController {
 				switch(i){
 				case 0:	
 					if(bool){ //seated
-						vivePlayers.remove(uuid);
-						return;
+						seated = true;
 					}
 					hmdpos = new Vec3d(posx, posy, posz);
 					hmdq = new Quaternion(rotw, rotx, roty, rotz);
@@ -104,42 +103,53 @@ public class PlayerModelController {
 		//Vector3f sLV3f=MCOpenVR.hmdRotation.transform(new Vector3f((float) shoulderL.xCoord,(float) shoulderL.yCoord,(float) shoulderL.zCoord));
 		//Vector3f sRV3f=MCOpenVR.hmdRotation.transform(new Vector3f((float) shoulderR.xCoord,(float) shoulderR.yCoord,(float) shoulderR.zCoord));
 
-	    Vector3 forward = new Vector3(0,0,-1);
+		Vector3 forward = new Vector3(0,0,-1);
 		Vector3 dir = hmdq.multiply(forward);
+		Vector3 dir2 = c0q.multiply(forward);
+		Vector3 dir3 = c1q.multiply(forward);
 
-		 float yaw1 = (float) Math.atan2(-dir.getX(), dir.getZ()); 
-		 float pitch1 = (float) Math.asin(dir.getY()/dir.length()); 
+
 				 
 		//Quaternion qua=new Quaternion(Vector3.up(),yaw1);
 
 		//shoulderL=shoulderL.multiply(qua.getMatrix());
 		//shoulderR=shoulderR.multiply(qua.getMatrix());
 
-		Vec2f[] vecs=new Vec2f[2];
-
-		for (int i = 0; i <= 1; i++) {
-			Vec3d ctr= i == 0 ? c0pos : c1pos;
-
-			Vec3d offset= i==0 ? shoulderR.toVec3d() : shoulderR.toVec3d();
-			Vec3d vecCtr = ctr.subtract(hmdpos.add(offset)).normalize();
-			Vec3d def = new Vec3d(0,0,-1);
-			
-			Angle euler=Quaternion.createFromToVector(Utils.convertVector(def),Utils.convertVector(vecCtr)).toEuler();
-
-			double pitch = -euler.getPitch();
-			double yaw = euler.getYaw();
-			pitch-=90;
-			yaw=-yaw;
-
-			vecs[i] = new Vec2f((float)Math.toRadians(pitch), (float)Math.toRadians(yaw));
-		}
+//		Vec2f[] vecs=new Vec2f[2];
+//
+//		for (int i = 0; i <= 1; i++) {
+//			Vec3d ctr= i == 0 ? c0pos : c1pos;
+//
+//			Vec3d offset= i==0 ? shoulderR.toVec3d() : shoulderR.toVec3d();
+//			Vec3d vecCtr = ctr.subtract(hmdpos.add(offset)).normalize();
+//			Vec3d def = new Vec3d(0,0,-1);
+//			
+//			Angle euler=Quaternion.createFromToVector(Utils.convertVector(def),Utils.convertVector(vecCtr)).toEuler();
+//
+//			double pitch = -euler.getPitch();
+//			double yaw = euler.getYaw();
+//			pitch-=90;
+//			yaw=-yaw;
+//
+//			vecs[i] = new Vec2f((float)Math.toRadians(pitch), (float)Math.toRadians(yaw));
+//		}
 		
 		RotInfo out = vivePlayers.get(uuid);
 		if(out == null) out = new RotInfo();
-		out.leftArm=vecs[1];
-		out.rightArm=vecs[0];
-		out.head = new Vec2f((float)(pitch1), (float)(yaw1));
-		vivePlayers.put(uuid, out);
+		out.seated = seated;
+		out.leftArmRot=new Vec3d(dir3.getX(), dir3.getY(), dir3.getZ());
+		out.rightArmRot=new Vec3d(dir2.getX(), dir2.getY(), dir2.getZ());
+		out.headRot = new Vec3d(dir.getX(), dir.getY(), dir.getZ());
+		out.Headpos = hmdpos;
+		out.leftArmPos = c1pos;
+		out.rightArmPos = c0pos;
+		
+		if(uuid == Minecraft.getMinecraft().player.getGameProfile().getId()){
+			
+		}else {
+			vivePlayers.put(uuid, out);
+		}
+
 	}
 	
 
@@ -147,11 +157,6 @@ public class PlayerModelController {
 		if(debug) 
 			return vivePlayers.get(Minecraft.getMinecraft().player.getUniqueID());
 		return vivePlayers.get(uuid);
-//		//give your own for testing
-//		RotInfo out=new RotInfo();
-//		out.leftArm=left;
-//		out.rightArm=right;
-//		return out;
 	}
 
 	public boolean debug = false;
@@ -162,4 +167,3 @@ public class PlayerModelController {
 		return vivePlayers.containsKey(uuid);
 	}
 }
-

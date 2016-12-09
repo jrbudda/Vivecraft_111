@@ -162,6 +162,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     
 	public void checkandUpdateRotateScale(boolean onFrame){
 		Minecraft mc = Minecraft.getMinecraft();
+		if(mc.currentScreen!=null) return;
 		if(!onFrame) {
 			if(this.wfCount > 0){
 				if(this.wfCount < 40){
@@ -1304,6 +1305,12 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 
 	@Override
 	public FloatBuffer getControllerMatrix_World(int controller) {
+		Matrix4f out = MCOpenVR.getAimRotation(controller);
+		Matrix4f rot = Matrix4f.rotationY(worldRotationRadians);
+		return Matrix4f.multiply(rot,out).toFloatBuffer();
+	}
+	
+	public FloatBuffer getControllerMatrix_World_Transposed(int controller) {
 		Matrix4f out = MCOpenVR.getAimRotation(controller);
 		Matrix4f rot = Matrix4f.rotationY(worldRotationRadians);
 		return Matrix4f.multiply(rot,out).transposed().toFloatBuffer();

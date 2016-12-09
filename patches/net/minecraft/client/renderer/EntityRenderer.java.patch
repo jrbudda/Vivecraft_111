@@ -1360,7 +1360,7 @@
      private boolean isDrawBlockOutline()
      {
 -        if (!this.drawBlockOutline)
-+        if (!this.drawBlockOutline || mc.vrSettings.hideGui)  //VIVE ADD THIS ONE
++        if (!this.drawBlockOutline || (mc.vrSettings.hideGui && mc.vrSettings.renderBlockOutlineMode == VRSettings.RENDER_BLOCK_OUTLINE_MODE_HUD) || mc.vrSettings.renderBlockOutlineMode == VRSettings.RENDER_BLOCK_OUTLINE_MODE_NEVER)  //VIVE EDIT
          {
              return false;
          }
@@ -3355,7 +3355,7 @@
 +    //    	Vector3f fore = new Vector3f(0,0,1);       
 +   //     	Matrix4f rotation = this.mc.vrPlayer.get.getAimRotation(controller);  
 +        	
-+        	FloatBuffer buf = mc.roomScale.getControllerMatrix_World(controller);
++        	FloatBuffer buf = mc.vrPlayer.getControllerMatrix_World_Transposed(controller);
 +        	
 +	    	if(!mc.bowTracker.isDrawing || controller == 0){ //doing this elsewhere
 +	    		GL11.glMultMatrix(buf);      
