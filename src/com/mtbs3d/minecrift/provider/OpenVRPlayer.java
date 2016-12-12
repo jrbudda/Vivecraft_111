@@ -991,11 +991,13 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         }
         
         mc.mcProfiler.startSection("updateSwingAttack");
-
+        
+        Vec3d forward = new Vec3d(0,0,-1);
+        
         for(int c =0 ;c<2;c++){
 
         	Vec3d handPos = this.getControllerPos_World(c);
-        	Vec3d handDirection = this.getControllerDir_World(c);
+        	Vec3d handDirection = getCustomHandVector(c, forward);
 
         	ItemStack is = player.getHeldItem(c==0?EnumHand.MAIN_HAND:EnumHand.OFF_HAND);
         	Item item = null;
@@ -1401,7 +1403,11 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 		return MCOpenVR.controllerTracking[c];
 	}
 	
-
+	public Vec3d getCustomHandVector(int controller, Vec3d axis) {
+		Vector3f v3 = MCOpenVR.getHandRotation(controller).transform(new Vector3f((float)axis.xCoord, (float)axis.yCoord,(float) axis.zCoord));
+		Vec3d out =  new Vec3d(v3.x, v3.y, v3.z).rotateYaw(worldRotationRadians);
+		return out;
+	}
 	
 }
 

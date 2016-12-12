@@ -101,14 +101,14 @@
 +        			Vec3d larm = rotInfo.leftArmPos.subtract(pos).addVector(0,minecraftBullshit,0);
 +        			larm = larm.add(rotInfo.leftArmRot.scale(-0.2)).scale(-1/scaleFactor);      		      		        		
 +        			this.bipedLeftArm.setRotationPoint((float)larm.xCoord, (float)larm.yCoord, -(float)larm.zCoord);          
-+        			this.bipedLeftArm.rotateAngleX=(float) (pitch3 + Math.PI/2);
-+        			this.bipedLeftArm.rotateAngleY=(float) (Math.PI-yaw3);
++        			this.bipedLeftArm.rotateAngleX=(float) (-pitch3+ 3*Math.PI/2);
++        			this.bipedLeftArm.rotateAngleY=(float) (2*Math.PI-yaw3);
 +
 +        			Vec3d rarm = rotInfo.rightArmPos.subtract(pos).addVector(0,minecraftBullshit,0);
 +        			rarm = rarm.add(rotInfo.rightArmRot.scale(-0.2)).scale(-1/scaleFactor);           
 +        			this.bipedRightArm.setRotationPoint((float)rarm.xCoord, (float)rarm.yCoord, -(float)rarm.zCoord);   
-+        			this.bipedRightArm.rotateAngleX=(float) (pitch2+ Math.PI/2);
-+        			this.bipedRightArm.rotateAngleY=(float) (Math.PI-yaw2);
++        			this.bipedRightArm.rotateAngleX=(float) (-pitch2+ 3*Math.PI/2);
++        			this.bipedRightArm.rotateAngleY=(float) (2*Math.PI-yaw2);
 +        			
 +            		this.bipedLeftArm.scaleX = 0.85f;
 +            		this.bipedLeftArm.scaleY = 0.5f;

@@ -279,7 +279,7 @@
 +	 * The minecriftVerString will be automatically updated by the build scripts, do not modify here.
 +	 * Modify minecriftversion.py in root minecrift dir.
 +	 */
-+    public final String minecriftVerString = "Vivecraft 1.11 Vivecraft-jrbudda-2";
++    public final String minecriftVerString = "Vivecraft 1.11 Vivecraft-jrbudda-3pre";
 +	/* end version */
 +	/** END MINECRIFT */
 +    
@@ -453,22 +453,6 @@
      {
 -        long i = System.nanoTime();
 -        this.mcProfiler.startSection("root");
--
--        if (Display.isCreated() && Display.isCloseRequested())
--        {
--            this.shutdown();
--        }
--
--        if (this.isGamePaused && this.world != null)
--        {
--            float f = this.timer.renderPartialTicks;
--            this.timer.updateTimer();
--            this.timer.renderPartialTicks = f;
--        }
--        else
--        {
--            this.timer.updateTimer();
--        }
 +	mcProfiler.endSection(); //idle
 +	try {
 +		
@@ -537,6 +521,22 @@
 +//			this.refreshResources();
 +//		}
  
+-        if (Display.isCreated() && Display.isCloseRequested())
+-        {
+-            this.shutdown();
+-        }
+-
+-        if (this.isGamePaused && this.world != null)
+-        {
+-            float f = this.timer.renderPartialTicks;
+-            this.timer.updateTimer();
+-            this.timer.renderPartialTicks = f;
+-        }
+-        else
+-        {
+-            this.timer.updateTimer();
+-        }
+-
 -        this.mcProfiler.startSection("scheduledExecutables");
 -
 -        synchronized (this.scheduledTasks)
@@ -791,14 +791,14 @@
 -                this.usageSnooper.startSnooper();
 -            }
 -        }
--
+ 
 -        if (this.isFramerateLimitBelowMax())
 -        {
 -            this.mcProfiler.startSection("fpslimit_wait");
 -            Display.sync(this.getLimitFramerate());
 -            this.mcProfiler.endSection();
 -        }
- 
+-
 -        this.mcProfiler.endSection();
 +			this.debugUpdateTime += 1000L;
 +			this.fpsCounter = 0;
@@ -1039,7 +1039,39 @@
                      }
                  }
  
-@@ -2246,9 +2646,10 @@
+@@ -2233,11 +2633,26 @@
+ 
+         if (flag)
+         {
+-            while (this.gameSettings.keyBindChat.isPressed())
+-            {
+-                this.displayGuiScreen(new GuiChat());
+-            }
+-
++        	if(Keyboard.isKeyDown(this.gameSettings.keyBindChat.getKeyCode()))
++        	{      		
++        		while (this.gameSettings.keyBindChat.isPressed())
++        		{
++        			this.displayGuiScreen(new GuiChat());
++        		}	
++        	} else {		
++        		if(this.currentScreen instanceof GuiChat){
++        			while (this.gameSettings.keyBindChat.isPressed())
++        			{
++        				this.displayGuiScreen(null);
++        			}
++        		} else {
++        			while (this.gameSettings.keyBindChat.isPressed())
++        			{
++        				this.displayGuiScreen(new GuiChat());
++        			}
++        		}
++        	}
++        	
+             if (this.currentScreen == null && this.gameSettings.keyBindCommand.isPressed())
+             {
+                 this.displayGuiScreen(new GuiChat("/"));
+@@ -2246,9 +2661,10 @@
  
          if (this.player.isHandActive())
          {
@@ -1052,7 +1084,7 @@
              }
  
              label472:
-@@ -2274,17 +2675,27 @@
+@@ -2274,17 +2690,27 @@
                  }
              }
          }
@@ -1088,7 +1120,7 @@
  
              while (this.gameSettings.keyBindPickBlock.isPressed())
              {
-@@ -2292,12 +2703,12 @@
+@@ -2292,12 +2718,12 @@
              }
          }
  
@@ -1104,7 +1136,7 @@
      }
  
      private void runTickMouse() throws IOException
-@@ -2318,6 +2729,13 @@
+@@ -2318,6 +2744,13 @@
                      KeyBinding.onTick(i - 100);
                  }
              }
@@ -1118,7 +1150,7 @@
  
              long j = getSystemTime() - this.systemTime;
  
-@@ -2372,6 +2790,7 @@
+@@ -2372,6 +2805,7 @@
       */
      public void launchIntegratedServer(String folderName, String worldName, @Nullable WorldSettings worldSettingsIn)
      {
@@ -1126,7 +1158,7 @@
          this.loadWorld((WorldClient)null);
          System.gc();
          ISaveHandler isavehandler = this.saveLoader.getSaveLoader(folderName, false);
-@@ -2434,7 +2853,7 @@
+@@ -2434,7 +2868,7 @@
                  ;
              }
          }
@@ -1135,7 +1167,7 @@
          this.displayGuiScreen(new GuiScreenWorking());
          SocketAddress socketaddress = this.theIntegratedServer.getNetworkSystem().addLocalEndpoint();
          NetworkManager networkmanager = NetworkManager.provideLocalClient(socketaddress);
-@@ -2449,6 +2868,9 @@
+@@ -2449,6 +2883,9 @@
       */
      public void loadWorld(@Nullable WorldClient worldClientIn)
      {
@@ -1145,7 +1177,7 @@
          this.loadWorld(worldClientIn, "");
      }
  
-@@ -2598,6 +3020,7 @@
+@@ -2598,6 +3035,7 @@
          return theMinecraft == null || !theMinecraft.gameSettings.hideGUI;
      }
  
@@ -1153,7 +1185,7 @@
      public static boolean isFancyGraphicsEnabled()
      {
          return theMinecraft != null && theMinecraft.gameSettings.fancyGraphics;
-@@ -2614,7 +3037,7 @@
+@@ -2614,7 +3052,7 @@
      /**
       * Called when user clicked he's mouse middle button (pick block)
       */
@@ -1162,7 +1194,7 @@
      {
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
-@@ -3409,4 +3832,1108 @@
+@@ -3409,4 +3847,1108 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }

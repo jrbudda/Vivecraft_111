@@ -6,6 +6,7 @@ import com.mtbs3d.minecrift.api.IRoomscaleAdapter;
 import com.mtbs3d.minecrift.api.NetworkHelper;
 import com.mtbs3d.minecrift.api.NetworkHelper.PacketDiscriminators;
 import com.mtbs3d.minecrift.provider.MCOpenVR;
+import com.mtbs3d.minecrift.provider.OpenVRPlayer;
 
 import de.fruitfly.ovr.structs.Matrix4f;
 import de.fruitfly.ovr.structs.Vector3f;
@@ -80,7 +81,7 @@ public class BowTracker {
 	}
 	
 	public void doProcess(Minecraft minecraft, EntityPlayerSP player){
-		IRoomscaleAdapter provider = minecraft.roomScale;
+		OpenVRPlayer provider = minecraft.vrPlayer;
 		if (!isActive(player)){			
 			isDrawing = false;
 			return;
@@ -106,16 +107,16 @@ public class BowTracker {
 
 		Vec3d forward = new Vec3d(0,1,0);
 
-		Vec3d stringPos=provider.getCustomControllerVector(1,forward).scale(maxDraw*0.5).add(leftPos);
+		Vec3d stringPos=provider.getCustomHandVector(1,forward).scale(maxDraw*0.5).add(leftPos);
 		double notchDist=rightPos.distanceTo(stringPos);
 
 		aim = rightPos.subtract(leftPos).normalize();
 
-		Vec3d rightaim3 = provider.getControllerDir_World(0);
+		Vec3d rightaim3 = provider.getCustomHandVector(0, new Vec3d(0,0,-1));
 		
 		Vector3f rightAim = new Vector3f((float)rightaim3.xCoord, (float) rightaim3.yCoord, (float) rightaim3.zCoord);
-		leftHandAim = provider.getControllerDir_World(1);
-	 	Vec3d l4v3 = provider.getCustomControllerVector(1, new Vec3d(0, -1, 0));
+		leftHandAim = provider.getCustomHandVector(1, new Vec3d(0, 0, -1));
+	 	Vec3d l4v3 = provider.getCustomHandVector(1, new Vec3d(0, -1, 0));
 		 
 		Vector3f leftforeward = new Vector3f((float)l4v3.xCoord, (float) l4v3.yCoord, (float) l4v3.zCoord);
 
