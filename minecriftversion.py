@@ -8,5 +8,5 @@ minecrift_build = "Vivecraft-jrbudda-3pre"
 of_file_extension = ".jar"
 mcp_version = "mcp935"
 mcp_uses_generics = True
-mcp_download_url = "http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip"
+mcp_download_url = "http://www.modcoderpack.com/website/sites/default/files/releases/mcp935.zip"
 forge_version = "112.18.0.1986"
