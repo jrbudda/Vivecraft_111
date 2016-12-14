@@ -222,7 +222,7 @@
          this.renderMapFirstPerson(this.itemStackMainHand);
      }
  
-@@ -241,100 +279,131 @@
+@@ -241,100 +279,132 @@
          GlStateManager.enableLighting();
      }
  
@@ -287,11 +287,12 @@
 +			this.doSwingItemAnimation(side, swingProgress);
 +        
 +        	GlStateManager.scale(0.4f, 0.4F, 0.4F);
-+        	GlStateManager.translate(-0.375*-f, 0, .75);
++        	GlStateManager.translate(0.375*-f, 0, .75);
 +	        GlStateManager.rotate(-90, 1, 0,0);
-+	 
 +	        GlStateManager.disableCull();
-+	
++	        
++	        GlStateManager.rotate(180, 0, 1, 0);	
++	        
 +	        if (flag)
 +	        {
 +	        	myRenderVRPlayer.renderRightArm(abstractclientplayer);
@@ -423,7 +424,7 @@
              }
          }
  
-@@ -343,200 +412,491 @@
+@@ -343,200 +413,491 @@
          this.rotateArm(partialTicks);
          GlStateManager.enableRescaleNormal();
  
@@ -1054,7 +1055,7 @@
          vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
          vertexbuffer.pos(-1.0D, -1.0D, -0.5D).tex((double)f7, (double)f9).endVertex();
          vertexbuffer.pos(1.0D, -1.0D, -0.5D).tex((double)f6, (double)f9).endVertex();
-@@ -560,17 +920,14 @@
+@@ -560,17 +921,14 @@
              VertexBuffer vertexbuffer = tessellator.getBuffer();
              float f = this.mc.player.getBrightness(partialTicks);
              GlStateManager.color(f, f, f, 0.5F);

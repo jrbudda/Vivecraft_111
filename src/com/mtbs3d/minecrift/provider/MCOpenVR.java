@@ -2013,7 +2013,7 @@ public class MCOpenVR
 			else
 			{
 				controllerTracking[c] = false;
-				OpenVRUtil.Matrix4fSetIdentity(controllerPose[c]);
+     			//OpenVRUtil.Matrix4fSetIdentity(controllerPose[c]);
 			}
 		}
 

@@ -1375,7 +1375,7 @@
              Entity entity = this.mc.getRenderViewEntity();
              boolean flag = entity instanceof EntityPlayer && !this.mc.gameSettings.hideGUI;
  
-@@ -1508,424 +1505,531 @@
+@@ -1508,424 +1505,532 @@
  
      public void renderWorld(float partialTicks, long finishTimeNano)
      {
@@ -1883,6 +1883,7 @@
 +	    		GlStateManager.enableRescaleNormal();
 +	    		
 +		        this.renderHand(partialTicks, 0);
++		        
 +				this.renderLeftHand(partialTicks);
 +				
 +		        boolean forgeHands = ReflectorForge.renderFirstPersonHand(this.mc.renderGlobal, partialTicks, pass);
@@ -2272,7 +2273,7 @@
          }
      }
  
-@@ -2223,7 +2327,7 @@
+@@ -2223,7 +2328,7 @@
              double d0 = MathHelper.sin(world.getCelestialAngleRadians(partialTicks)) > 0.0F ? -1.0D : 1.0D;
              Vec3d vec3d2 = new Vec3d(d0, 0.0D, 0.0D);
              float f5 = (float)entity.getLook(partialTicks).dotProduct(vec3d2);
@@ -2281,7 +2282,7 @@
              if (f5 < 0.0F)
              {
                  f5 = 0.0F;
-@@ -2267,8 +2371,9 @@
+@@ -2267,8 +2372,9 @@
              this.fogColorBlue *= f11;
          }
  
@@ -2293,7 +2294,7 @@
          if (this.cloudFog)
          {
              Vec3d vec3d3 = world.getCloudColour(partialTicks);
-@@ -2276,7 +2381,7 @@
+@@ -2276,7 +2382,7 @@
              this.fogColorGreen = (float)vec3d3.yCoord;
              this.fogColorBlue = (float)vec3d3.zCoord;
          }
@@ -2302,7 +2303,7 @@
          {
              float f12 = 0.0F;
  
-@@ -2302,7 +2407,7 @@
+@@ -2302,7 +2408,7 @@
                  this.fogColorBlue = (float)vec3d4.zCoord;
              }
          }
@@ -2311,7 +2312,7 @@
          {
              this.fogColorRed = 0.6F;
              this.fogColorGreen = 0.1F;
-@@ -2380,16 +2485,7 @@
+@@ -2380,16 +2486,7 @@
              this.fogColorBlue = f7;
          }
  
@@ -2329,7 +2330,7 @@
      }
  
      /**
-@@ -2403,7 +2499,13 @@
+@@ -2403,7 +2500,13 @@
          GlStateManager.glFog(2918, this.setFogColorBuffer(this.fogColorRed, this.fogColorGreen, this.fogColorBlue, 1.0F));
          GlStateManager.glNormal3f(0.0F, -1.0F, 0.0F);
          GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -2344,7 +2345,7 @@
          float f = -1.0F;
  
          if (Reflector.ForgeHooksClient_getFogDensity.exists())
-@@ -2463,7 +2565,7 @@
+@@ -2463,7 +2566,7 @@
  
              GlStateManager.setFogDensity(0.1F);
          }
@@ -2353,7 +2354,7 @@
          {
              if (Config.isShaders())
              {
-@@ -2495,7 +2597,7 @@
+@@ -2495,7 +2598,7 @@
                  GlStateManager.setFogDensity(0.02F);
              }
          }
@@ -2362,7 +2363,7 @@
          {
              if (Config.isShaders())
              {
-@@ -2729,10 +2831,12 @@
+@@ -2729,10 +2832,12 @@
              this.updatedWorld = world;
          }
  
@@ -2379,7 +2380,7 @@
      }
  
      private void frameFinish()
-@@ -2756,49 +2860,6 @@
+@@ -2756,49 +2861,6 @@
          }
      }
  
@@ -2429,7 +2430,7 @@
      public boolean setFxaaShader(int p_setFxaaShader_1_)
      {
          if (!OpenGlHelper.isFramebufferEnabled())
-@@ -2890,8 +2951,9 @@
+@@ -2890,8 +2952,9 @@
          this.itemActivationOffY = this.random.nextFloat() * 2.0F - 1.0F;
      }
  
@@ -2440,7 +2441,7 @@
          if (this.itemActivationItem != null && this.itemActivationTicks > 0)
          {
              int i = 40 - this.itemActivationTicks;
-@@ -2900,26 +2962,2078 @@
+@@ -2900,26 +2963,2077 @@
              float f2 = f * f1;
              float f3 = 10.25F * f2 * f1 + -24.95F * f1 * f1 + 25.5F * f2 + -13.8F * f1 + 4.0F * f;
              float f4 = f3 * (float)Math.PI;
@@ -3394,7 +3395,6 @@
 +		}
 +		
 +
-+		
 +			GL11.glScalef(mc.vrPlayer.worldScale , mc.vrPlayer.worldScale , mc.vrPlayer.worldScale );
 +		
 +    //    	Vector3f fore = new Vector3f(0,0,1);       

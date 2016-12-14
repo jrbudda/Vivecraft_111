@@ -1703,17 +1703,17 @@ public class VRSettings
     		//out[ViveButtons.OCULUS_RIGHT_THUMBPAD_TOUCH.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_RIGHT_THUMBPAD_TOUCH, "none");
     		out[ViveButtons.OCULUS_LEFT_INDEX_TRIGGER_PRESS.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_INDEX_TRIGGER_PRESS, "key.forward");
     		out[ViveButtons.OCULUS_LEFT_INDEX_TRIGGER_TOUCH.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_INDEX_TRIGGER_TOUCH, "none");
-    		out[ViveButtons.OCULUS_LEFT_X_PRESS.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_X_PRESS, "key.jump");
+    		out[ViveButtons.OCULUS_LEFT_X_PRESS.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_X_PRESS, "key.chat");
     		out[ViveButtons.OCULUS_LEFT_Y_PRESS.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_Y_PRESS, "none");
     		out[ViveButtons.OCULUS_LEFT_X_TOUCH.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_X_TOUCH, "none");
     		out[ViveButtons.OCULUS_LEFT_Y_TOUCH.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_Y_TOUCH, "none");
     		out[ViveButtons.OCULUS_LEFT_HAND_TRIGGER_PRESS.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_HAND_TRIGGER_PRESS, "key.playerlist");
     		out[ViveButtons.OCULUS_LEFT_HAND_TRIGGER_TOUCH.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_HAND_TRIGGER_TOUCH, "none");
-    		out[ViveButtons.OCULUS_LEFT_STICK_PRESS.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_STICK_PRESS, "key.inventory");
+    		out[ViveButtons.OCULUS_LEFT_STICK_PRESS.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_STICK_PRESS, "key.sprint");
     		out[ViveButtons.OCULUS_LEFT_STICK_TOUCH.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_STICK_TOUCH, "none");
     		out[ViveButtons.OCULUS_LEFT_STICK_LEFT.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_STICK_LEFT, "Rotate Left");
     		out[ViveButtons.OCULUS_LEFT_STICK_RIGHT.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_STICK_RIGHT, "Rotate Right");
-    		out[ViveButtons.OCULUS_LEFT_STICK_UP.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_STICK_UP, "key.sprint");
+    		out[ViveButtons.OCULUS_LEFT_STICK_UP.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_STICK_UP, "key.jump");
     		out[ViveButtons.OCULUS_LEFT_STICK_DOWN.ordinal()] = new VRControllerButtonMapping(ViveButtons.OCULUS_LEFT_STICK_DOWN, "key.sneak");
   	 		
     		
