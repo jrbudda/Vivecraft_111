@@ -208,7 +208,7 @@ public class BowTracker {
 			}
 
 			if(isCharged() && hapcounter %4==0){
-				provider.triggerHapticPulse(1,500);
+				provider.triggerHapticPulse(1,200);
 			}
 			
 			//else if(drawperc==1 && hapcounter % 8 == 0){

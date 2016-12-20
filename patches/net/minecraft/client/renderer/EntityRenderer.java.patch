@@ -1375,7 +1375,7 @@
              Entity entity = this.mc.getRenderViewEntity();
              boolean flag = entity instanceof EntityPlayer && !this.mc.gameSettings.hideGUI;
  
-@@ -1508,424 +1505,532 @@
+@@ -1508,424 +1505,544 @@
  
      public void renderWorld(float partialTicks, long finishTimeNano)
      {
@@ -1408,6 +1408,16 @@
 +			mc.vrPlayer.lastroomOrigin.zCoord + (mc.vrPlayer.roomOrigin.zCoord - mc.vrPlayer.lastroomOrigin.zCoord ) * (double)partialTicks);
 +		}
 +	        
++		if(mc.currentScreen == null && mc.currentPass == renderPass.Left){
++			// VIVE START - teleport movement
++			if (!mc.vrPlayer.getFreeMoveMode() && 
++					mc.gameSettings.keyBindForward.isKeyDown()) { 
++				mc.vrPlayer.updateTeleportDestinations(this, mc, mc.getRenderViewEntity());
++			}
++			// VIVE END - teleport movement
++		}
++
++		
 +		cacheRVEPos((EntityLivingBase) mc.getRenderViewEntity());
 +		
 +		Vec3d f, g; 
@@ -1578,6 +1588,7 @@
 +//			/** END MINECRIFT */
 +	        
 +	        ActiveRenderInfo.updateRenderInfo(this.mc.player, this.mc.gameSettings.thirdPersonView == 2);
++	        //TODO: more with this ^^
 +	        
 +	        GlStateManager.enableAlpha();
 +	        GlStateManager.enableDepth();
@@ -1661,7 +1672,7 @@
 +	        {///uuuh what... are...u...doing....
 +	            this.setupFog(-1, partialTicks);
 +	            GlStateManager.matrixMode(GL11.GL_PROJECTION);
-+	            GlStateManager.pushMatrix();            
++	            GlStateManager.pushMatrix();      
 +//	            GlStateManager.matrixMode(5889);
 +//	            GlStateManager.loadIdentity();
 +//	            Project.gluPerspective(this.getFOVModifier(partialTicks, true), (float)this.mc.displayWidth / (float)this.mc.displayHeight, 0.05F, this.clipDistance);
@@ -1672,7 +1683,7 @@
 +	                Shaders.beginSky();
 +	            }
 +	            
-+	            renderglobal.renderSky(partialTicks, pass);
++	           renderglobal.renderSky(partialTicks, pass);
 +	            
 +	            if (shadersMod)
 +	            {
@@ -1695,7 +1706,9 @@
 +	        }
 +	
 +	        this.setupFog(0, partialTicks);
++	        
 +	        GlStateManager.shadeModel(7425);
++	        
 +	        //VIVE NO EYE HEIGHT
 +	        if (entity.posY < 128.0D + (double)(this.mc.gameSettings.ofCloudsHeight * 128.0F))
 +	        {
@@ -1881,18 +1894,17 @@
 +		        RenderHelper.enableStandardItemLighting();
 +	    		itemRenderer.setLightmap();
 +	    		GlStateManager.enableRescaleNormal();
-+	    		
-+		        this.renderHand(partialTicks, 0);
-+		        
-+				this.renderLeftHand(partialTicks);
-+				
-+		        boolean forgeHands = ReflectorForge.renderFirstPersonHand(this.mc.renderGlobal, partialTicks, pass);
-+		        
++    		
++	    		this.renderHand(partialTicks, 0);
++	        
++	        	this.renderLeftHand(partialTicks);
++//		
++			boolean forgeHands = ReflectorForge.renderFirstPersonHand(this.mc.renderGlobal, partialTicks, pass);
++//	        
 +	            GlStateManager.disableRescaleNormal();
 +	            RenderHelper.disableStandardItemLighting();
 +	            this.disableLightmap();
 +		        GlStateManager.enableTexture2D();	
-+	        
  
 -            RenderHelper.disableStandardItemLighting();
 -            this.disableLightmap();
@@ -2273,7 +2285,7 @@
          }
      }
  
-@@ -2223,7 +2328,7 @@
+@@ -2223,7 +2340,7 @@
              double d0 = MathHelper.sin(world.getCelestialAngleRadians(partialTicks)) > 0.0F ? -1.0D : 1.0D;
              Vec3d vec3d2 = new Vec3d(d0, 0.0D, 0.0D);
              float f5 = (float)entity.getLook(partialTicks).dotProduct(vec3d2);
@@ -2282,7 +2294,7 @@
              if (f5 < 0.0F)
              {
                  f5 = 0.0F;
-@@ -2267,8 +2372,9 @@
+@@ -2267,8 +2384,9 @@
              this.fogColorBlue *= f11;
          }
  
@@ -2294,7 +2306,7 @@
          if (this.cloudFog)
          {
              Vec3d vec3d3 = world.getCloudColour(partialTicks);
-@@ -2276,7 +2382,7 @@
+@@ -2276,7 +2394,7 @@
              this.fogColorGreen = (float)vec3d3.yCoord;
              this.fogColorBlue = (float)vec3d3.zCoord;
          }
@@ -2303,7 +2315,7 @@
          {
              float f12 = 0.0F;
  
-@@ -2302,7 +2408,7 @@
+@@ -2302,7 +2420,7 @@
                  this.fogColorBlue = (float)vec3d4.zCoord;
              }
          }
@@ -2312,7 +2324,7 @@
          {
              this.fogColorRed = 0.6F;
              this.fogColorGreen = 0.1F;
-@@ -2380,16 +2486,7 @@
+@@ -2380,16 +2498,7 @@
              this.fogColorBlue = f7;
          }
  
@@ -2330,7 +2342,7 @@
      }
  
      /**
-@@ -2403,7 +2500,13 @@
+@@ -2403,7 +2512,13 @@
          GlStateManager.glFog(2918, this.setFogColorBuffer(this.fogColorRed, this.fogColorGreen, this.fogColorBlue, 1.0F));
          GlStateManager.glNormal3f(0.0F, -1.0F, 0.0F);
          GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -2345,7 +2357,7 @@
          float f = -1.0F;
  
          if (Reflector.ForgeHooksClient_getFogDensity.exists())
-@@ -2463,7 +2566,7 @@
+@@ -2463,7 +2578,7 @@
  
              GlStateManager.setFogDensity(0.1F);
          }
@@ -2354,7 +2366,7 @@
          {
              if (Config.isShaders())
              {
-@@ -2495,7 +2598,7 @@
+@@ -2495,7 +2610,7 @@
                  GlStateManager.setFogDensity(0.02F);
              }
          }
@@ -2363,7 +2375,7 @@
          {
              if (Config.isShaders())
              {
-@@ -2729,10 +2832,12 @@
+@@ -2729,10 +2844,12 @@
              this.updatedWorld = world;
          }
  
@@ -2380,7 +2392,7 @@
      }
  
      private void frameFinish()
-@@ -2756,49 +2861,6 @@
+@@ -2756,49 +2873,6 @@
          }
      }
  
@@ -2430,7 +2442,7 @@
      public boolean setFxaaShader(int p_setFxaaShader_1_)
      {
          if (!OpenGlHelper.isFramebufferEnabled())
-@@ -2890,8 +2952,9 @@
+@@ -2890,8 +2964,9 @@
          this.itemActivationOffY = this.random.nextFloat() * 2.0F - 1.0F;
      }
  
@@ -2441,7 +2453,7 @@
          if (this.itemActivationItem != null && this.itemActivationTicks > 0)
          {
              int i = 40 - this.itemActivationTicks;
-@@ -2900,26 +2963,2077 @@
+@@ -2900,26 +2975,2080 @@
              float f2 = f * f1;
              float f3 = 10.25F * f2 * f1 + -24.95F * f1 * f1 + 25.5F * f2 + -13.8F * f1 + 4.0F * f;
              float f4 = f3 * (float)Math.PI;
@@ -2924,12 +2936,6 @@
 +			}
 +			
 +	
-+			// VIVE START - teleport movement
-+			if (!mc.vrPlayer.getFreeMoveMode() && 
-+					mc.gameSettings.keyBindForward.isKeyDown()) { 
-+				mc.vrPlayer.updateTeleportDestinations(this, mc, mc.getRenderViewEntity());
-+			}
-+			// VIVE END - teleport movement
 +			/** END MINECRIFT */    
 +		}
 +	}
@@ -2958,12 +2964,15 @@
 +	// Thanks to mhagain
 +	public void renderFadeBlend (float r, float g, float b, float fadeAlpha, int left, int right, int bottom, int top)
 +	{
++		if(fadeAlpha == 0 || Config.isShaders()) return;
++		//TODO: fix under shadersmod
 +		
 +		GlStateManager.enableBlend();
 +		GlStateManager.disableAlpha();
 +		GlStateManager.tryBlendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA,SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
 +		GlStateManager.disableDepth();
 +		GlStateManager.disableTexture2D();
++		GlStateManager.disableLighting();
 +		
 +		GL11.glMatrixMode(GL11.GL_PROJECTION);
 +		GL11.glPushMatrix();
@@ -2993,6 +3002,12 @@
 +	
 +			GL11.glMatrixMode(GL11.GL_MODELVIEW);
 +		GL11.glPopMatrix();
++		
++		GlStateManager.enableDepth();
++		GlStateManager.enableTexture2D();
++		GlStateManager.enableAlpha();
++		GlStateManager.enableLighting();
++		
 +	}
 +
 +	
@@ -4150,7 +4165,7 @@
 +			dir = new Vec3d(dir.xCoord, 0, dir.zCoord);
 +			dir = dir.normalize();
 +			if(mc.getRenderViewEntity() != null && mc.world != null){
-+				out = mc.getRenderViewEntity().getPositionVector().addVector(dir.xCoord*0.3 * mc.vrPlayer.worldScale, -0.4* mc.vrPlayer.worldScale ,dir.zCoord*0.3* mc.vrPlayer.worldScale);
++				out = mc.roomScale.getHMDPos_World().addVector(dir.xCoord*0.3 * mc.vrPlayer.worldScale, -0.4* mc.vrPlayer.worldScale ,dir.zCoord*0.3* mc.vrPlayer.worldScale);
 +			} else {
 +				out = mc.roomScale.getHMDPos_Room().addVector(dir.xCoord*0.3 , -0.4 ,dir.zCoord*0.3);
 +			}

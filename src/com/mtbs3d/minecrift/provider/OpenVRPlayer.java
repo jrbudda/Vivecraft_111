@@ -827,15 +827,18 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         	Vec3d hitVec = new Vec3d(collision.hitVec.xCoord, hitBlock.getY() + testClimb.getBoundingBox(mc.world, hitBlock).maxY, collision.hitVec.zCoord );
 	   	   	Vec3d offset = hitVec.subtract(player.posX, player.getEntityBoundingBox().minY, player.posZ);
 	    	AxisAlignedBB bb = player.getEntityBoundingBox().offset(offset.xCoord, offset.yCoord, offset.zCoord);
+	    	double ex = 0;
+			if (testClimb.getBlock() == Blocks.SOUL_SAND) ex = 0.05;
+	  
 			boolean emptySpotReq = mc.world.getCollisionBoxes(player,bb).isEmpty() &&
-					!mc.world.getCollisionBoxes(player,bb.expand(0, .125, 0)).isEmpty();     
+					!mc.world.getCollisionBoxes(player,bb.expand(0, .125 + ex, 0)).isEmpty();     
 	    	
 			if(!emptySpotReq){
 				Vec3d center = new Vec3d(hitBlock).addVector(0.5, testClimb.getBoundingBox(mc.world, hitBlock).maxY, 0.5);
 				offset = center.subtract(player.posX, player.getEntityBoundingBox().minY, player.posZ);
 				bb = player.getEntityBoundingBox().offset(offset.xCoord, offset.yCoord, offset.zCoord);
 				emptySpotReq = mc.world.getCollisionBoxes(player,bb).isEmpty() &&
-					!mc.world.getCollisionBoxes(player,bb.expand(0, .125, 0)).isEmpty();     	
+					!mc.world.getCollisionBoxes(player,bb.expand(0, .125 + ex, 0)).isEmpty();     	
 			}
 	    	
 			if(emptySpotReq){
@@ -1243,8 +1246,8 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	
 	@Override
 	public Vec3d getHMDPos_World() {
-		Vec3d out = vecMult(MCOpenVR.getCenterEyePosition(),worldScale).rotateYaw(worldRotationRadians)
-				.add(getWalkMultOffset());
+		Vec3d out = vecMult(MCOpenVR.getCenterEyePosition(),worldScale).add(getWalkMultOffset()).rotateYaw(worldRotationRadians);
+				
 		return out.addVector(roomOrigin.xCoord, roomOrigin.yCoord, roomOrigin.zCoord);
 	}
 
@@ -1299,8 +1302,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	
 	@Override
 	public Vec3d getEyePos_World(renderPass eye) {
-		Vec3d out = vecMult(MCOpenVR.getEyePosition(eye),worldScale).rotateYaw(worldRotationRadians)
-				.add(getWalkMultOffset());
+		Vec3d out = vecMult(MCOpenVR.getEyePosition(eye),worldScale).add(getWalkMultOffset()).rotateYaw(worldRotationRadians);			
 		return out.addVector(roomOrigin.xCoord, roomOrigin.yCoord, roomOrigin.zCoord);
 	}
 	

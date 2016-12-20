@@ -1,5 +1,14 @@
 --- a/net/minecraft/client/settings/GameSettings.java
 +++ b/net/minecraft/client/settings/GameSettings.java
+@@ -102,7 +102,7 @@
+     public float chatOpacity = 1.0F;
+     public boolean snooperEnabled = true;
+     public boolean fullScreen;
+-    public boolean enableVsync = true;
++    public boolean enableVsync = false;
+     public boolean useVbo = true;
+     public boolean reducedDebugInfo;
+     public boolean hideServerAddress;
 @@ -1883,18 +1883,18 @@
  
          if (p_setOptionValueOF_1_ == GameSettings.Options.FAST_RENDER)

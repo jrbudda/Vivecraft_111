@@ -482,12 +482,14 @@ public class MCOpenVR
 			int count = vrRenderModels.GetRenderModelCount.apply();
 			Pointer pointer = new Memory(JOpenVRLibrary.k_unMaxPropertyStringSize);
 			for (int i = 0; i < 2; i++) {
-				if (controllerDeviceIndex[i] != -1) {
+				if (controllerDeviceIndex[i] != -1 && !mc.vrSettings.seated) {
 					vrsystem.GetStringTrackedDeviceProperty.apply(controllerDeviceIndex[i], JOpenVRLibrary.ETrackedDeviceProperty.ETrackedDeviceProperty_Prop_RenderModelName_String, pointer, JOpenVRLibrary.k_unMaxPropertyStringSize - 1, hmdErrorStore);
 					RenderModel_ControllerMode_State_t modeState = new RenderModel_ControllerMode_State_t();
 					RenderModel_ComponentState_t componentState = new RenderModel_ComponentState_t();
 					vrRenderModels.GetComponentState.apply(pointer, ptrFomrString("tip"), controllerStateReference[i], modeState, componentState);
 					OpenVRUtil.convertSteamVRMatrix3ToMatrix4f(componentState.mTrackingToComponentLocal, controllerTipTransform[i]);
+				} else {
+					OpenVRUtil.Matrix4fSetIdentity(controllerTipTransform[i]);
 				}
 			}
 		}
