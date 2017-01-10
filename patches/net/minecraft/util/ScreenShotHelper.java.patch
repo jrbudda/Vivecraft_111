@@ -1,0 +1,20 @@
+--- a/net/minecraft/util/ScreenShotHelper.java
++++ b/net/minecraft/util/ScreenShotHelper.java
+@@ -69,7 +69,7 @@
+                 GlStateManager.pushMatrix();
+                 GlStateManager.clear(16640);
+                 minecraft.getFramebuffer().bindFramebuffer(true);
+-                minecraft.entityRenderer.updateCameraAndRender(minecraft.getRenderPartialTicks(), System.nanoTime());
++                minecraft.entityRenderer.updateCameraAndRender(minecraft.getRenderPartialTicks());
+             }
+ 
+             BufferedImage bufferedimage = createScreenshot(width, height, buffer);
+@@ -211,7 +211,7 @@
+     private static void updateFramebufferSize()
+     {
+         Minecraft minecraft = Minecraft.getMinecraft();
+-        minecraft.getFramebuffer().createBindFramebuffer(minecraft.displayWidth, minecraft.displayHeight);
++        minecraft.getFramebuffer().createBindFramebuffer(minecraft.displayWidth, minecraft.displayHeight,-1);
+ 
+         if (minecraft.entityRenderer != null)
+         {

@@ -4630,7 +4630,7 @@ field_184728_b,SWINGING_ARMS,2,
 field_184729_a,CLIMBING,2,
 field_184731_c,IS_AGGRESSIVE,2,
 field_184737_bv,IS_CHILD,2,
-field_184738_bw,VILLAGER_TYPE,2,
+field_184738_bw,VILLAGER_TYPE,2,Was the type of villager for zombie villagers prior to 1.11. Now unused. Use {@link EntityZombieVillager#PROFESSION} instead.
 field_184739_bx,CONVERTING,2,
 field_184740_by,ARMS_RAISED,2,
 field_184741_a,FIRST_HEAD_TARGET,2,
@@ -7408,12 +7408,12 @@ field_71576_a,crashReport,2,The crash report associated with this exception
 field_72307_f,hitVec,2,The vector position of the hit
 field_72308_g,entityHit,2,The hit entity
 field_72313_a,typeOfHit,2,"The type of hit that occured, see {@link RayTraceResult#Type} for possibilities."
-field_72334_f,maxZ,2,
-field_72336_d,maxX,2,
-field_72337_e,maxY,2,
-field_72338_b,minY,2,
-field_72339_c,minZ,2,
-field_72340_a,minX,2,
+field_72334_f,maxZ,2,The maximum Z coordinate of this bounding box. Guaranteed to always be greater than or equal to {@link #minZ}.
+field_72336_d,maxX,2,The maximum X coordinate of this bounding box. Guaranteed to always be greater than or equal to {@link #minX}.
+field_72337_e,maxY,2,The maximum Y coordinate of this bounding box. Guaranteed to always be greater than or equal to {@link #minY}.
+field_72338_b,minY,2,The minimum Y coordinate of this bounding box. Guaranteed to always be less than or equal to {@link #maxY}.
+field_72339_c,minZ,2,The minimum Y coordinate of this bounding box. Guaranteed to always be less than or equal to {@link #maxZ}.
+field_72340_a,minX,2,The minimum X coordinate of this bounding box. Guaranteed to always be less than or equal to {@link #maxX}.
 field_72400_f,mcServer,2,Reference to the MinecraftServer object.
 field_72401_g,bannedPlayers,2,
 field_72402_d,viewDistance,2,

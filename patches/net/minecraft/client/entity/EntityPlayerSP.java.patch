@@ -148,16 +148,13 @@
          }
      }
  
-@@ -1136,12 +1206,46 @@
-     /**
-      * Tries to move the entity towards the specified location.
+@@ -1138,10 +1208,44 @@
       */
--    public void move(MoverType x, double p_70091_2_, double p_70091_4_, double p_70091_6_)
-+    public void move(MoverType t, double x, double y, double z)
+     public void move(MoverType type, double x, double y, double z)
      {
 -        double d0 = this.posX;
 -        double d1 = this.posZ;
--        super.move(x, p_70091_2_, p_70091_4_, p_70091_6_);
+-        super.move(type, x, y, z);
 -        this.updateAutoJump((float)(this.posX - d0), (float)(this.posZ - d1));
 +    	boolean client = this instanceof EntityPlayerSP;
 +    	boolean freemove = OpenVRPlayer.get().getFreeMoveMode();
@@ -172,7 +169,7 @@
 +    		double oz = roomOrigin.zCoord - posZ;
 +            double d0 = this.posX;
 +            double d1 = this.posZ;
-+    		super.move(t,x,y,z);
++    		super.move(type,x,y,z);
 +    		this.updateAutoJump((float)(this.posX - d0), (float)(this.posZ - d1));
 +    		if (client){	
 +    			double oy = this.posY;
@@ -184,7 +181,7 @@
 +    					}
 +    	} else {
 +    		if(doY) {      	 
-+    			super.move(t,0,y,0);
++    			super.move(type,0,y,0);
 +    			if (client){
 +    				OpenVRPlayer.get().setRoomOrigin(
 +    					OpenVRPlayer.get().getRoomOriginPos_World().xCoord, 

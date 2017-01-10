@@ -424,7 +424,7 @@
              }
          }
  
-@@ -343,200 +413,491 @@
+@@ -343,200 +413,492 @@
          this.rotateArm(partialTicks);
          GlStateManager.enableRescaleNormal();
  
@@ -872,7 +872,7 @@
 -                BlockPos blockpos1 = new BlockPos(d0, d1 + (double)entityplayer.getEyeHeight(), d2);
 -                IBlockState iblockstate1 = this.mc.world.getBlockState(blockpos1);
 -
--                if (iblockstate1.isViewBlocking())
+-                if (iblockstate1.causesSuffocation())
 -                {
 -                    iblockstate = iblockstate1;
 -                    blockpos = blockpos1;
@@ -1020,11 +1020,12 @@
 +    		return false;
 +    	}
 +    }
++    
 +    public boolean isInsideOpaqueBlock(Vec3d pos)
 +    {
 +    	if (mc.world == null) return false;
 +    	BlockPos bp = new BlockPos(pos);
-+    	return mc.world.getBlockState(bp).isViewBlocking();
++    	return mc.world.getBlockState(bp).isFullyOpaque();
 +    }
  
 -    /**
@@ -1055,7 +1056,7 @@
          vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
          vertexbuffer.pos(-1.0D, -1.0D, -0.5D).tex((double)f7, (double)f9).endVertex();
          vertexbuffer.pos(1.0D, -1.0D, -0.5D).tex((double)f6, (double)f9).endVertex();
-@@ -560,17 +921,14 @@
+@@ -560,17 +922,14 @@
              VertexBuffer vertexbuffer = tessellator.getBuffer();
              float f = this.mc.player.getBrightness(partialTicks);
              GlStateManager.color(f, f, f, 0.5F);

@@ -65,7 +65,7 @@
                  float f3 = this.rand.nextFloat() * ((float)Math.PI * 2F);
                  f2 = 0.02F * this.rand.nextFloat();
                  entityitem.motionX += Math.cos((double)f3) * (double)f2;
-@@ -1525,15 +1549,22 @@
+@@ -1527,15 +1551,22 @@
  
      public void spawnSweepParticles()
      {

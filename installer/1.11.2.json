@@ -1,7 +1,7 @@
 {
-  "id": "1.11",
-  "time": "2016-11-16T09:39:37-05:00",
-  "releaseTime": "2016-11-14T09:34:40-05:00",
+  "id": "1.11.2",
+  "time": "2016-12-21T04:42:21-05:00",
+  "releaseTime": "2016-12-21T04:29:12-05:00",
   "type": "release",
   "minecraftArguments": "--username ${auth_player_name} --version ${version_name} --gameDir ${game_directory} --assetsDir ${assets_root} --assetIndex ${assets_index_name} --uuid ${auth_uuid} --accessToken ${auth_access_token} --userType ${user_type} --versionType ${version_type}",
   "libraries": [
@@ -206,12 +206,12 @@
       }
     },
     {
-      "name": "com.mojang:realms:1.10.4",
+      "name": "com.mojang:realms:1.10.8",
       "downloads": {
         "artifact": {
-          "url": "https://libraries.minecraft.net/com/mojang/realms/1.10.4/realms-1.10.4.jar",
-          "sha1": "7e837a5eae3fc08b13d5e1baf5ddf5b5d31aa2ff",
-          "size": 3025166
+          "url": "https://libraries.minecraft.net/com/mojang/realms/1.10.8/realms-1.10.8.jar",
+          "sha1": "67560bbd6a83d48ae8b956f1feac09010bde879c",
+          "size": 3025164
         }
       }
     },
@@ -483,7 +483,7 @@
         }
       }
     },
-  {
+	  {
    "name": "org.ow2.asm:asm-all:5.0.3"
   }, 
   {
@@ -521,14 +521,14 @@
   "assets": "1.11",
   "downloads": {
     "client": {
-      "url": "https://launcher.mojang.com/mc/game/1.11/client/780e46b3a96091a7f42c028c615af45974629072/client.jar",
-      "sha1": "780e46b3a96091a7f42c028c615af45974629072",
-      "size": 9183701
+      "url": "https://launcher.mojang.com/mc/game/1.11.2/client/db5aa600f0b0bf508aaf579509b345c4e34087be/client.jar",
+      "sha1": "db5aa600f0b0bf508aaf579509b345c4e34087be",
+      "size": 9198097
     },
     "server": {
-      "url": "https://launcher.mojang.com/mc/game/1.11/server/48820c84cb1ed502cb5b2fe23b8153d5e4fa61c0/server.jar",
-      "sha1": "48820c84cb1ed502cb5b2fe23b8153d5e4fa61c0",
-      "size": 9713666
+      "url": "https://launcher.mojang.com/mc/game/1.11.2/server/f00c294a1576e03fddcac777c3cf4c7d404c4ba4/server.jar",
+      "sha1": "f00c294a1576e03fddcac777c3cf4c7d404c4ba4",
+      "size": 9720835
     }
   },
   "assetIndex": {

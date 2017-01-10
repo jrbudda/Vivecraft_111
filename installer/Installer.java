@@ -47,13 +47,13 @@ public class Installer extends JPanel  implements PropertyChangeListener
     public static String winredist2010_32url = "http://download.microsoft.com/download/C/6/D/C6D0FD4E-9E53-4897-9B91-836EBA2AACD3/vcredist_x86.exe";
 
     /* DO NOT RENAME THESE STRING CONSTS - THEY ARE USED IN (AND THE VALUES UPDATED BY) THE AUTOMATED BUILD SCRIPTS */
-    private static final String MINECRAFT_VERSION = "1.11";
-    private static final String MC_VERSION        = "1.11";
-    private static final String MC_MD5            = "752390ee40cdcd6429818cf6efa25067";
+    private static final String MINECRAFT_VERSION = "1.11.2";
+    private static final String MC_VERSION        = "1.11.2";
+    private static final String MC_MD5            = "";
     private static final String OF_LIB_PATH       = "libraries/optifine/OptiFine/";
-    private static final String OF_FILE_NAME      = "1.11_HD_U_B2";
-    private static final String OF_JSON_NAME      = "1.11_HD_U_B2";
-    private static final String OF_MD5            = "cfb53cfd143f1ec7a41c5ae3b7e6fa6d";
+    private static final String OF_FILE_NAME      = "1.11.2_HD_U_B5";
+    private static final String OF_JSON_NAME      = "1.11.2_HD_U_B5";
+    private static final String OF_MD5            = "c2df3b1be3f038ca3cbe04f947e1d63e";
     private static final String OF_VERSION_EXT    = ".jar";
     private static final String FORGE_VERSION     = "112.18.0.1986";
     /* END OF DO NOT RENAME */
@@ -666,10 +666,11 @@ public class Installer extends JPanel  implements PropertyChangeListener
 
                         //Create empty version jar file
                         //All code actually lives in libraries/
-                        ZipOutputStream null_jar = new ZipOutputStream(new FileOutputStream(new File (ver_dir, jar_id+".jar")));
-                        null_jar.putNextEntry(new ZipEntry("Classes actually in libraries directory"));
-                        null_jar.closeEntry();
-                        null_jar.close();
+						//1/2017 - dont do this anymore - better errors.
+                     //   ZipOutputStream null_jar = new ZipOutputStream(new FileOutputStream(new File (ver_dir, jar_id+".jar")));
+                     //   null_jar.putNextEntry(new ZipEntry("Classes actually in libraries directory"));
+                     //   null_jar.closeEntry();
+                     //   null_jar.close();
                         return ver_json_file.exists() && ver_file.exists();
                     } catch (Exception e) {
                         finalMessage += " Error: "+e.getLocalizedMessage();

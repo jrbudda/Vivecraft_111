@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/settings/GameSettings.java
 +++ b/net/minecraft/client/settings/GameSettings.java
-@@ -102,7 +102,7 @@
+@@ -103,7 +103,7 @@
      public float chatOpacity = 1.0F;
      public boolean snooperEnabled = true;
      public boolean fullScreen;
@@ -9,7 +9,7 @@
      public boolean useVbo = true;
      public boolean reducedDebugInfo;
      public boolean hideServerAddress;
-@@ -1883,18 +1883,18 @@
+@@ -1885,18 +1885,18 @@
  
          if (p_setOptionValueOF_1_ == GameSettings.Options.FAST_RENDER)
          {
@@ -37,7 +37,7 @@
  
              Config.updateFramebufferSize();
          }
-@@ -2958,7 +2958,7 @@
+@@ -2986,7 +2986,7 @@
          this.guiScale = 0;
          this.particleSetting = 0;
          this.heldItemTooltips = true;
@@ -46,7 +46,7 @@
          this.forceUnicodeFont = false;
          this.ofFogType = 1;
          this.ofFogStart = 0.8F;
-@@ -2969,7 +2969,7 @@
+@@ -2997,7 +2997,7 @@
          this.ofSmoothWorld = Config.isSingleProcessor();
          this.ofLazyChunkLoading = Config.isSingleProcessor();
          this.ofFastMath = false;

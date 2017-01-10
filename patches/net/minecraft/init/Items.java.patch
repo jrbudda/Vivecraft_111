@@ -8,13 +8,13 @@
 +    public static final Item DRIINKME_BOTTLE;
      public static final Item TOTEM;
      public static final Item SHULKER_SHELL;
- 
-@@ -451,6 +453,8 @@
+     public static final Item field_191525_da;
+@@ -452,6 +454,8 @@
              BEETROOT_SEEDS = getRegisteredItem("beetroot_seeds");
              BEETROOT = getRegisteredItem("beetroot");
              BEETROOT_SOUP = getRegisteredItem("beetroot_soup");
 +            EATME_CAKE = getRegisteredItem("eatme_cake");
 +            DRIINKME_BOTTLE = getRegisteredItem("drinkme_bottle");
-             TOTEM = getRegisteredItem("totem");
+             TOTEM = getRegisteredItem("totem_of_undying");
              SHULKER_SHELL = getRegisteredItem("shulker_shell");
-         }
+             field_191525_da = getRegisteredItem("iron_nugget");

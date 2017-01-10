@@ -50,7 +50,7 @@
      }
  
      /**
-@@ -920,8 +942,24 @@
+@@ -926,8 +948,24 @@
          }
          else
          {
@@ -77,8 +77,8 @@
      }
  
      /**
-@@ -1995,6 +2033,50 @@
-             String s1 = packetbuffer2.readString(256);
+@@ -2008,6 +2046,50 @@
+             String s1 = packetbuffer3.readString(256);
              this.gameController.getSoundHandler().stop(s1, SoundCategory.getByName(s));
          }
 +        // VIVE START - server told us that it has this mod too, allow extended reach, etc.

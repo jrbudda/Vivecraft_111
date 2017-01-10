@@ -8,7 +8,7 @@
  import net.minecraft.client.gui.GuiTextField;
  import net.minecraft.client.gui.achievement.GuiAchievements;
  import net.minecraft.client.gui.achievement.GuiStats;
-@@ -587,7 +588,7 @@
+@@ -594,7 +595,7 @@
       */
      public void drawScreen(int mouseX, int mouseY, float partialTicks)
      {

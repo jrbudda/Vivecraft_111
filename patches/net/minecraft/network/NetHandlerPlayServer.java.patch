@@ -36,20 +36,31 @@
                  }
  
                  entity.setPositionAndRotation(d3, d4, d5, f, f1);
-@@ -520,8 +528,10 @@
+@@ -497,9 +505,9 @@
  
-                         if (!this.playerEntity.isInvulnerableDimensionChange() && d11 > 0.0625D && !this.playerEntity.isPlayerSleeping() && !this.playerEntity.interactionManager.isCreative() && this.playerEntity.interactionManager.getGameType() != GameType.SPECTATOR)
-                         {
--                            flag = true;
--                            LOGGER.warn("{} moved wrongly!", new Object[] {this.playerEntity.getName()});
-+                        	//VIVE
-+//                            flag = true;
-+//                            LOGGER.warn("{} moved wrongly!", new Object[] {this.playerEntity.getName()});
-+                        	//END VIVE
-                         }
+                                 if (d11 - d10 > (double)(f2 * (float)i) && (!this.serverController.isSinglePlayer() || !this.serverController.getServerOwner().equals(this.playerEntity.getName())))
+                                 {
+-                                    LOGGER.warn("{} moved too quickly! {},{},{}", new Object[] {this.playerEntity.getName(), Double.valueOf(d7), Double.valueOf(d8), Double.valueOf(d9)});
+-                                    this.setPlayerLocation(this.playerEntity.posX, this.playerEntity.posY, this.playerEntity.posZ, this.playerEntity.rotationYaw, this.playerEntity.rotationPitch);
+-                                    return;
++                                 //   LOGGER.warn("{} moved too quickly! {},{},{}", new Object[] {this.playerEntity.getName(), Double.valueOf(d7), Double.valueOf(d8), Double.valueOf(d9)});
++                                 //   this.setPlayerLocation(this.playerEntity.posX, this.playerEntity.posY, this.playerEntity.posZ, this.playerEntity.rotationYaw, this.playerEntity.rotationPitch);
++                                 //   return;
+                                 }
+                             }
  
-                         this.playerEntity.setPositionAndRotation(d4, d5, d6, f, f1);
-@@ -1774,5 +1784,24 @@
+@@ -530,8 +538,8 @@
+ 
+                             if (!this.playerEntity.isInvulnerableDimensionChange() && d11 > 0.0625D && !this.playerEntity.isPlayerSleeping() && !this.playerEntity.interactionManager.isCreative() && this.playerEntity.interactionManager.getGameType() != GameType.SPECTATOR)
+                             {
+-                                flag = true;
+-                                LOGGER.warn("{} moved wrongly!", new Object[] {this.playerEntity.getName()});
++                               // flag = true;
++                               // LOGGER.warn("{} moved wrongly!", new Object[] {this.playerEntity.getName()});
+                             }
+ 
+                             this.playerEntity.setPositionAndRotation(d4, d5, d6, f, f1);
+@@ -1785,5 +1793,24 @@
                  LOGGER.error((String)"Couldn\'t pick item", (Throwable)exception);
              }
          }

@@ -1009,11 +1009,11 @@ func_148527_a,setRepositories,0,
 func_148529_f,clearResourcePack,0,
 func_148530_e,getResourcePackInstance,0,Getter for the IResourcePack instance associated with this ResourcePackRepository
 func_148537_a,sendPacketToAllPlayersInDimension,2,
-func_148539_a,sendChatMsg,2,Sends the given string to every player as chat message.
+func_148539_a,sendMessage,2,Sends the given string to every player as chat message.
 func_148540_a,sendPacketToAllPlayers,2,
 func_148542_a,allowUserToConnect,2,"checks ban-lists, then white-lists, then space for the server. Returns null on success, or an error message"
 func_148543_a,sendToAllNearExcept,2,"params: srcPlayer,x,y,z,r,dimension. The packet is not sent to the srcPlayer, but all other players within the search radius"
-func_148544_a,sendChatMsgImpl,2,
+func_148544_a,sendMessage,2,
 func_148545_a,createPlayerForUser,2,also checks for multiple logins across servers
 func_148574_b,canReplaceExisting,0,
 func_148586_a,getTypeInt,0,
@@ -1356,20 +1356,20 @@ func_150238_a,setColor,2,Sets the color for this ChatStyle to the given value.  
 func_150241_a,setClickEvent,2,Sets the event that should be run when text of this ChatStyle is clicked on.
 func_150242_c,getItalic,2,Whether or not text of this ChatStyle should be italicized.
 func_150253_a,getSiblings,2,Gets the sibling components of this one.
-func_150254_d,getFormattedText,0,"Gets the text of this component, with formatting codes added for rendering."
-func_150255_a,setStyle,2,
-func_150256_b,getStyle,2,
-func_150257_a,appendSibling,2,Appends the given component to the end of this one.
-func_150258_a,appendText,2,Appends the given text to the end of this component.
+func_150254_d,getFormattedText,0,"Gets the text of this component <em>and all sibling components</em>, with formatting codes added for rendering."
+func_150255_a,setStyle,2,Sets the style of this component and updates the parent style of all of the sibling components.
+func_150256_b,getStyle,2,"Gets the style of this component. Returns a direct reference; changes to this style will modify the style of this component (IE, there is no need to call {@link #setStyle(Style)} again after modifying it).\n \nIf this component's style is currently <code>null</code>, it will be initialized to the default style, and the parent style of all sibling components will be set to that style. (IE, changes to this style will also be reflected in sibling components.)\n \nThis method never returns <code>null</code>."
+func_150257_a,appendSibling,2,"Adds a new component to the end of the sibling list, setting that component's style's parent style to this component's style.\n \n@return This component, for chaining (and not the newly added component)"
+func_150258_a,appendText,2,"Adds a new component to the end of the sibling list, with the specified text. Same as calling {@link #appendSibling(ITextComponent)} with a new {@link TextComponentString}.\n \n@return This component, for chaining (and not the newly added component)"
 func_150259_f,createCopy,2,"Creates a copy of this component.  Almost a deep copy, except the style is shallow-copied."
-func_150260_c,getUnformattedText,2,"Get the text of this component, <em>and all child components</em>, with all special formatting codes removed."
-func_150261_e,getUnformattedComponentText,2,"Gets the text of this component, without any special formatting codes added, for chat.  TODO: why is this two different methods?"
+func_150260_c,getUnformattedText,2,"Gets the text of this component <em>and all sibling components</em>, without any formatting codes."
+func_150261_e,getUnformattedComponentText,2,"Gets the raw content of this component (but not its sibling components), without any formatting codes. For example, this is the raw text in a {@link TextComponentString}, but it's the translated text for a {@link TextComponentTranslation} and it's the score value for a {@link TextComponentScore}."
 func_150262_a,createDeepCopyIterator,2,"Creates an iterator that iterates over the given components, returning deep copies of each component in turn so that the properties of the returned objects will remain externally consistent after being returned."
-func_150265_g,getText,2,Gets the text value of this ChatComponentText.  TODO: what are getUnformattedText and getUnformattedTextForChat missing that made someone decide to create a third equivalent method that only ChatComponentText can implement?
-func_150268_i,getKey,2,
-func_150269_b,initializeFromFormat,2,"initializes our children from a format string, using the format args to fill in the placeholder variables."
-func_150270_g,ensureInitialized,2,ensures that our children are initialized from the most recent string translation mapping.
-func_150271_j,getFormatArgs,2,
+func_150265_g,getText,2,"Gets the text value of this component. This is used to access the {@link #text} property, and only should be used when dealing specifically with instances of {@link TextComponentString} - for other purposes, use {@link #getUnformattedComponentText()}."
+func_150268_i,getKey,2,Gets the key used to translate this component.
+func_150269_b,initializeFromFormat,2,"Initializes the content of this component, substituting in variables.\n \n@param format The format string to use (already translated with {@link I18n#translateToLocal(String)}, but not formatted)"
+func_150270_g,ensureInitialized,2,Ensures that all of the children are up to date with the most recent translation mapping.
+func_150271_j,getFormatArgs,2,Gets the object array that is used to translate the key.
 func_150272_a,getFormatArgumentAsComponent,2,
 func_150284_a,createNewByType,2,Creates a new NBTBase object that corresponds with the passed in id.
 func_150285_a_,getString,2,
@@ -1430,8 +1430,8 @@ func_150684_a,getValueByCanonicalName,2,Gets a value by its canonical name.
 func_150685_b,getCanonicalName,2,"Gets the canonical name for this action (e.g., ""show_achievement"")"
 func_150686_a,shouldAllowInChat,2,Indicates whether this event can be run from chat text.
 func_150695_a,serializeChatStyle,2,
-func_150696_a,componentToJson,2,
-func_150699_a,jsonToComponent,2,
+func_150696_a,componentToJson,2,Serializes a component into JSON.
+func_150699_a,jsonToComponent,2,"Parses a JSON string into a {@link ITextComponent}, with strict parsing.\n \n@see #fromJsonLenient(String)\n@see {@link com.google.gson.stream.JsonReader#setLenient(boolean)}"
 func_150701_a,getAction,2,Gets the action to perform when this event is raised.
 func_150702_b,getValue,2,"Gets the value to perform the action on when this event is raised.  For example, if the action is ""show item"", this would be the item to show."
 func_150718_a,closeChannel,2,"Closes the channel, the parameter can be used for an exit message (not certain how it gets sent)"
@@ -2310,7 +2310,7 @@ func_175594_ao,setWindowIcon,0,
 func_175597_ag,getItemRenderer,0,
 func_175598_ae,getRenderManager,0,
 func_175599_af,getRenderItem,0,
-func_175600_c,getVersion,0,
+func_175600_c,getVersion,0,Gets the version that Minecraft was launched under (the name of a version JSON). Specified via the <code>--version</code> flag.
 func_175601_h,updateDisplay,0,
 func_175602_ab,getBlockRendererDispatcher,0,
 func_175603_A,scheduleResourcesRefresh,0,
@@ -3882,9 +3882,9 @@ func_179985_a,processComponent,2,
 func_179986_j,getInsertion,2,Get the text to be inserted into Chat when the component is shift-clicked
 func_179989_a,setInsertion,2,Set a text to be inserted into Chat when the component is shift-clicked
 func_179992_g,getSelector,2,"Gets the selector of this component, in plain text."
-func_179994_h,getObjective,2,
-func_179995_g,getName,2,
-func_179997_b,setValue,2,Sets the value displayed instead of the real score.
+func_179994_h,getObjective,2,Gets the name of the objective for this score.
+func_179995_g,getName,2,Gets the name of the entity who owns this score.
+func_179997_b,setValue,2,"Sets the value that is displayed for the score. Generally, you do not want to call this as the score is resolved automatically. (If you want to manually set text, use a {@link TextComponentString})"
 func_180031_a,checkThreadAndEnqueue,2,"Handles pumping inbound packets across threads by checking whether the current thread is actually the main thread for the side in question. If not, then the packet is pumped into the handler queue in the main thread so that it can be handled synchronously by the recipient, it then throws an exception to terminate the current packet handler thread."
 func_180065_d,canJump,2,
 func_180066_a,setCanJump,2,
@@ -4107,7 +4107,7 @@ func_180634_a,onEntityCollidedWithBlock,2,Called When an Entity Collided with th
 func_180635_a,spawnAsEntity,2,Spawns the given ItemStack as an EntityItem into the World at the given position
 func_180636_a,collisionRayTrace,2,Ray traces through the blocks collision from start vector to end vector returning a ray trace hit.
 func_180637_b,dropXpOnBlockBreak,2,Spawns the given amount of experience into the World as XP orb entities
-func_180639_a,onBlockActivated,2,
+func_180639_a,onBlockActivated,2,Called when the block is right clicked by a player.
 func_180640_a,getSelectedBoundingBox,0,
 func_180641_l,getComparatorInputOverride,2,
 func_180642_a,getStateForPlacement,2,"Called by ItemBlocks just before a block is actually set in the world, to allow for adjustments to the IBlockstate"
@@ -4363,7 +4363,7 @@ func_184118_az,runTickKeyboard,0,
 func_184119_a,storeTEInStack,0,
 func_184121_ak,getRenderPartialTicks,0,
 func_184122_c,processKeyF3,0,
-func_184123_d,getVersionType,0,
+func_184123_d,getVersionType,0,Gets the type of version that Minecraft was launched under (as specified in the version JSON). Specified via the <code>--versionType</code> flag.
 func_184124_aB,runTickMouse,0,
 func_184125_al,getBlockColors,0,
 func_184126_aj,getDataFixer,0,
@@ -4765,9 +4765,9 @@ func_184870_b,getClickedComponentAt,0,
 func_184876_a,getCoordinateInfo,2,
 func_184878_a,getLastElement,2,
 func_184879_a,getServer,2,
-func_184881_a,execute,2,Callback for when the command is executed
-func_184882_a,checkPermission,2,Check if the given ICommandSender has permission to execute this command
-func_184883_a,getTabCompletions,2,Get a list of options for when the user presses the TAB key
+func_184881_a,execute,2,Callback for when the command is executed\n \n@param server The server instance\n@param sender The sender who executed the command\n@param args The arguments that were passed
+func_184882_a,checkPermission,2,Check if the given ICommandSender has permission to execute this command\n \n@param server The server instance\n@param sender The ICommandSender to check permissions on
+func_184883_a,getTabCompletions,2,"Get a list of options for when the user presses the TAB key\n \n@param server The server instance\n@param sender The ICommandSender to get tab completions for\n@param args Any arguments that were present when TAB was pressed\n@param targetPos The block that the player's mouse is over, <tt>null</tt> if the mouse is not over a block"
 func_184884_a,getEntity,2,
 func_184885_b,getEntity,2,
 func_184886_d,getPlayerName,2,
@@ -5328,11 +5328,11 @@ func_186652_a,deserialize,2,
 func_186657_a,testProperty,2,
 func_186660_b,intersectsWithYZ,2,
 func_186661_a,isClosest,2,
-func_186662_g,expandXyz,2,
+func_186662_g,expandXyz,2,"Creates a new {@link AxisAlignedBB} that is expanded by the given value in all directions. Equivalent to {@link #expand(double, double, double)} with the given value for all 3 params. Negative values will shrink the AABB.\n<br/>\nSide lengths will be increased by 2 times the value of the parameter, since both min and max are changed.\n<br/>\nIf contracting and the amount to contract by is larger than the length of a side, then the side will wrap (still creating a valid AABB - see samples on {@link #expand(double, double, double)}).\n \n@return A modified AABB.\n \n@param value Distance to expand by on all axes."
 func_186663_b,collideWithYPlane,2,
-func_186664_h,contract,2,
+func_186664_h,contract,2,"Creates a new {@link AxisAlignedBB} that is expanded by the given value in all directions. Equivalent to {@link #expandXyz(double)} with value set to the negative of the value provided here. Passing a negative value to this method values will grow the AABB.\n<br/>\nSide lengths will be decreased by 2 times the value of the parameter, since both min and max are changed.\n<br/>\nIf contracting and the amount to contract by is larger than the length of a side, then the side will wrap (still creating a valid AABB - see samples on {@link #expand(double, double, double)}).\n \n@return A modified AABB.\n \n@param value Distance to contract by on all axes."
 func_186665_c,collideWithZPlane,2,
-func_186666_e,setMaxY,2,
+func_186666_e,setMaxY,2,Helper method that returns a new {@link AxisAlignedBB} with the given value for {@link #maxY} and all other values taken from this bounding box.
 func_186667_c,intersectsWithXZ,2,
 func_186668_a,intersects,2,
 func_186669_d,intersectsWithXY,2,
@@ -5432,8 +5432,8 @@ func_186863_b,readVarIntArray,2,
 func_186865_a,writeLongArray,2,"Writes an array of longs to the buffer, prefixed by the length of the array (as a VarInt)."
 func_186873_b,readLongArray,0,Reads a length-prefixed array of longs from the buffer.
 func_186875_a,writeVarIntArray,2,"Writes an array of VarInts to the buffer, prefixed by the length of the array (as a VarInt)."
-func_186876_a,resolve,2,
-func_186877_b,fromJsonLenient,2,
+func_186876_a,resolve,2,"Resolves the value of the score on this component.\n \n@param sender The sender, used only to identify a server."
+func_186877_b,fromJsonLenient,2,"Parses a JSON string into a {@link ITextComponent}, being lenient upon parse errors.\n \n@see #jsonToComponent(String)\n@see {@link com.google.gson.stream.JsonReader#setLenient(boolean)}"
 func_186879_b,getUniqueId,0,
 func_186880_c,getX,0,
 func_186881_e,getZ,0,
@@ -5821,7 +5821,7 @@ func_188251_a,process,2,
 func_188252_b,processFixes,2,
 func_188253_c,processWalkers,2,
 func_188254_a,getTypeList,2,
-func_188255_a,registerWalkerAdd,2,
+func_188255_a,registerVanillaWalker,2,"Do not invoke this method, use registerWalker instead. It is expected to be removed in future versions."
 func_188256_a,registerFix,2,
 func_188257_a,process,2,
 func_188258_a,registerWalker,2,
@@ -5986,7 +5986,7 @@ func_188734_b,deserializeSound,0,
 func_188735_a,create,2,
 func_188736_a,createPhase,2,
 func_188737_a,getConstructor,2,
-func_188738_a,getById,2,
+func_188738_a,getById,2,"Gets a phase by its ID. If the phase is out of bounds (negative or beyond the end of the phase array), returns {@link #HOLDING_PATTERN}.\n \n@param idIn The ID of the phase"
 func_188739_c,getTotalPhases,2,
 func_188740_b,getId,2,
 func_188756_a,getCurrentPhase,2,
@@ -6032,7 +6032,7 @@ func_189516_d,writeInternal,2,
 func_189517_E_,getUpdateTag,2,
 func_189518_D_,getUpdatePacket,2,
 func_189520_a,stop,0,
-func_189529_a,setDetail,2,
+func_189529_a,setDetail,2,"Adds an additional section to this crash report category, resolved by calling the given callable.\n \nIf the given callable throws an exception, a detail containing that exception will be created instead.\n \n@param nameIn The name of the section to add.\n@param detail An {@link ICrashReportDetail} callable that produces a message to add."
 func_189530_b,writeToNBT,2,
 func_189532_c,setPos,2,
 func_189533_g,setPos,2,
@@ -6537,7 +6537,7 @@ func_190998_f,getPatternItem,2,
 func_190999_e,hasPatternItem,2,
 func_191000_d,hasPattern,2,
 func_191057_i,hasCustomBreakingProgress,0,
-func_191058_s,isViewBlocking,2,
+func_191058_s,causesSuffocation,2,
 func_191059_e,getOffset,2,
 func_191062_e,isChunkGeneratedAt,2,
 func_191063_a,isChunkGeneratedAt,2,
@@ -6599,7 +6599,7 @@ func_191163_a,getIcon,2,
 func_191179_b,getType,2,
 func_191180_f,renderOnFrame,0,
 func_191194_a,move,2,
-func_191195_a,contract,2,
+func_191195_a,contract,2,"Creates a new {@link AxisAlignedBB} that has been contracted by the given amount, with positive changes decreasing max values and negative changes increasing min values.\n<br/>\nIf the amount to contract by is larger than the length of a side, then the side will wrap (still creating a valid AABB - see last sample).\n \n<h3>Samples:</h3>\n<table>\n<tr><th>Input</th><th>Result</th></tr>\n<tr><td><pre><code>new AxisAlignedBB(0, 0, 0, 4, 4, 4).contract(2, 2, 2)</code></pre></td><td><pre><samp>box[0.0, 0.0, 0.0 -> 2.0, 2.0, 2.0]</samp></pre></td></tr>\n<tr><td><pre><code>new AxisAlignedBB(0, 0, 0, 4, 4, 4).contract(-2, -2, -2)</code></pre></td><td><pre><samp>box[2.0, 2.0, 2.0 -> 4.0, 4.0, 4.0]</samp></pre></td></tr>\n<tr><td><pre><code>new AxisAlignedBB(5, 5, 5, 7, 7, 7).contract(0, 1, -1)</code></pre></td><td><pre><samp>box[5.0, 5.0, 6.0 -> 7.0, 6.0, 7.0]</samp></pre></td></tr>\n<tr><td><pre><code>new AxisAlignedBB(-2, -2, -2, 2, 2, 2).contract(4, -4, 0)</code></pre></td><td><pre><samp>box[-8.0, 2.0, -2.0 -> -2.0, 8.0, 2.0]</samp></pre></td></tr>\n</table>\n \n<h3>See Also:</h3>\n<ul>\n<li>{@link #addCoord(double, double, double)} - like this, except for expanding.</li>\n<li>{@link #expand(double, double, double)} and {@link #expandXyz(double)} - expands in all directions.</li>\n<li>{@link #contract(double)} - contracts in all directions (like {@link #expandXyz(double)})</li>\n</ul>\n \n@return A new modified bounding box.\n \n@param x Amount to change by in the x direction. If positive, decreases {@link #maxX}. If negative, increases {@link #minX}.\n@param y Amount to change by in the y direction. If positive, decreases {@link #maxY}. If negative, increases {@link #minY}.\n@param z Amount to change by in the z direction. If positive, decreases {@link #maxZ}. If negative, increases {@link #minZ}."
 func_191196_a,create,2,
 func_191197_a,withSize,2,"Creates a new NonNullList with <i>fixed</i> size, and filled with the object passed."
 func_191205_a,getMapInstanceIfExists,0,
@@ -7135,7 +7135,7 @@ func_71506_a,getSectionsInStringBuilder,2,Gets the various sections of the crash
 func_71507_a,addCrashSection,2,Adds a Crashreport section with the given name with the given value (convered .toString())
 func_71514_a,getAliases,2,Get a list of aliases for this command. <b>Never return null!</b>
 func_71517_b,getName,2,Gets the name of the command
-func_71518_a,getUsage,2,Gets the usage string for the command.
+func_71518_a,getUsage,2,Gets the usage string for the command.\n \n@param sender The ICommandSender who is requesting usage details
 func_71521_c,getCommandSenderAsPlayer,2,Returns the given ICommandSender as a EntityPlayer or throw an exception.
 func_71523_a,doesStringStartWith,2,Returns true if the given substring is exactly equal to the start of the given string (case insensitive).
 func_71527_a,joinNiceString,2,"Creates a linguistic series joining the input objects together.  Examples: 1) {} --> """",  2) {""Steve""} --> ""Steve"",  3) {""Steve"", ""Phil""} --> ""Steve and Phil"",  4) {""Steve"", ""Phil"", ""Mark""} --> ""Steve, Phil and Mark"""
@@ -7147,15 +7147,15 @@ func_71556_a,executeCommand,2,"Attempt to execute a command. This method should 
 func_71557_a,getPossibleCommands,2,Get a list of commands that the given command sender has access to execute.
 func_71559_a,dropFirstString,2,creates a new array and sets elements 0..n-2 to be 0..n-1 of the input (n elements)
 func_71560_a,registerCommand,2,adds the command and any aliases it has to the internal map of available commands
-func_71565_a,filterAllowedCharacters,2,Filter string by only keeping those characters for which isAllowedCharacter() returns true.
-func_71566_a,isAllowedCharacter,2,
+func_71565_a,filterAllowedCharacters,2,"Filter a string, keeping only characters for which {@link #isAllowedCharacter(char)} returns true.\n \nNote that this method strips line breaks, as {@link #isAllowedCharacter(char)} returns false for those.\n@return A filtered version of the input string\n \n@param input The string to filter"
+func_71566_a,isAllowedCharacter,2,Checks if the given character is allowed to be put into chat.\n \n@param character The character to check
 func_71575_a,getCrashReport,2,Gets the CrashReport wrapped by this exception.
-func_72314_b,expand,2,"Creates a new bounding box that has been expanded. If negative values are used, it will shrink."
+func_72314_b,expand,2,"Creates a new {@link AxisAlignedBB} that has been contracted by the given amount in both directions. Negative values will shrink the AABB instead of expanding it.\n<br/>\nSide lengths will be increased by 2 times the value of the parameters, since both min and max are changed.\n<br/>\nIf contracting and the amount to contract by is larger than the length of a side, then the side will wrap (still creating a valid AABB - see last ample).\n \n<h3>Samples:</h3>\n<table>\n<tr><th>Input</th><th>Result</th></tr>\n<tr><td><pre><code>new AxisAlignedBB(0, 0, 0, 1, 1, 1).expand(2, 2, 2)</code></pre></td><td><pre><samp>box[-2.0, -2.0, -2.0 -> 3.0, 3.0, 3.0]</samp></pre></td></tr>\n<tr><td><pre><code>new AxisAlignedBB(0, 0, 0, 6, 6, 6).expand(-2, -2, -2)</code></pre></td><td><pre><samp>box[2.0, 2.0, 2.0 -> 4.0, 4.0, 4.0]</samp></pre></td></tr>\n<tr><td><pre><code>new AxisAlignedBB(5, 5, 5, 7, 7, 7).expand(0, 1, -1)</code></pre></td><td><pre><samp>box[5.0, 4.0, 6.0 -> 7.0, 8.0, 6.0]</samp></pre></td></tr>\n<tr><td><pre><code>new AxisAlignedBB(1, 1, 1, 3, 3, 3).expand(-4, -2, -3)</code></pre></td><td><pre><samp>box[-1.0, 1.0, 0.0 -> 5.0, 3.0, 4.0]</samp></pre></td></tr>\n</table>\n \n<h3>See Also:</h3>\n<ul>\n<li>{@link #addCoord(double, double, double)} - expands in only one direction.</li>\n<li>{@link #contract(double, double, double)} - contracts in only one direction.</li>\n<lu>{@link #expandXyz(double)} - version of this that expands in all directions from one parameter.</li>\n<li>{@link #contract(double)} - contracts in all directions</li>\n</ul>\n \n@return A modified bounding box.\n \n@param x Distance to grow/shrink on the x axis.\n@param y Distance to grow/shrink on the y axis.\n@param z Distance to grow/shrink on the z axis."
 func_72316_a,calculateXOffset,2,"if instance and the argument bounding boxes overlap in the Y and Z dimensions, calculate the offset between them in the X dimension.  return var2 if the bounding boxes do not overlap or if var2 is closer to 0 then the calculated offset.  Otherwise return the calculated offset."
 func_72317_d,offset,2,Offsets the current bounding box by the specified amount.
 func_72318_a,isVecInside,2,Returns if the supplied Vec3D is completely inside the bounding box
 func_72320_b,getAverageEdgeLength,2,Returns the average length of the edges of the bounding box.
-func_72321_a,addCoord,2,"Adds a coordinate to the bounding box, extending it if the point lies outside the current ranges."
+func_72321_a,addCoord,2,"Creates a new {@link AxisAlignedBB} that has been expanded by the given amount, with positive changes increasing max values and negative changes decreasing min values.\n\n<h3>Samples:</h3>\n<table>\n<tr><th>Input</th><th>Result</th></tr>\n<tr><td><pre><code>new AxisAlignedBB(0, 0, 0, 1, 1, 1).addCoord(2, 2, 2)</code></pre></td><td><pre><samp>box[0, 0, 0 -> 3, 3, 3]</samp></pre></td><td>\n<tr><td><pre><code>new AxisAlignedBB(0, 0, 0, 1, 1, 1).addCoord(-2, -2, -2)</code></pre></td><td><pre><samp>box[-2, -2, -2 -> 1, 1, 1]</samp></pre></td><td>\n<tr><td><pre><code>new AxisAlignedBB(5, 5, 5, 7, 7, 7).addCoord(0, 1, -1)</code></pre></td><td><pre><samp>box[5, 5, 4, 7, 8, 7]</samp></pre></td><td>\n</table>\n\n<h3>See Also:</h3>\n<ul>\n<li>{@link #contract(double, double, double)} - like this, except for shrinking.</li>\n<li>{@link #expand(double, double, double)} and {@link #expandXyz(double)} - expands in all directions.</li>\n<li>{@link #contract(double)} - contracts in all directions (like {@link #expandXyz(double)})</li>\n</ul>\n\n@return A modified bounding box that will always be equal or greater in volume to this bounding box.\n \n@param x Amount to change by in the x direction. If positive, increases {@link #maxX}. If negative, decreases {@link #minX}.\n@param y Amount to change by in the y direction. If positive, increases {@link #maxY}. If negative, decreases {@link #minY}.\n@param z Amount to change by in the z direction. If positive, increases {@link #maxZ}. If negative, decreases {@link #minZ}."
 func_72322_c,calculateZOffset,2,"if instance and the argument bounding boxes overlap in the Y and X dimensions, calculate the offset between them in the Z dimension.  return var2 if the bounding boxes do not overlap or if var2 is closer to 0 then the calculated offset.  Otherwise return the calculated offset."
 func_72323_b,calculateYOffset,2,"if instance and the argument bounding boxes overlap in the X and Z dimensions, calculate the offset between them in the Y dimension.  return var2 if the bounding boxes do not overlap or if var2 is closer to 0 then the calculated offset.  Otherwise return the calculated offset."
 func_72326_a,intersectsWith,2,Checks if the bounding box intersects with another.
@@ -8020,7 +8020,7 @@ func_76623_d,onChunkUnload,2,Called when this Chunk is unloaded by the ChunkProv
 func_76625_h,getTopFilledSegment,2,Returns the topmost ExtendedBlockStorage instance for this Chunk that actually contains a block.
 func_76630_e,setChunkModified,2,Sets the isModified flag for this Chunk
 func_76631_c,onChunkLoad,2,Called when this Chunk is loaded by the ChunkProvider
-func_76632_l,getChunkCoordIntPair,2,Gets a ChunkCoordIntPair representing the Chunk's position.
+func_76632_l,getPos,2,Gets a {@link ChunkPos} representing the x and z coordinates of this chunk.
 func_76657_c,setExtSkylightValue,2,Sets the saved Sky-light value in the extended block storage structure.
 func_76659_c,setBlocklightArray,2,Sets the NibbleArray instance used for Block-light values in this particular storage block.
 func_76661_k,getBlocklightArray,2,Returns the NibbleArray instance containing Block-light data.
@@ -8118,7 +8118,7 @@ func_77191_a,performWorldGenSpawning,2,Called during chunk generation to spawn i
 func_77192_a,findChunksForSpawning,2,"adds all chunks within the spawn radius of the players to eligibleChunksForSpawning. pars: the world, hostileCreatures, passiveCreatures. returns number of eligible chunks."
 func_77201_a,readRecipiesFromTags,2,
 func_77202_a,getRecipiesAsTags,2,
-func_77203_a,canRecipeBeUsed,2,"can par1,par2 be used to in crafting recipe par3"
+func_77203_a,canRecipeBeUsed,2,"can par1,par2 be used to in crafting recipe par3\n \n@param stack0 The first stack for the recipe.\n@param stack1 The second stack for the recipe.\n@param index The recipe's index."
 func_77272_a,asLong,2,Converts the chunk coordinate pair to a long
 func_77277_b,getPlayerKnockbackMap,2,
 func_77278_a,doExplosionA,2,Does the first part of the explosion (destroy blocks)
@@ -8205,7 +8205,7 @@ func_77626_a,getMaxItemUseDuration,2,How long it takes to use or consume an item
 func_77627_a,setHasSubtypes,2,
 func_77629_n_,shouldRotateAroundWhenRendering,0,Returns true if this item should be rotated by 180 degrees around the Y axis when being held in an entities hands.
 func_77634_r,hasContainerItem,2,True if this Item has a container item (a.k.a. crafting result)
-func_77636_d,hasEffect,0,
+func_77636_d,hasEffect,0,"Returns true if this item has an enchantment glint. By default, this returns <code>stack.isItemEnchanted()</code>, but other items can override it (for instance, written books always return true).\n \nNote that if you override this method, you generally want to also call the super version (on {@link Item}) to get the glint for enchanted items. Of course, that is unnecessary if the overwritten version always returns true."
 func_77637_a,setCreativeTab,2,returns this;
 func_77639_j,getItemStackLimit,2,Returns the maximum size of the stack for a specific item. *Isn't this more a Set than a Get?*
 func_77640_w,getCreativeTab,0,gets the CreativeTab this item is displayed on
@@ -8312,16 +8312,16 @@ func_78256_a,getStringWidth,0,Returns the width of this string. Equivalent of Fo
 func_78257_a,loadGlyphTexture,0,Load one of the /font/glyph_XX.png into a new GL texture and store the texture ID in glyphTextureName array.
 func_78259_e,sizeStringToWidth,0,Determines how many characters from the string will fit into the specified width.
 func_78260_a,getBidiFlag,0,Get bidiFlag that controls if the Unicode Bidirectional Algorithm should be run before rendering any string
-func_78262_a,trimStringToWidth,0,"Trims a string to a specified width, optionally starting from the end and working backwards.\n<h3>Samples:</h3>\n(Assuming that {@link #getCharWidth(char)} returns <code>6</code> for all of the characters in <code>0123456789</code> on the current resource pack)\n<dl>\n<dt><code>trimStringToWidth(""0123456789"", 1, false)</code></dt>\n<dd><samp>""""</samp></dd>\n<dt><code>trimStringToWidth(""0123456789"", 6, false)</code></dt>\n<dd><samp>""0""</samp></dd>\n<dt><code>trimStringToWidth(""0123456789"", 29, false)</code></dt>\n<dd><samp>""0123""</samp></dd>\n<dt><code>trimStringToWidth(""0123456789"", 30, false)</code></dt>\n<dd><samp>""01234""</samp></dd>\n<dt><code>trimStringToWidth(""0123456789"", 9001, false)</code></dt>\n<dd><samp>""0123456789""</samp></dd>\n<dt><code>trimStringToWidth(""0123456789"", 1, true)</code></dt>\n<dd><samp>""""</samp></dd>\n<dt><code>trimStringToWidth(""0123456789"", 6, true)</code></dt>\n<dd><samp>""9""</samp></dd>\n<dt><code>trimStringToWidth(""0123456789"", 29, true)</code></dt>\n<dd><samp>""6789""</samp></dd>\n<dt><code>trimStringToWidth(""0123456789"", 30, true)</code></dt>\n<dd><samp>""56789""</samp></dd>\n<dt><code>trimStringToWidth(""0123456789"", 9001, true)</code></dt>\n<dd><samp>""0123456789""</samp></dd>\n</dl>\n \n@param text The text to trim\n@param width The width to trim to (in pixels)\n@param reverse If true, starts from the end of the string and works backwords, rather than starting from the start and working forwards. Even if true, the final string will be in the correct order."
+func_78262_a,trimStringToWidth,0,"Trims a string to a specified width, optionally starting from the end and working backwards.\n<h3>Samples:</h3>\n(Assuming that {@link #getCharWidth(char)} returns <code>6</code> for all of the characters in\n<code>0123456789</code> on the current resource pack)\n<table>\n<tr><th>Input</th><th>Returns</th></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 1, false)</code></td><td><samp>""""</samp></td></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 6, false)</code></td><td><samp>""0""</samp></td></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 29, false)</code></td><td><samp>""0123""</samp></td></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 30, false)</code></td><td><samp>""01234""</samp></td></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 9001, false)</code></td><td><samp>""0123456789""</samp></td></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 1, true)</code></td><td><samp>""""</samp></td></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 6, true)</code></td><td><samp>""9""</samp></td></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 29, true)</code></td><td><samp>""6789""</samp></td></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 30, true)</code></td><td><samp>""56789""</samp></td></tr>\n<tr><td><code>trimStringToWidth(""0123456789"", 9001, true)</code></td><td><samp>""0123456789""</samp></td></tr>\n</table>\n \n@param text The text to trim\n@param width The width to trim to (in pixels)\n@param reverse If true, starts from the end of the string and works backwords, rather than starting from the start and working forwards. Even if true, the final string will be in the correct order."
 func_78263_a,getCharWidth,0,Returns the width of this character as rendered.
 func_78264_a,setUnicodeFlag,0,Set unicodeFlag controlling whether strings should be rendered with Unicode fonts instead of the default.png font.
 func_78265_b,resetStyles,0,Reset all style flag fields in the class to false; called at the start of string rendering
 func_78266_a,renderDefaultChar,0,"Render a single character with the default.png font at current (posX,posY) location..."
-func_78267_b,splitStringWidth,0,Returns the width of the wordwrapped String (maximum length is parameter k)
+func_78267_b,getWordWrappedHeight,0,Returns the height (in pixels) of the given string if it is wordwrapped to the given max width.
 func_78268_b,renderSplitString,0,Perform actual work of rendering a multi-line string with wordwrap and with darker drop shadow color if flag is set
 func_78269_a,trimStringToWidth,0,Trims a string to fit a specified Width.\n \n@param text The text to trim\n@param width The width to trim to (in pixels)
 func_78270_c,isFormatSpecial,0,Checks if the char code is O-K...lLrRk-o... used to set special formatting.
-func_78271_c,listFormattedStringToWidth,0,Breaks a string into a list of pieces that will fit a specified width.
+func_78271_c,listFormattedStringToWidth,0,Breaks a string into a list of pieces where the width of each line is always less than or equal to the provided width. Formatting codes will be preserved between lines.
 func_78272_b,isFormatColor,0,"Checks if the char code is a hexadecimal character, used to set colour."
 func_78273_d,trimStringNewline,0,Remove all newline characters from the end of the string
 func_78274_b,renderStringAligned,0,Render string either left or right aligned depending on bidiFlag
@@ -8487,11 +8487,11 @@ func_82342_d,isInvulnerable,2,Return whether this skull comes from an invulnerab
 func_82343_e,setInvulnerable,2,Set whether this skull comes from an invulnerable (aura) wither boss.
 func_82356_Z,isCommandBlockEnabled,2,Return whether command blocks are enabled.
 func_82357_ak,getSpawnProtectionSize,1,Return the spawn protection area's size.
-func_82358_a,isUsernameIndex,2,Return whether the specified command parameter index is a username parameter.
+func_82358_a,isUsernameIndex,2,Return whether the specified command parameter index is a username parameter.\n \n@param args The arguments of the command invocation\n@param index The index
 func_82362_a,getRequiredPermissionLevel,2,Return the required permission level for this command.
 func_82370_a,getUsernameIndex,2,Return a command's first parameter index containing a valid username.
 func_82377_a,matchesMultiplePlayers,2,Returns whether the given pattern can match more than one player.
-func_82378_b,hasArguments,2,Returns whether the given token has any arguments set.
+func_82378_b,isSelector,2,Returns whether the given string represents a selector.
 func_82381_h,getArgumentMap,2,"Parses the given argument string, turning it into a HashMap&lt;String, String&gt; of name-&gt;value."
 func_82386_a,matchOnePlayer,2,Returns the one player that matches the given at-token.  Returns null if more than one player matches.
 func_82400_a,getRenderYaw,0,
