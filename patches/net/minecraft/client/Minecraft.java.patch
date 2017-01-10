@@ -119,7 +119,7 @@
  import net.minecraft.world.EnumDifficulty;
  import net.minecraft.world.WorldProviderEnd;
  import net.minecraft.world.WorldProviderHell;
-@@ -183,25 +230,166 @@
+@@ -183,25 +230,148 @@
  import net.minecraft.world.storage.ISaveFormat;
  import net.minecraft.world.storage.ISaveHandler;
  import net.minecraft.world.storage.WorldInfo;
@@ -230,29 +230,11 @@
 +	public float lastWorldScale = 0f;
 +	public DimensionType lastDimensionId = DimensionType.OVERWORLD;
 +	public SoundManager sndManager = null;
-+	public int _Lanczos_shaderProgramId = -1;
-+	public int _LanczosShader_texelWidthOffsetUniform = -1;
-+	public int _LanczosShader_texelHeightOffsetUniform = -1;
-+	public int _LanczosShader_inputImageTextureUniform = -1;
-+	public int _DepthMask_shaderProgramId = -1;
-+	public int _DepthMask_resolutionUniform = -1;
-+	public int _DepthMask_positionUniform = -1;
-+	public int _DepthMask_scaleUniform = -1;
-+	public int _DepthMask_colorTexUniform = -1;
-+	public int _DepthMask_depthTexUniform = -1;
-+	public int _DepthMask_hmdViewPosition = -1;
-+	public int _DepthMask_hmdPlaneNormal = -1;
-+	public int _DepthMask_projectionMatrix = -1;
-+	public int _DepthMask_viewMatrix = -1;
-+	public int _DepthMask_passUniform = -1;
-+	public int _DepthMask_keyColorUniform = -1;
-+	public int _FOVReduction_RadiusUniform = -1;
-+	public int _FOVReduction_BorderUniform = -1;
-+	public int _FOVReduction_TextureUniform= -1;
-+	public int _FOVReduction_shaderProgramId = -1;
++
 +	private FloatBuffer matrixBuffer = GLAllocation.createDirectFloatBuffer(16);
 +	private Framebuffer mirrorFB = null;
 +	private Framebuffer fsaaFirstPassResultFBO;
++	private Framebuffer fsaaLastPassResultFBO;
 +	private final float OCULUS_RED_COLOUR_COMPONENT = (1f/255f)*61f;
 +	private final float OCULUS_GREEN_COLOUR_COMPONENT = (1f/255f)*61f;
 +	private final float OCULUS_BLUE_COLOUR_COMPONENT = (1f/255f)*61f;
@@ -286,7 +268,7 @@
      private static final Logger LOGGER = LogManager.getLogger();
      private static final ResourceLocation LOCATION_MOJANG_PNG = new ResourceLocation("textures/gui/title/mojang.png");
      public static final boolean IS_RUNNING_ON_MAC = Util.getOSType() == Util.EnumOS.OSX;
-@@ -217,7 +405,7 @@
+@@ -217,7 +387,7 @@
      private ServerData currentServerData;
  
      /** The RenderEngine instance used by Minecraft */
@@ -295,7 +277,7 @@
  
      /**
       * Set to 'this' in Minecraft constructor; used by some settings get methods
-@@ -329,7 +517,7 @@
+@@ -329,7 +499,7 @@
      private final boolean jvm64bit;
      private final boolean isDemo;
      @Nullable
@@ -304,7 +286,7 @@
      private boolean integratedServerIsRunning;
  
      /** The profiler instance */
-@@ -349,7 +537,7 @@
+@@ -349,7 +519,7 @@
      private ItemColors itemColors;
      private Framebuffer framebufferMc;
      private TextureMap textureMapBlocks;
@@ -313,7 +295,7 @@
      private MusicTicker mcMusicTicker;
      private ResourceLocation mojangLogo;
      private final MinecraftSessionService sessionService;
-@@ -382,6 +570,25 @@
+@@ -382,6 +552,25 @@
  
      /** Profiler currently displayed in the debug screen pie chart */
      private String debugProfilerName = "root";
@@ -339,7 +321,7 @@
  
      public Minecraft(GameConfiguration gameConfig)
      {
-@@ -400,8 +607,10 @@
+@@ -400,8 +589,10 @@
          LOGGER.info("Setting user: {}", new Object[] {this.session.getUsername()});
          LOGGER.debug("(Session ID is {})", new Object[] {this.session.getSessionID()});
          this.isDemo = gameConfig.gameInfo.isDemo;
@@ -352,7 +334,7 @@
          this.tempDisplayWidth = gameConfig.displayInfo.width;
          this.tempDisplayHeight = gameConfig.displayInfo.height;
          this.fullscreen = gameConfig.displayInfo.fullscreen;
-@@ -418,6 +627,15 @@
+@@ -418,6 +609,15 @@
          Locale.setDefault(Locale.ROOT);
          Bootstrap.register();
          this.dataFixer = DataFixesManager.createFixer();
@@ -368,7 +350,7 @@
      }
  
      public void run()
-@@ -495,7 +713,7 @@
+@@ -495,7 +695,7 @@
       */
      private void init() throws LWJGLException, IOException
      {
@@ -377,7 +359,7 @@
          this.defaultResourcePacks.add(this.mcDefaultResourcePack);
          this.startTimerHackThread();
  
-@@ -509,6 +727,7 @@
+@@ -509,6 +709,7 @@
          this.setWindowIcon();
          this.setInitialDisplayMode();
          this.createDisplay();
@@ -385,7 +367,7 @@
          OpenGlHelper.initializeTextures();
          this.framebufferMc = new Framebuffer(this.displayWidth, this.displayHeight, true);
          this.framebufferMc.setFramebufferColor(0.0F, 0.0F, 0.0F, 0.0F);
-@@ -534,6 +753,16 @@
+@@ -534,6 +735,16 @@
              this.fontRendererObj.setBidiFlag(this.mcLanguageManager.isCurrentLanguageBidirectional());
          }
  
@@ -402,7 +384,7 @@
          this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii_sga.png"), this.renderEngine, false);
          this.mcResourceManager.registerReloadListener(this.fontRendererObj);
          this.mcResourceManager.registerReloadListener(this.standardGalacticFontRenderer);
-@@ -605,7 +834,8 @@
+@@ -605,7 +816,8 @@
          this.mojangLogo = null;
          this.loadingScreen = new LoadingScreenRenderer(this);
          this.debugRenderer = new DebugRenderer(this);
@@ -412,7 +394,7 @@
          if (this.gameSettings.fullScreen && !this.fullscreen)
          {
              this.toggleFullscreen();
-@@ -613,7 +843,7 @@
+@@ -613,7 +825,7 @@
  
          try
          {
@@ -421,7 +403,7 @@
          }
          catch (OpenGLException var2)
          {
-@@ -622,6 +852,11 @@
+@@ -622,6 +834,11 @@
          }
  
          this.renderGlobal.makeEntityOutlineShader();
@@ -433,7 +415,7 @@
      }
  
      private void registerMetadataSerializers()
-@@ -1024,6 +1259,13 @@
+@@ -1024,6 +1241,13 @@
              this.ingameGUI.getChatGUI().clearChatMessages(true);
          }
  
@@ -447,7 +429,7 @@
          this.currentScreen = (GuiScreen)guiScreenIn;
  
          if (guiScreenIn != null)
-@@ -1057,7 +1299,8 @@
+@@ -1057,7 +1281,8 @@
      /**
       * Checks for an OpenGL error. If there is one, prints the error ID and error string.
       */
@@ -457,7 +439,7 @@
      {
          int i = GlStateManager.glGetError();
  
-@@ -1109,28 +1352,76 @@
+@@ -1109,28 +1334,76 @@
       */
      private void runGameLoop() throws IOException
      {
@@ -555,7 +537,7 @@
          {
              while (!this.scheduledTasks.isEmpty())
              {
-@@ -1138,96 +1429,200 @@
+@@ -1138,96 +1411,200 @@
              }
          }
  
@@ -830,9 +812,9 @@
 +	}
 +	catch (Exception e) {
 +		// set mono provider
-+		if (this.stereoProvider.getName() == "OpenVR"){
-+			this.stereoProvider = new NullStereoRenderer();
-+		}
++//		if (this.stereoProvider.getName() == "OpenVR"){
++//			this.stereoProvider = new NullStereoRenderer();
++//		}
 +		
 +		// set error
 +	//	this.errorHelper = new ErrorHelper(e.title, e.error, "Reverted to mono renderer!", ERROR_DISPLAY_TIME_SECS);
@@ -843,7 +825,7 @@
      }
  
      public void updateDisplay()
-@@ -1342,7 +1737,7 @@
+@@ -1342,7 +1719,7 @@
      /**
       * Parameter appears to be unused
       */
@@ -852,7 +834,7 @@
      {
          if (this.mcProfiler.profilingEnabled)
          {
-@@ -1479,7 +1874,8 @@
+@@ -1479,7 +1856,8 @@
                  }
  
                  this.inGameHasFocus = true;
@@ -862,7 +844,7 @@
                  this.displayGuiScreen((GuiScreen)null);
                  this.leftClickCounter = 10000;
              }
-@@ -1514,16 +1910,16 @@
+@@ -1514,16 +1892,16 @@
          }
      }
  
@@ -882,7 +864,7 @@
              {
                  BlockPos blockpos = this.objectMouseOver.getBlockPos();
  
-@@ -1533,25 +1929,26 @@
+@@ -1533,25 +1911,26 @@
                      this.player.swingArm(EnumHand.MAIN_HAND);
                  }
              }
@@ -919,7 +901,7 @@
              }
              else if (!this.player.isRowingBoat())
              {
-@@ -1567,39 +1964,45 @@
+@@ -1567,39 +1946,45 @@
                          if (this.world.getBlockState(blockpos).getMaterial() != Material.AIR)
                          {
                              this.playerController.clickBlock(blockpos, this.objectMouseOver.sideHit);
@@ -976,7 +958,7 @@
                  }
  
                  for (EnumHand enumhand : EnumHand.values())
-@@ -1723,27 +2126,12 @@
+@@ -1723,27 +2108,12 @@
       */
      private void resize(int width, int height)
      {
@@ -1006,7 +988,7 @@
      }
  
      /**
-@@ -1997,6 +2385,14 @@
+@@ -1997,6 +2367,14 @@
                  this.currentScreen.handleKeyboardInput();
              }
  
@@ -1021,7 +1003,7 @@
              boolean flag = Keyboard.getEventKeyState();
  
              if (flag)
-@@ -2006,6 +2402,8 @@
+@@ -2006,6 +2384,8 @@
                      this.entityRenderer.switchUseShader();
                  }
  
@@ -1030,7 +1012,7 @@
                  boolean flag1 = false;
  
                  if (this.currentScreen == null)
-@@ -2013,6 +2411,7 @@
+@@ -2013,6 +2393,7 @@
                      if (i == 1)
                      {
                          this.displayInGameMenu();
@@ -1038,7 +1020,7 @@
                      }
  
                      flag1 = Keyboard.isKeyDown(61) && this.processKeyF3(i);
-@@ -2020,7 +2419,9 @@
+@@ -2020,7 +2401,9 @@
  
                      if (i == 59)
                      {
@@ -1049,7 +1031,7 @@
                      }
                  }
  
-@@ -2243,11 +2644,26 @@
+@@ -2243,11 +2626,26 @@
  
          if (flag)
          {
@@ -1081,7 +1063,7 @@
              if (this.currentScreen == null && this.gameSettings.keyBindCommand.isPressed())
              {
                  this.displayGuiScreen(new GuiChat("/"));
-@@ -2256,9 +2672,10 @@
+@@ -2256,9 +2654,10 @@
  
          if (this.player.isHandActive())
          {
@@ -1094,7 +1076,7 @@
              }
  
              label472:
-@@ -2284,17 +2701,27 @@
+@@ -2284,17 +2683,27 @@
                  }
              }
          }
@@ -1130,7 +1112,7 @@
  
              while (this.gameSettings.keyBindPickBlock.isPressed())
              {
-@@ -2302,12 +2729,12 @@
+@@ -2302,12 +2711,12 @@
              }
          }
  
@@ -1146,7 +1128,7 @@
      }
  
      private void runTickMouse() throws IOException
-@@ -2328,6 +2755,13 @@
+@@ -2328,6 +2737,13 @@
                      KeyBinding.onTick(i - 100);
                  }
              }
@@ -1160,7 +1142,7 @@
  
              long j = getSystemTime() - this.systemTime;
  
-@@ -2382,6 +2816,7 @@
+@@ -2382,6 +2798,7 @@
       */
      public void launchIntegratedServer(String folderName, String worldName, @Nullable WorldSettings worldSettingsIn)
      {
@@ -1168,7 +1150,7 @@
          this.loadWorld((WorldClient)null);
          System.gc();
          ISaveHandler isavehandler = this.saveLoader.getSaveLoader(folderName, false);
-@@ -2444,7 +2879,7 @@
+@@ -2444,7 +2861,7 @@
                  ;
              }
          }
@@ -1177,7 +1159,7 @@
          this.displayGuiScreen(new GuiScreenWorking());
          SocketAddress socketaddress = this.theIntegratedServer.getNetworkSystem().addLocalEndpoint();
          NetworkManager networkmanager = NetworkManager.provideLocalClient(socketaddress);
-@@ -2459,6 +2894,9 @@
+@@ -2459,6 +2876,9 @@
       */
      public void loadWorld(@Nullable WorldClient worldClientIn)
      {
@@ -1187,7 +1169,7 @@
          this.loadWorld(worldClientIn, "");
      }
  
-@@ -2608,6 +3046,7 @@
+@@ -2608,6 +3028,7 @@
          return theMinecraft == null || !theMinecraft.gameSettings.hideGUI;
      }
  
@@ -1195,7 +1177,7 @@
      public static boolean isFancyGraphicsEnabled()
      {
          return theMinecraft != null && theMinecraft.gameSettings.fancyGraphics;
-@@ -2624,7 +3063,7 @@
+@@ -2624,7 +3045,7 @@
      /**
       * Called when user clicked he's mouse middle button (pick block)
       */
@@ -1204,7 +1186,7 @@
      {
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
-@@ -3419,4 +3858,1108 @@
+@@ -3419,4 +3840,1122 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }
@@ -1261,12 +1243,12 @@
 +				GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 +				for(int i = 0; i < 2; i++) {
 +
-+					OpenGlHelper.glUseProgram(_DepthMask_shaderProgramId);
++					OpenGlHelper.glUseProgram(VRShaders._DepthMask_shaderProgramId);
 +
 +					// set projection matrix
 +					entityRenderer.thirdPassProjectionMatrix.store(matrixBuffer);
 +					matrixBuffer.rewind();
-+					ARBShaderObjects.glUniformMatrix4ARB(_DepthMask_projectionMatrix, false, matrixBuffer);
++					ARBShaderObjects.glUniformMatrix4ARB(VRShaders._DepthMask_projectionMatrix, false, matrixBuffer);
 +
 +					// create view matrix
 +					org.lwjgl.util.vector.Matrix4f viewMatrix = new org.lwjgl.util.vector.Matrix4f();
@@ -1277,17 +1259,17 @@
 +					// set view matrix
 +					viewMatrix.store(matrixBuffer);
 +					matrixBuffer.rewind();
-+					ARBShaderObjects.glUniformMatrix4ARB(_DepthMask_viewMatrix, false, matrixBuffer);
++					ARBShaderObjects.glUniformMatrix4ARB(VRShaders._DepthMask_viewMatrix, false, matrixBuffer);
 +					
 +					// set other uniforms
-+					ARBShaderObjects.glUniform2fARB(_DepthMask_resolutionUniform, displayWidth / 2, displayHeight);
-+					ARBShaderObjects.glUniform2fARB(_DepthMask_positionUniform, (displayWidth / 2) * i, 0);
-+					ARBShaderObjects.glUniform1iARB(_DepthMask_colorTexUniform, 1);
-+					ARBShaderObjects.glUniform1iARB(_DepthMask_depthTexUniform, 2);
-+					ARBShaderObjects.glUniform3fARB(_DepthMask_hmdViewPosition, (float)camplayer.xCoord, (float)camplayer.yCoord, (float)camplayer.zCoord);
-+					ARBShaderObjects.glUniform3fARB(_DepthMask_hmdPlaneNormal, -CameraLook.x, 0, -CameraLook.z);
-+					ARBShaderObjects.glUniform1iARB(_DepthMask_passUniform, i);
-+					ARBShaderObjects.glUniform3fARB(_DepthMask_keyColorUniform, vrSettings.mixedRealityKeyColor.getRed() / 255F, vrSettings.mixedRealityKeyColor.getGreen() / 255F, vrSettings.mixedRealityKeyColor.getBlue() / 255F);
++					ARBShaderObjects.glUniform2fARB(VRShaders._DepthMask_resolutionUniform, displayWidth / 2, displayHeight);
++					ARBShaderObjects.glUniform2fARB(VRShaders._DepthMask_positionUniform, (displayWidth / 2) * i, 0);
++					ARBShaderObjects.glUniform1iARB(VRShaders._DepthMask_colorTexUniform, 1);
++					ARBShaderObjects.glUniform1iARB(VRShaders._DepthMask_depthTexUniform, 2);
++					ARBShaderObjects.glUniform3fARB(VRShaders._DepthMask_hmdViewPosition, (float)camplayer.xCoord, (float)camplayer.yCoord, (float)camplayer.zCoord);
++					ARBShaderObjects.glUniform3fARB(VRShaders._DepthMask_hmdPlaneNormal, -CameraLook.x, 0, -CameraLook.z);
++					ARBShaderObjects.glUniform1iARB(VRShaders._DepthMask_passUniform, i);
++					ARBShaderObjects.glUniform3fARB(VRShaders._DepthMask_keyColorUniform, vrSettings.mixedRealityKeyColor.getRed() / 255F, vrSettings.mixedRealityKeyColor.getGreen() / 255F, vrSettings.mixedRealityKeyColor.getBlue() / 255F);
 +
 +					// bind color and depth textures
 +					GlStateManager.setActiveTexture(GL13.GL_TEXTURE1);
@@ -1330,8 +1312,11 @@
 +						if(ports==1) i = 0;
 +											
 +						this.framebufferMc.unbindFramebuffer();	//draw directly to window
-+												
-+						framebuffer.framebufferRenderExt((displayWidth / 2) * i, displayWidth / ports, displayHeight, 0, true);
++								
++						Framebuffer source = this.framebufferEye0;
++						if(currentPass2 == renderPass.Left) source = framebufferEye1;
++						
++						source.framebufferRenderExt((displayWidth / 2) * i, displayWidth / ports, displayHeight, 0, true);
 +
 +						return true;
 +					}
@@ -1481,10 +1466,11 @@
 +				this.fsaaFirstPassResultFBO = null;
 +			}
 +		
-+			_LanczosShader_texelWidthOffsetUniform = -1;
-+			_LanczosShader_texelHeightOffsetUniform = -1;
-+			_LanczosShader_inputImageTextureUniform = -1;
-+
++			if (this.fsaaLastPassResultFBO != null) {
++				this.fsaaLastPassResultFBO.deleteFramebuffer();
++				this.fsaaLastPassResultFBO = null;
++			}
++			
 +			int multiSampleCount = 0;
 +			boolean multiSample = (multiSampleCount > 0 ? true : false);
 +			
@@ -1567,26 +1553,6 @@
 +			this.guiFramebuffer.setFramebufferColor(RED_COLOUR_COMPONENT, GREEN_COLOUR_COMPONENT, BLUE_COLOUR_COMPONENT, 0.0F);
 +			checkGLError("post color");
 +
-+		
-+			_DepthMask_shaderProgramId = ShaderHelper.initShaders(VRShaders.DEPTH_MASK_VERTEX_SHADER, VRShaders.DEPTH_MASK_FRAGMENT_SHADER, true);
-+			
-+			if (_DepthMask_shaderProgramId == 0) {
-+				throw new Exception("Failed to validate depth mask shader!");
-+			}
-+			
-+			// Setup uniform IDs
-+			_DepthMask_resolutionUniform = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "resolution");
-+			_DepthMask_positionUniform = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "position");
-+			_DepthMask_colorTexUniform = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "colorTex");
-+			_DepthMask_depthTexUniform = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "depthTex");
-+			_DepthMask_hmdViewPosition = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "hmdViewPosition");
-+			_DepthMask_hmdPlaneNormal = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "hmdPlaneNormal");
-+			_DepthMask_projectionMatrix = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "projectionMatrix");
-+			_DepthMask_viewMatrix = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "viewMatrix");
-+			_DepthMask_passUniform = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "pass");
-+			_DepthMask_keyColorUniform = ARBShaderObjects.glGetUniformLocationARB(_DepthMask_shaderProgramId, "keyColor");
-+			
-+			checkGLError("post select");
 +			entityRenderer.setupClipPlanes();
 +
 +			if (this.stereoProvider.isStereo() && this.stereoProvider.usesDistortion())
@@ -1595,61 +1561,49 @@
 +				this.eyeproj[1] = this.stereoProvider.getProjectionMatrix(null, 1, this.entityRenderer.minClipDistance, this.entityRenderer.clipDistance).transposed().toFloatBuffer();
 +			}
 +
-+			try
++			if (this.vrSettings.useFsaa)
 +			{
-+				if (this.vrSettings.useFsaa)
++				try //setup fsaa
 +				{
++
 +					// GL21.GL_SRGB8_ALPHA8
 +					// GL11.GL_RGBA8
 +					checkGLError("pre FSAA FBO creation");
 +					// Lanczos downsample FBOs
 +					fsaaFirstPassResultFBO = new Framebuffer("FSAA Pass1 FBO",EyeTextureSize.w, displayFBHeight,false, false,false, 0, -1);
-+						//TODO: ugh, support multiple color attachments in Framebuffer....
-+							
++					//TODO: ugh, support multiple color attachments in Framebuffer....
++					fsaaLastPassResultFBO = new Framebuffer("FSAA Pass2 FBO",displayFBWidth, displayFBHeight,false, false,false, 0, -1);
++			
 +					print(this.fsaaFirstPassResultFBO.toString());
-+					
++
 +					checkGLError("FSAA FBO creation");
 +
-+					_Lanczos_shaderProgramId = ShaderHelper.initShaders(VRShaders.LANCZOS_SAMPLER_VERTEX_SHADER, VRShaders.LANCZOS_SAMPLER_FRAGMENT_SHADER, true);
-+					if (_Lanczos_shaderProgramId == 0) {
-+						throw new Exception("Failed to validate FSAA shader!");
-+					}
++					VRShaders.setupFSAA();
 +
-+					ShaderHelper.checkGLError("@1");
-+
-+					// Setup uniform IDs
-+					_LanczosShader_texelWidthOffsetUniform = ARBShaderObjects.glGetUniformLocationARB(_Lanczos_shaderProgramId, "texelWidthOffset");
-+					_LanczosShader_texelHeightOffsetUniform = ARBShaderObjects.glGetUniformLocationARB(_Lanczos_shaderProgramId, "texelHeightOffset");
-+					_LanczosShader_inputImageTextureUniform = ARBShaderObjects.glGetUniformLocationARB(_Lanczos_shaderProgramId, "inputImageTexture");
-+
-+					ShaderHelper.checkGLError("FBO init Lanczos shader");
-+				}
-+				
-+				_FOVReduction_shaderProgramId = ShaderHelper.initShaders(VRShaders.FOV_REDUCTION_VERTEX_SHADER, VRShaders.FOV_REDUCTION_FRAGMENT_SHADER, true);
-+				if (_FOVReduction_shaderProgramId == 0) {
-+					throw new Exception("Failed to validate FOV shader!");
++					ShaderHelper.checkGLError("FBO init fsaa shader");
 +				}
 +
-+				ShaderHelper.checkGLError("@1");
 +
-+				// Setup uniform IDs
-+				_FOVReduction_RadiusUniform = ARBShaderObjects.glGetUniformLocationARB(_FOVReduction_shaderProgramId, "circle_radius");
-+				_FOVReduction_BorderUniform = ARBShaderObjects.glGetUniformLocationARB(_FOVReduction_shaderProgramId, "border");
-+				_FOVReduction_TextureUniform = ARBShaderObjects.glGetUniformLocationARB(_FOVReduction_shaderProgramId, "tex0");
-+
-+				ShaderHelper.checkGLError("FBO init FOV shader");
-+
++				catch (Exception ex)
++				{
++					// We had an issue. Set the usual suspects to defaults...
++					this.vrSettings.useFsaa = false;
++					this.vrSettings.saveOptions();
++					System.out.println(ex.getMessage());
++					reinitFramebuffers = true;
++					return;
++				}
 +			}
-+			catch (Exception ex)
-+			{
-+				// We had an issue. Set the usual suspects to defaults...
-+				this.vrSettings.useFsaa = false;
-+				this.vrSettings.saveOptions();
-+				System.out.println("[Minecrift] FAILED to setup FSAA: " + ex.getMessage());
-+				reinitFramebuffers = true;
-+				return;
++			
++			try { //setup other shaders
++				VRShaders.setupDepthMask();
++				ShaderHelper.checkGLError("init depth shader");
++				VRShaders.setupFOVReduction();
++				ShaderHelper.checkGLError("init FOV shader");			
++			} catch (Exception e) {
++				System.out.println(e.getMessage());
 +			}
-+
++			
 +			// Init screen size
 +			if (this.currentScreen != null)
 +			{
@@ -1658,9 +1612,7 @@
 +				int l = scaledresolution.getScaledHeight();
 +				this.currentScreen.setWorldAndResolution(this, k, l);
 +			}
-+//			this.loadingScreen = new LoadingScreenRenderer(this, this.displayWidth, this.displayHeight);
-+//			this.loadingScreen.deleteFramebuffer();
-+//			this.loadingScreen.renderTarget = this.guiFramebuffer;
++
 +
 +			System.out.println("[Minecrift] New render config:" +
 +					"\nRender target width:  " + (this.stereoProvider.isStereo() ? EyeTextureSize.w + EyeTextureSize.w: this.displayWidth) +
@@ -1919,22 +1871,6 @@
 +
 +boolean w;
 +
-+	private void doPostProcessing(long frameIndex, float nano)
-+	{	
-+		
-+		if (showSplashScreen && splashFadeAlpha > 0)
-+		{
-+		//	final Color3f rgb = new Color3f(0f, 0f, 0f);
-+		//	this.entityRenderer.renderFadeBlend(rgb, splashFadeAlpha);
-+		}
-+	
-+		if (this.vrSettings.useFsaa && currentPass != renderPass.Center)
-+		{
-+			doFSAA();
-+		}
-+		
-+	}
-+	
 +
 +	private void doFSAA() {
 +		if (this.fsaaFirstPassResultFBO == null){
@@ -1969,12 +1905,12 @@
 +					GlStateManager.viewport(0, 0, fsaaFirstPassResultFBO.framebufferWidth, fsaaFirstPassResultFBO.framebufferHeight);
 +
 +					// Set the downsampling shader as in use
-+					ARBShaderObjects.glUseProgramObjectARB(_Lanczos_shaderProgramId);
++					ARBShaderObjects.glUseProgramObjectARB(VRShaders._Lanczos_shaderProgramId);
 +
 +					// Set up the fragment shader uniforms
-+					ARBShaderObjects.glUniform1fARB(_LanczosShader_texelWidthOffsetUniform, 1.0f / (3.0f * (float) fsaaFirstPassResultFBO.framebufferWidth));
-+					ARBShaderObjects.glUniform1fARB(_LanczosShader_texelHeightOffsetUniform, 0.0f);
-+					ARBShaderObjects.glUniform1iARB(_LanczosShader_inputImageTextureUniform, 0);
++					ARBShaderObjects.glUniform1fARB(VRShaders._LanczosShader_texelWidthOffsetUniform, 1.0f / (3.0f * (float) fsaaFirstPassResultFBO.framebufferWidth));
++					ARBShaderObjects.glUniform1fARB(VRShaders._LanczosShader_texelHeightOffsetUniform, 0.0f);
++					ARBShaderObjects.glUniform1iARB(VRShaders._LanczosShader_inputImageTextureUniform, 0);
 +
 +					GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT);
 +
@@ -1984,9 +1920,8 @@
 +
 +					// Pass 2 - Vertial
 +					// Now switch to 2nd pass screen framebuffer
-+					Framebuffer curr = this.currentPass == renderPass.Left? this.framebufferEye0 : this.framebufferEye1;
 +					
-+					curr.bindFramebuffer(true);
++					fsaaLastPassResultFBO.bindFramebuffer(true);
 +					//curr.selectTexture(0); //this is our Eye tex!
 +					
 +					checkGLError("postselect");
@@ -1994,7 +1929,7 @@
 +					
 +					checkGLError("posttex");
 +					
-+					GL11.glViewport(0, 0,curr.framebufferWidth, curr.framebufferHeight);
++					GL11.glViewport(0, 0,fsaaLastPassResultFBO.framebufferWidth, fsaaLastPassResultFBO.framebufferHeight);
 +					
 +					GlStateManager.clearColor(RED_COLOUR_COMPONENT, GREEN_COLOUR_COMPONENT, BLUE_COLOUR_COMPONENT, 1.0f);
 +					GlStateManager.clearDepth(1.0D);
@@ -2004,9 +1939,9 @@
 +					GL13.glActiveTexture(GL13.GL_TEXTURE0);
 +					checkGLError("postact");
 +					// Set up the fragment shader uniforms for pass 2
-+					ARBShaderObjects.glUniform1fARB(_LanczosShader_texelWidthOffsetUniform, 0.0f);
-+					ARBShaderObjects.glUniform1fARB(_LanczosShader_texelHeightOffsetUniform, 1.0f / (3.0f * (float) framebufferEye0.framebufferHeight));
-+					ARBShaderObjects.glUniform1iARB(_LanczosShader_inputImageTextureUniform, 0);
++					ARBShaderObjects.glUniform1fARB(VRShaders._LanczosShader_texelWidthOffsetUniform, 0.0f);
++					ARBShaderObjects.glUniform1fARB(VRShaders._LanczosShader_texelHeightOffsetUniform, 1.0f / (3.0f * (float) framebufferEye0.framebufferHeight));
++					ARBShaderObjects.glUniform1iARB(VRShaders._LanczosShader_inputImageTextureUniform, 0);
 +					
 +					drawQuad();
 +
@@ -2210,7 +2145,7 @@
 +		System.out.println("[Minecrift] " + s);
 +	}
 +	
-+	
++	private float watereffect, portaleffect;
 +	private boolean renderSingleView(int eye, float nano) {
 +		boolean shouldupdate = false;
 +	
@@ -2243,71 +2178,132 @@
 +				}
 +			this.mcProfiler.endSection();
 +				
-+		if(currentPass != renderPass.Third) {	
-+			
-+			this.mcProfiler.startSection("postProcessing");
-+				doPostProcessing(frameIndex, nano);
-+				checkGLError("postpostprocess " + eye);
-+			this.mcProfiler.endSection();
++			if(currentPass != renderPass.Third && currentPass != renderPass.Center) {	
++				//copies the rendered scene to eye tex with fsaa and other postprocessing effects.
++				this.mcProfiler.startSection("postprocesseye");
 +
-+			if (currentPass != renderPass.Center) {
-+				this.mcProfiler.startSection("framebufferDraw");
-+					if(!vrSettings.useFsaa){
-+						if(currentPass == renderPass.Left)	
-+							framebufferEye0.bindFramebuffer(true); //draw to L eye tex
-+						else
-+							framebufferEye1.bindFramebuffer(true); //draw to R eye tex
-+						
-+						if(vrSettings.useFOVReduction && vrSettings.vrFreeMove){
-+							if( player !=null && (Math.abs(player.moveForward) > 0 || Math.abs(player.moveStrafing) > 0)) {	
-+							fov -=0.05;
-+							if(fov < 0.22) fov = 0.22f;
-+							} else {
-+								fov +=0.01;
-+								if(fov > 0.8) fov = 0.8f;				
-+							}
-+							ARBShaderObjects.glUseProgramObjectARB(_FOVReduction_shaderProgramId);
-+							ARBShaderObjects.glUniform1fARB(_FOVReduction_RadiusUniform, fov);
-+							ARBShaderObjects.glUniform1iARB(_FOVReduction_TextureUniform, 0);
-+							ARBShaderObjects.glUniform1fARB(_FOVReduction_BorderUniform, 0.06f);
-+							framebuffer.framebufferRender(framebufferEye0.framebufferWidth, framebufferEye0.framebufferHeight);
-+							ARBShaderObjects.glUseProgramObjectARB(0);
-+						}	
-+						else{
-+							framebuffer.framebufferRender(framebufferEye0.framebufferWidth, framebufferEye0.framebufferHeight);
-+						}
-+						
-+						checkGLError("post-draw " + eye);
++				Framebuffer source = this.framebuffer;
++
++				if (this.vrSettings.useFsaa)
++				{
++					this.mcProfiler.startSection("fsaa");
++					doFSAA();
++					source = fsaaLastPassResultFBO;
++					checkGLError("fsaa " + eye);
++					this.mcProfiler.endSection();
++				}
++
++				if(currentPass == renderPass.Left)	
++					framebufferEye0.bindFramebuffer(true); //draw to L eye tex
++				else
++					framebufferEye1.bindFramebuffer(true); //draw to R eye tex
++
++				if(vrSettings.useFOVReduction && vrSettings.vrFreeMove){
++					if( player !=null && (Math.abs(player.moveForward) > 0 || Math.abs(player.moveStrafing) > 0)) {	
++						fov -=0.05;
++						if(fov < 0.22) fov = 0.22f;
++					} else {
++						fov +=0.01;
++						if(fov > 0.8) fov = 0.8f;				
 +					}
++				} else {
++					fov = 1f;
++				}
++
++				ARBShaderObjects.glUseProgramObjectARB(VRShaders._FOVReduction_shaderProgramId);
++				ARBShaderObjects.glUniform1fARB(VRShaders._FOVReduction_RadiusUniform, fov);
++				ARBShaderObjects.glUniform1iARB(VRShaders._FOVReduction_TextureUniform, 0);
++				ARBShaderObjects.glUniform1fARB(VRShaders._FOVReduction_BorderUniform, 0.06f);
++
++				// VIVE start - screen flash when hurt instead of view tilt
++				float r = 0, k = 0;
++				// VIVE start - screen flash when hurt instead of view tilt
++				if (player!=null) {
++					
++					if(entityRenderer.itemRenderer.inwater){
++						watereffect = 1.3f;
++					} else {
++						if(watereffect == 1.3f) watereffect = 2.3f;
++						watereffect -= (1f/60f);
++						if(watereffect < 0) watereffect = 0;
++					}
++					
++					if(entityRenderer.itemRenderer.inportal){
++						portaleffect = 1f;
++					} else {
++						portaleffect -= (1f/60f);
++						if(portaleffect < 0) portaleffect = 0;
++					}
++					
++					float var3 = (float)player.hurtTime - nano;
++
++					float percent = 1 - player.getHealth() / player.getMaxHealth();
++					percent = percent * 0.15f;
++
++					if (var3>0.0f)
++					{
++						var3 /= (float) player.maxHurtTime;
++						var3 = percent + MathHelper.sin(var3 * var3 * var3 * var3 * (float) Math.PI) * 0.5f;
++						r = var3;
++					} else {
++						r = percent;
++						if (player.isCreative()) r = 0;
++					}
++					
++					if(entityRenderer.itemRenderer.inblock){
++						k = (float) entityRenderer.itemRenderer.inBlock;
++						
++					}
++				
++					if (player.isPlayerSleeping()){
++						if(k<0.8)k=.8f;
++					}
++					
++					if (MCOpenVR.isWalkingAbout){
++						if(k<0.8)k=.8f;
++					}
++						
++				} 
++				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_HealthAlpha, r);
++				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_BlackAlpha, k);
++				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_time, (float) (System.currentTimeMillis() - usageSnooper.getMinecraftStartTimeMillis()) / 1000);
++				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_waterAmplitude, watereffect);
++				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_portalAmplitutde, portaleffect);		
++				
++				source.framebufferRender(framebufferEye0.framebufferWidth, framebufferEye0.framebufferHeight);
++
++				ARBShaderObjects.glUseProgramObjectARB(0);
++
++				checkGLError("post-draw " + eye);
++
 +				this.mcProfiler.endSection();
-+			
++
 +				//this.mcProfiler.startSection("OpenGL Finish");
 +				//	GL11.glFinish();//DO NOT LEAVE THIS UNCOMMENTED
 +				//this.mcProfiler.endSection();
-+						
++
 +				this.mcProfiler.startSection("compositorSubmit");
-+					if(this.stereoProvider.isStereo())
-+						this.stereoProvider.endFrame(this.currentPass);
-+					else
-+						try {
-+							this.stereoProvider.endFrame();
-+						} catch (RenderConfigException e) {
-+							// TODO Auto-generated catch block
-+							e.printStackTrace();
-+						}
++				if(this.stereoProvider.isStereo())
++					this.stereoProvider.endFrame(this.currentPass);
++				else
++					try {
++						this.stereoProvider.endFrame();
++					} catch (RenderConfigException e) {
++						// TODO Auto-generated catch block
++						e.printStackTrace();
++					}
 +				this.mcProfiler.endSection();
 +			}
-+	
-+		}
-+			
-+			this.mcProfiler.startSection("mirror");
-+				shouldupdate =copyToMirror(this.currentPass);
-+				checkGLError("post-mirror " + eye);
-+			this.mcProfiler.endSection();
-+			
++
++
++		this.mcProfiler.startSection("mirror");
++			shouldupdate =copyToMirror(this.currentPass);
++			checkGLError("post-mirror " + eye);
++		this.mcProfiler.endSection();
++
 +		return shouldupdate;
 +	}
-+	
++
 +	public float getFrameDelta() {
 +		return frameDelta;
 +	}
