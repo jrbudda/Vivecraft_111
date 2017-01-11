@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/Minecraft.java
 +++ b/net/minecraft/client/Minecraft.java
-@@ -13,19 +13,56 @@
+@@ -13,20 +13,58 @@
  import com.mojang.authlib.minecraft.MinecraftSessionService;
  import com.mojang.authlib.properties.PropertyMap;
  import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
@@ -55,9 +55,11 @@
  import java.util.Date;
 +import java.util.Deque;
  import java.util.Iterator;
++import java.util.LinkedList;
  import java.util.List;
  import java.util.Locale;
-@@ -37,11 +74,13 @@
+ import java.util.Queue;
+@@ -37,11 +75,13 @@
  import java.util.concurrent.FutureTask;
  import javax.annotation.Nullable;
  import javax.imageio.ImageIO;
@@ -71,7 +73,7 @@
  import net.minecraft.client.entity.EntityPlayerSP;
  import net.minecraft.client.gui.FontRenderer;
  import net.minecraft.client.gui.GuiChat;
-@@ -69,7 +108,9 @@
+@@ -69,7 +109,9 @@
  import net.minecraft.client.particle.ParticleManager;
  import net.minecraft.client.renderer.BlockRendererDispatcher;
  import net.minecraft.client.renderer.EntityRenderer;
@@ -81,7 +83,7 @@
  import net.minecraft.client.renderer.ItemRenderer;
  import net.minecraft.client.renderer.OpenGlHelper;
  import net.minecraft.client.renderer.RenderGlobal;
-@@ -112,12 +153,14 @@
+@@ -112,12 +154,14 @@
  import net.minecraft.client.settings.GameSettings;
  import net.minecraft.client.settings.KeyBinding;
  import net.minecraft.client.shader.Framebuffer;
@@ -96,7 +98,7 @@
  import net.minecraft.entity.item.EntityArmorStand;
  import net.minecraft.entity.item.EntityBoat;
  import net.minecraft.entity.item.EntityEnderCrystal;
-@@ -146,6 +189,8 @@
+@@ -146,6 +190,8 @@
  import net.minecraft.server.MinecraftServer;
  import net.minecraft.server.integrated.IntegratedServer;
  import net.minecraft.server.management.PlayerProfileCache;
@@ -105,7 +107,7 @@
  import net.minecraft.stats.AchievementList;
  import net.minecraft.stats.IStatStringFormat;
  import net.minecraft.stats.StatisticsManager;
-@@ -170,11 +215,13 @@
+@@ -170,11 +216,13 @@
  import net.minecraft.util.math.BlockPos;
  import net.minecraft.util.math.MathHelper;
  import net.minecraft.util.math.RayTraceResult;
@@ -119,7 +121,7 @@
  import net.minecraft.world.EnumDifficulty;
  import net.minecraft.world.WorldProviderEnd;
  import net.minecraft.world.WorldProviderHell;
-@@ -183,25 +230,148 @@
+@@ -183,18 +231,28 @@
  import net.minecraft.world.storage.ISaveFormat;
  import net.minecraft.world.storage.ISaveHandler;
  import net.minecraft.world.storage.WorldInfo;
@@ -148,9 +150,8 @@
  import org.lwjgl.opengl.GLContext;
  import org.lwjgl.opengl.OpenGLException;
  import org.lwjgl.opengl.PixelFormat;
- import org.lwjgl.util.glu.GLU;
+@@ -202,6 +260,113 @@
  
-+
  public class Minecraft implements IThreadListener, ISnooperInfo
  {
 +	// VIVE START - teleport movement
@@ -235,12 +236,7 @@
 +	private Framebuffer mirrorFB = null;
 +	private Framebuffer fsaaFirstPassResultFBO;
 +	private Framebuffer fsaaLastPassResultFBO;
-+	private final float OCULUS_RED_COLOUR_COMPONENT = (1f/255f)*61f;
-+	private final float OCULUS_GREEN_COLOUR_COMPONENT = (1f/255f)*61f;
-+	private final float OCULUS_BLUE_COLOUR_COMPONENT = (1f/255f)*61f;
-+	public float RED_COLOUR_COMPONENT = OCULUS_RED_COLOUR_COMPONENT;
-+	public float GREEN_COLOUR_COMPONENT = OCULUS_GREEN_COLOUR_COMPONENT;
-+	public float BLUE_COLOUR_COMPONENT = OCULUS_BLUE_COLOUR_COMPONENT;
++
 +	private boolean firstInit = true;
 +	public boolean showSplashScreen = true;
 +	public long splashTimer1 = 0;
@@ -261,14 +257,14 @@
 +	 * The minecriftVerString will be automatically updated by the build scripts, do not modify here.
 +	 * Modify minecriftversion.py in root minecrift dir.
 +	 */
-+    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-4";
++    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-4Real";
 +	/* end version */
 +	/** END MINECRIFT */
 +    
      private static final Logger LOGGER = LogManager.getLogger();
      private static final ResourceLocation LOCATION_MOJANG_PNG = new ResourceLocation("textures/gui/title/mojang.png");
      public static final boolean IS_RUNNING_ON_MAC = Util.getOSType() == Util.EnumOS.OSX;
-@@ -217,7 +387,7 @@
+@@ -217,7 +382,7 @@
      private ServerData currentServerData;
  
      /** The RenderEngine instance used by Minecraft */
@@ -277,7 +273,7 @@
  
      /**
       * Set to 'this' in Minecraft constructor; used by some settings get methods
-@@ -329,7 +499,7 @@
+@@ -329,7 +494,7 @@
      private final boolean jvm64bit;
      private final boolean isDemo;
      @Nullable
@@ -286,7 +282,7 @@
      private boolean integratedServerIsRunning;
  
      /** The profiler instance */
-@@ -349,7 +519,7 @@
+@@ -349,7 +514,7 @@
      private ItemColors itemColors;
      private Framebuffer framebufferMc;
      private TextureMap textureMapBlocks;
@@ -295,7 +291,7 @@
      private MusicTicker mcMusicTicker;
      private ResourceLocation mojangLogo;
      private final MinecraftSessionService sessionService;
-@@ -382,6 +552,25 @@
+@@ -382,6 +547,30 @@
  
      /** Profiler currently displayed in the debug screen pie chart */
      private String debugProfilerName = "root";
@@ -309,6 +305,11 @@
 +	public renderPass currentPass;
 +	private boolean lastClick;
 +
++	public int hmdAvgLength = 90;
++	public LinkedList<Vec3d> hmdPosSamples = new LinkedList<Vec3d>();
++	public LinkedList<Float> hmdYawSamples = new LinkedList<Float>();
++	private float hmdYawTotal;
++	private float hmdYawLast;
 +	
 +	public enum renderPass{
 +		Left, Right, Center, Third;
@@ -537,7 +538,7 @@
          {
              while (!this.scheduledTasks.isEmpty())
              {
-@@ -1138,96 +1411,200 @@
+@@ -1138,98 +1411,239 @@
              }
          }
  
@@ -689,7 +690,42 @@
 +			updateSoundListener(); // we update the sound listener from the HMD info
 +		this.mcProfiler.endSection();
 +	
++		this.mcProfiler.startSection("hmdSampling");
 +
++		if (hmdPosSamples.size() == hmdAvgLength)
++			hmdPosSamples.removeFirst();
++		if (hmdYawSamples.size() == hmdAvgLength)
++			hmdYawSamples.removeFirst();
++
++		float yaw = roomScale.getHMDYaw_World();
++		if (yaw < 0) yaw += 360;
++		hmdYawTotal += angleDiff(yaw, hmdYawLast);
++		hmdYawLast = yaw;
++		if (Math.abs(angleNormalize(hmdYawTotal) - hmdYawLast) > 1 || hmdYawTotal > 100000) {
++			hmdYawTotal = hmdYawLast;
++			System.out.println("HMD yaw desync/overflow corrected");
++		}
++
++		hmdPosSamples.add(roomScale.getHMDPos_World());
++		
++		float yawAvg = 0;
++		if(hmdYawSamples.size() > 0){
++			for (float f : hmdYawSamples) {
++				yawAvg += f;
++			}
++			yawAvg /= hmdYawSamples.size();
++		}
++		
++		if( Math.abs((hmdYawTotal - yawAvg)) > 20) trigger = true;
++		
++		if( Math.abs((hmdYawTotal - yawAvg)) < 1) trigger = false;
++		
++		if(trigger)
++			hmdYawSamples.add(hmdYawTotal);
++
++		this.mcProfiler.endSection();
++		
++		
 +		float nano = this.timer.renderPartialTicks;
 +		
 +
@@ -752,7 +788,7 @@
 +		try {
 +			this.stereoProvider.endFrame();
 +		} catch (Exception e) {
-+			LOGGER.error(e);
++			LOGGER.error(e.toString());
 +		}
 +
 +		mcProfiler.endSection();
@@ -824,8 +860,12 @@
 +	mcProfiler.startSection("Idle");
      }
  
++    private boolean trigger;
++    
      public void updateDisplay()
-@@ -1342,7 +1719,7 @@
+     {
+         this.mcProfiler.startSection("display_update");
+@@ -1342,7 +1756,7 @@
      /**
       * Parameter appears to be unused
       */
@@ -834,7 +874,7 @@
      {
          if (this.mcProfiler.profilingEnabled)
          {
-@@ -1479,7 +1856,8 @@
+@@ -1479,7 +1893,8 @@
                  }
  
                  this.inGameHasFocus = true;
@@ -844,7 +884,7 @@
                  this.displayGuiScreen((GuiScreen)null);
                  this.leftClickCounter = 10000;
              }
-@@ -1514,16 +1892,16 @@
+@@ -1514,16 +1929,16 @@
          }
      }
  
@@ -864,7 +904,7 @@
              {
                  BlockPos blockpos = this.objectMouseOver.getBlockPos();
  
-@@ -1533,25 +1911,26 @@
+@@ -1533,25 +1948,26 @@
                      this.player.swingArm(EnumHand.MAIN_HAND);
                  }
              }
@@ -901,7 +941,7 @@
              }
              else if (!this.player.isRowingBoat())
              {
-@@ -1567,39 +1946,45 @@
+@@ -1567,39 +1983,45 @@
                          if (this.world.getBlockState(blockpos).getMaterial() != Material.AIR)
                          {
                              this.playerController.clickBlock(blockpos, this.objectMouseOver.sideHit);
@@ -958,7 +998,7 @@
                  }
  
                  for (EnumHand enumhand : EnumHand.values())
-@@ -1723,27 +2108,12 @@
+@@ -1723,27 +2145,12 @@
       */
      private void resize(int width, int height)
      {
@@ -988,7 +1028,7 @@
      }
  
      /**
-@@ -1997,6 +2367,14 @@
+@@ -1997,6 +2404,14 @@
                  this.currentScreen.handleKeyboardInput();
              }
  
@@ -1003,7 +1043,7 @@
              boolean flag = Keyboard.getEventKeyState();
  
              if (flag)
-@@ -2006,6 +2384,8 @@
+@@ -2006,6 +2421,8 @@
                      this.entityRenderer.switchUseShader();
                  }
  
@@ -1012,7 +1052,7 @@
                  boolean flag1 = false;
  
                  if (this.currentScreen == null)
-@@ -2013,6 +2393,7 @@
+@@ -2013,6 +2430,7 @@
                      if (i == 1)
                      {
                          this.displayInGameMenu();
@@ -1020,7 +1060,7 @@
                      }
  
                      flag1 = Keyboard.isKeyDown(61) && this.processKeyF3(i);
-@@ -2020,7 +2401,9 @@
+@@ -2020,7 +2438,9 @@
  
                      if (i == 59)
                      {
@@ -1031,7 +1071,7 @@
                      }
                  }
  
-@@ -2243,11 +2626,26 @@
+@@ -2243,11 +2663,26 @@
  
          if (flag)
          {
@@ -1063,7 +1103,7 @@
              if (this.currentScreen == null && this.gameSettings.keyBindCommand.isPressed())
              {
                  this.displayGuiScreen(new GuiChat("/"));
-@@ -2256,9 +2654,10 @@
+@@ -2256,9 +2691,10 @@
  
          if (this.player.isHandActive())
          {
@@ -1076,7 +1116,7 @@
              }
  
              label472:
-@@ -2284,17 +2683,27 @@
+@@ -2284,17 +2720,27 @@
                  }
              }
          }
@@ -1112,7 +1152,7 @@
  
              while (this.gameSettings.keyBindPickBlock.isPressed())
              {
-@@ -2302,12 +2711,12 @@
+@@ -2302,12 +2748,12 @@
              }
          }
  
@@ -1128,7 +1168,7 @@
      }
  
      private void runTickMouse() throws IOException
-@@ -2328,6 +2737,13 @@
+@@ -2328,6 +2774,13 @@
                      KeyBinding.onTick(i - 100);
                  }
              }
@@ -1142,7 +1182,7 @@
  
              long j = getSystemTime() - this.systemTime;
  
-@@ -2382,6 +2798,7 @@
+@@ -2382,6 +2835,7 @@
       */
      public void launchIntegratedServer(String folderName, String worldName, @Nullable WorldSettings worldSettingsIn)
      {
@@ -1150,7 +1190,7 @@
          this.loadWorld((WorldClient)null);
          System.gc();
          ISaveHandler isavehandler = this.saveLoader.getSaveLoader(folderName, false);
-@@ -2444,7 +2861,7 @@
+@@ -2444,7 +2898,7 @@
                  ;
              }
          }
@@ -1159,7 +1199,7 @@
          this.displayGuiScreen(new GuiScreenWorking());
          SocketAddress socketaddress = this.theIntegratedServer.getNetworkSystem().addLocalEndpoint();
          NetworkManager networkmanager = NetworkManager.provideLocalClient(socketaddress);
-@@ -2459,6 +2876,9 @@
+@@ -2459,6 +2913,9 @@
       */
      public void loadWorld(@Nullable WorldClient worldClientIn)
      {
@@ -1169,7 +1209,7 @@
          this.loadWorld(worldClientIn, "");
      }
  
-@@ -2608,6 +3028,7 @@
+@@ -2608,6 +3065,7 @@
          return theMinecraft == null || !theMinecraft.gameSettings.hideGUI;
      }
  
@@ -1177,7 +1217,7 @@
      public static boolean isFancyGraphicsEnabled()
      {
          return theMinecraft != null && theMinecraft.gameSettings.fancyGraphics;
-@@ -2624,7 +3045,7 @@
+@@ -2624,7 +3082,7 @@
      /**
       * Called when user clicked he's mouse middle button (pick block)
       */
@@ -1186,7 +1226,7 @@
      {
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
-@@ -3419,4 +3840,1122 @@
+@@ -3419,4 +3877,1041 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }
@@ -1547,10 +1587,6 @@
 +			print(this.guiFramebuffer.toString());
 +			this.checkGLError("GUI framebuffer setup");
 +
-+			this.framebuffer.setFramebufferColor(RED_COLOUR_COMPONENT, GREEN_COLOUR_COMPONENT, BLUE_COLOUR_COMPONENT, 0.0F);
-+			this.framebufferEye0.setFramebufferColor(RED_COLOUR_COMPONENT, GREEN_COLOUR_COMPONENT, BLUE_COLOUR_COMPONENT, 0.0F);
-+			this.framebufferEye1.setFramebufferColor(RED_COLOUR_COMPONENT, GREEN_COLOUR_COMPONENT, BLUE_COLOUR_COMPONENT, 0.0F);
-+			this.guiFramebuffer.setFramebufferColor(RED_COLOUR_COMPONENT, GREEN_COLOUR_COMPONENT, BLUE_COLOUR_COMPONENT, 0.0F);
 +			checkGLError("post color");
 +
 +			entityRenderer.setupClipPlanes();
@@ -1897,7 +1933,7 @@
 +					// Bind the FBO Texture
 +					this.framebuffer.bindFramebufferTexture();
 +
-+					GlStateManager.clearColor(RED_COLOUR_COMPONENT, GREEN_COLOUR_COMPONENT, BLUE_COLOUR_COMPONENT, 1.0f);
++					GlStateManager.clearColor(1, 1, 1, 1.0f);
 +					GlStateManager.clearDepth(1.0D);
 +					GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);            // Clear Screen And Depth Buffer on the framebuffer
 +
@@ -1931,7 +1967,7 @@
 +					
 +					GL11.glViewport(0, 0,fsaaLastPassResultFBO.framebufferWidth, fsaaLastPassResultFBO.framebufferHeight);
 +					
-+					GlStateManager.clearColor(RED_COLOUR_COMPONENT, GREEN_COLOUR_COMPONENT, BLUE_COLOUR_COMPONENT, 1.0f);
++					GlStateManager.clearColor(1, 1, 1, 1.0f);
 +					GlStateManager.clearDepth(1.0D);
 +					GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 +					checkGLError("postclear");
@@ -1976,100 +2012,6 @@
 +		GL11.glEnd();
 +	}
 +
-+	//unused
-+	public void showSplash(Framebuffer rendertarget)
-+	{
-+
-+		final int SPLASH_TIMEOUT_MS = this.stereoProvider.isStereo() ? 2000 : 1500;
-+		final int SPLASH_FADE_TIMEOUT_MS = this.stereoProvider.isStereo() ? 1000 : 0;
-+		splashFadeAlpha = 0f;
-+		final long currentTimeMs = System.currentTimeMillis();
-+
-+		// Start display splash timer (only after any calibration has finished)
-+		if (splashTimer1 == 0 && splashTimer2 == 0)
-+		{
-+			splashTimer1 = currentTimeMs;
-+		}
-+
-+		RED_COLOUR_COMPONENT = 1f;
-+		GREEN_COLOUR_COMPONENT = 1f;
-+		BLUE_COLOUR_COMPONENT = 1f;
-+
-+		// Start fade timer
-+		if (splashTimer1 != 0 && (currentTimeMs > splashTimer1 + SPLASH_TIMEOUT_MS))
-+		{
-+			splashTimer1 = 0;
-+			splashTimer2 = currentTimeMs;
-+		}
-+
-+		// Continue or end fade
-+		if (splashTimer2 != 0 && (currentTimeMs < splashTimer2 + SPLASH_FADE_TIMEOUT_MS))
-+		{
-+			splashFadeAlpha = (100f / SPLASH_FADE_TIMEOUT_MS) * (currentTimeMs - splashTimer2) * 0.01f;
-+		}
-+		else if (splashTimer2 != 0 && (currentTimeMs >= splashTimer2 + SPLASH_FADE_TIMEOUT_MS))
-+		{
-+			this.showSplashScreen = false;
-+			splashFadeAlpha = this.stereoProvider.isStereo() ? 1f : 0f;
-+			RED_COLOUR_COMPONENT = OCULUS_RED_COLOUR_COMPONENT;
-+			GREEN_COLOUR_COMPONENT = OCULUS_GREEN_COLOUR_COMPONENT;
-+			BLUE_COLOUR_COMPONENT = OCULUS_BLUE_COLOUR_COMPONENT;
-+		}
-+
-+		int existingScale = gameSettings.guiScale;
-+		gameSettings.guiScale = 0;
-+		ScaledResolution var1 = new ScaledResolution(this);
-+				int var2 = var1.getScaleFactor();
-+		splash = guiFramebuffer;
-+		GL11.glMatrixMode(GL11.GL_PROJECTION);
-+		GL11.glLoadIdentity();
-+		GL11.glOrtho(0.0D, (double) var1.getScaledWidth(), (double) var1.getScaledHeight(), 0.0D, 1000.0D, 3000.0D);
-+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-+		GL11.glLoadIdentity();
-+		GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
-+		GL11.glDisable(GL11.GL_LIGHTING);
-+		GL11.glDisable(GL11.GL_FOG);
-+		GlStateManager.disableDepth();
-+		GlStateManager.enableTexture2D();
-+//			
-+//		try
-+//		{
-+//			if (this.mojangLogo == null)
-+//				this.mojangLogo = this.renderEngine.getDynamicTextureLocation("logo", new DynamicTexture(ImageIO.read(this.mcDefaultResourcePack.getInputStream(this.locationMojangPng))));
-+//			this.renderEngine.bindTexture(this.mojangLogo);
-+//		}
-+//		catch (IOException var7)
-+//		{
-+//		//	logger.error("Unable to load logo: " + locationMojangPng, var7);
-+//		}
-+
-+//		Tessellator var4 = Tessellator.getInstance();
-+//		var4.startDrawingQuads();
-+//		var4.setColorOpaque_I(16777215);
-+//		var4.addVertexWithUV(0.0D, (double)this.displayHeight, 0.0D, 0.0D, 0.0D);
-+//		var4.addVertexWithUV((double)this.displayWidth, (double)this.displayHeight, 0.0D, 0.0D, 0.0D);
-+//		var4.addVertexWithUV((double) this.displayWidth, 0.0D, 0.0D, 0.0D, 0.0D);
-+//		var4.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-+//		var4.draw();
-+//		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-+//		var4.setColorOpaque_I(16777215);
-+//		short var5 = 256;
-+//		short var6 = 256;
-+//		this.scaledTessellator((var1.getScaledWidth() - var5) / 2, (var1.getScaledHeight() - var6) / 2, 0, 0, var5, var6);
-+//		GL11.glDisable(GL11.GL_LIGHTING);
-+//		GL11.glDisable(GL11.GL_FOG);
-+//		rendertarget.bindFramebuffer(true);
-+//		splash.framebufferRender(var1.getScaledWidth() * var2, var1.getScaledHeight() * var2);
-+//		GL11.glEnable(GL11.GL_ALPHA_TEST);
-+//		GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-+		//GL11.glFlush();
-+		//Display.update();
-+		gameSettings.guiScale = existingScale;
-+		//this.func_147120_f();
-+		
-+	}
-+	
-+	
 +	/**
 +	 * Sets the listener of sounds
 +	 */
@@ -2218,6 +2160,7 @@
 +				// VIVE start - screen flash when hurt instead of view tilt
 +				float r = 0, k = 0;
 +				// VIVE start - screen flash when hurt instead of view tilt
++				float time =  (float) (System.currentTimeMillis() - usageSnooper.getMinecraftStartTimeMillis()) / 1000;
 +				if (player!=null) {
 +					
 +					if(entityRenderer.itemRenderer.inwater){
@@ -2227,6 +2170,8 @@
 +						watereffect -= (1f/60f);
 +						if(watereffect < 0) watereffect = 0;
 +					}
++					
++					if(Config.isShaders()) watereffect = 0; //dont stack.
 +					
 +					if(entityRenderer.itemRenderer.inportal){
 +						portaleffect = 1f;
@@ -2238,7 +2183,7 @@
 +					float var3 = (float)player.hurtTime - nano;
 +
 +					float percent = 1 - player.getHealth() / player.getMaxHealth();
-+					percent = percent * 0.15f;
++					percent = percent * 0.35f;
 +
 +					if (var3>0.0f)
 +					{
@@ -2246,7 +2191,7 @@
 +						var3 = percent + MathHelper.sin(var3 * var3 * var3 * var3 * (float) Math.PI) * 0.5f;
 +						r = var3;
 +					} else {
-+						r = percent;
++						r =  (float) (percent * Math.abs(Math.sin(2.5f*time/(1-percent+.1) )));
 +						if (player.isCreative()) r = 0;
 +					}
 +					
@@ -2266,7 +2211,7 @@
 +				} 
 +				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_HealthAlpha, r);
 +				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_BlackAlpha, k);
-+				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_time, (float) (System.currentTimeMillis() - usageSnooper.getMinecraftStartTimeMillis()) / 1000);
++				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_time,time);
 +				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_waterAmplitude, watereffect);
 +				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_portalAmplitutde, portaleffect);		
 +				
@@ -2306,6 +2251,20 @@
 +
 +	public float getFrameDelta() {
 +		return frameDelta;
++	}
++	
++	private float angleNormalize(float angle) {
++		angle %= 360;
++		if (angle < 0) angle += 360;
++		return angle;
++	}
++	
++	private float angleDiff(float a, float b) {
++		float d = Math.abs(a - b) % 360;
++		float r = d > 180 ? 360 - d : d;
++		
++		int sign = (a - b >= 0 && a - b <= 180) || (a - b <=-180 && a- b>= -360) ? 1 : -1;
++		return r * sign;
 +	}
 +	
  }

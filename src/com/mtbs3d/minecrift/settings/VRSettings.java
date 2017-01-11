@@ -156,6 +156,7 @@ public class VRSettings
     public float manualCalibration=-1;
     public float playerEyeHeight = 1.62f;
     public boolean vehicleRotation = false;
+	public float vrWorldRotationCached;
     
     public VRSettings( Minecraft minecraft, File dataDir )
     {

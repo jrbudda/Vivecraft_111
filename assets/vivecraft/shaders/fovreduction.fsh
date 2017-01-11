@@ -12,7 +12,6 @@ uniform float redalpha;
 uniform float blackalpha;
 
 const vec4 black = vec4(0, 0, 0, 1.0);
-const vec4 red = vec4(1, 0, 0, 1.0);
 const float pi = 3.14159265;
 
 void main(){
@@ -21,7 +20,7 @@ void main(){
     
 	if(portal > 0){ //swirly whirly
 		float ts = gl_TexCoord[0].s;
-		vec2 mod_texcoord = gl_TexCoord[0].st + vec2(water*.005*cos(portaltime + 20*ts*pi, water*.005*sin(portaltime + 30*ts*pi));
+		vec2 mod_texcoord = gl_TexCoord[0].st + vec2(water*.005*cos(portaltime + 20*ts*pi), water*.005*sin(portaltime + 30*ts*pi));
 		bkg_color = texture2D(tex0, mod_texcoord);
 	}
 
@@ -32,6 +31,7 @@ void main(){
 	}
 	
 	if(redalpha > 0){ //ouchy wouchy
+		vec4 red = vec4(bkg_color.r, 0, 0, 1.0);
 		bkg_color  = mix(bkg_color, red, redalpha);
 	}
 

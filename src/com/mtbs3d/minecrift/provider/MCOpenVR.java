@@ -79,6 +79,7 @@ public class MCOpenVR
 	static VR_IVROverlay_FnTable vrOverlay;
 	static VR_IVRSettings_FnTable vrSettings;
     static VR_IVRRenderModels_FnTable vrRenderModels;
+	static VR_IVRChaperone_FnTable vrChaperone;
 	 
 	private static IntBuffer hmdErrorStore;
 	private static TrackedDevicePose_t.ByReference hmdTrackedDevicePoseReference;
@@ -319,6 +320,7 @@ public class MCOpenVR
 			initOpenVROverlay() ;	
 			initOpenVROSettings();
 			initOpenVRRenderModels();
+			initOpenVRChaperone();
 		} catch (Exception e) {
 			e.printStackTrace();
 			initSuccess = false;
@@ -478,6 +480,17 @@ public class MCOpenVR
 			}
 		}
 	
+		private static void initOpenVRChaperone() throws Exception {
+			vrChaperone = new VR_IVRChaperone_FnTable(JOpenVRLibrary.VR_GetGenericInterface(JOpenVRLibrary.IVRChaperone_Version, hmdErrorStore));
+			if (vrChaperone != null && hmdErrorStore.get(0) == 0) {
+				vrChaperone.setAutoSynch(false);
+				vrChaperone.read();
+				System.out.println("OpenVR chaperone initialized.");
+			} else {
+				throw new Exception(jopenvr.JOpenVRLibrary.VR_GetVRInitErrorAsEnglishDescription(hmdErrorStore.get(0)).getString(0));
+			}
+		}
+		
 		private static void getTipTransforms(){
 			int count = vrRenderModels.GetRenderModelCount.apply();
 			Pointer pointer = new Memory(JOpenVRLibrary.k_unMaxPropertyStringSize);
@@ -2097,11 +2110,16 @@ public class MCOpenVR
 	}
 
 	/**
-	 * Gets the Roll(Z) from YXZ Euler angle representation of orientation
 	 *
-	 * @return The Head Roll, in degrees
+	 * @return Play area size or null if not valid
 	 */
-	
+	public static float[] getPlayAreaSize() {
+		FloatBuffer bufX = FloatBuffer.allocate(1);
+		FloatBuffer bufZ = FloatBuffer.allocate(1);
+		byte valid = vrChaperone.GetPlayAreaSize.apply(bufX, bufZ);
+		if (valid == 1) return new float[]{bufX.get(0), bufZ.get(0)};
+		return null;
+	}
 
 	/**
 	 * Gets the orientation quaternion
@@ -2136,12 +2154,14 @@ public class MCOpenVR
 			//TODO reset scale things
 			MCOpenVR.guiScale = 2.0f;
 			mc.vrPlayer.worldScale = 1;
+			mc.vrSettings.vrWorldRotationCached = mc.vrSettings.vrWorldRotation;
+			mc.vrSettings.vrWorldRotation = 0;
 			mc.vrPlayer.worldRotationRadians = (float) Math.toRadians( mc.vrSettings.vrWorldRotation);
+			float[] playArea = getPlayAreaSize();
 			guiPos_World = new Vector3f(
 					(float) (0 + mc.vrPlayer.getRoomOriginPos_World().xCoord),
 					(float) (1.3f + mc.vrPlayer.getRoomOriginPos_World().yCoord),
-					(float) (-1.3f + mc.vrPlayer.getRoomOriginPos_World().zCoord));
-			
+					(float) ((playArea != null ? -playArea[1] / 2 : 0) - 0.3f + mc.vrPlayer.getRoomOriginPos_World().zCoord));			
 			
 			guiRotationPose = new Matrix4f();
 			guiRotationPose.M[0][0] = guiRotationPose.M[1][1] = guiRotationPose.M[2][2] = guiRotationPose.M[3][3] = 1.0F;
@@ -2151,7 +2171,10 @@ public class MCOpenVR
 			
 			return;
 		} else { //these dont update when screen open.
-
+			if (mc.vrSettings.vrWorldRotationCached != 0) {
+				mc.vrSettings.vrWorldRotation = mc.vrSettings.vrWorldRotationCached;
+				mc.vrSettings.vrWorldRotationCached = 0;
+			}
 		}		
 		
 		// i am dead view
