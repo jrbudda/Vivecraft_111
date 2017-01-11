@@ -1226,7 +1226,7 @@
      {
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
-@@ -3419,4 +3877,1041 @@
+@@ -3419,4 +3877,1042 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }
@@ -1355,6 +1355,7 @@
 +								
 +						Framebuffer source = this.framebufferEye0;
 +						if(currentPass2 == renderPass.Left) source = framebufferEye1;
++						if(thirdPass) source = framebuffer;
 +						
 +						source.framebufferRenderExt((displayWidth / 2) * i, displayWidth / ports, displayHeight, 0, true);
 +

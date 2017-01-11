@@ -49,7 +49,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
     /* DO NOT RENAME THESE STRING CONSTS - THEY ARE USED IN (AND THE VALUES UPDATED BY) THE AUTOMATED BUILD SCRIPTS */
     private static final String MINECRAFT_VERSION = "1.11.2";
     private static final String MC_VERSION        = "1.11.2";
-    private static final String MC_MD5            = "";
+    private static final String MC_MD5            = "9dd50a2e6a74f7e186354250c2f2c635";
     private static final String OF_LIB_PATH       = "libraries/optifine/OptiFine/";
     private static final String OF_FILE_NAME      = "1.11.2_HD_U_B5";
     private static final String OF_JSON_NAME      = "1.11.2_HD_U_B5";
@@ -315,17 +315,21 @@ public class Installer extends JPanel  implements PropertyChangeListener
                     } catch (Exception e) { }
                 }
             }
-            if (success && md5 != null) {
-                String OnDiskMd5 = GetMd5(fo);
-                if (OnDiskMd5 == null || !OnDiskMd5.equalsIgnoreCase(md5)) {
-                    System.out.println("Bad md5 for " + fo.getName() + "!");
+              if (success) {
+                if (!checkMD5(fo, md5)){
+				JOptionPane.showMessageDialog(null, "Bad md5 for " + fo.getName() + "!" + " actual: " + GetMd5(fo).toLowerCase(),"Error downloading", JOptionPane.ERROR_MESSAGE);
                     fo.delete();
                     success = false;
                 }
-            }
-
+			}
             return success;
         }
+
+		private boolean checkMD5(File a, String b){
+			if (a.exists() == false) return false;
+			if(b == null) return true;
+			return GetMd5(a).equalsIgnoreCase(b);
+		}
 
         private String GetMd5(File fo)
         {
@@ -554,50 +558,42 @@ public class Installer extends JPanel  implements PropertyChangeListener
         }
 
         private boolean SetupMinecraftAsLibrary() {
-        /*    File lib_dir = new File(targetDir,"libraries/net/minecraft/Minecraft/"+MINECRAFT_VERSION );
-            lib_dir.mkdirs();
-            File lib_file = new File(lib_dir,"Minecraft-"+MINECRAFT_VERSION+".jar");
-            File mc_jar = null;
-            if( lib_file.exists() && lib_file.length() > 4500000 )return true; //TODO: should md5sum it here, I suppose
+		String s = "";
             try {
-                // Download the minecraft jar (we don't wont to require that it has previously been downloaded in Minecraft)
+				File mc_jar = null;
+				String minecriftVersionName = "vivecraft-" + version + mod;
+				s+=		minecriftVersionName;
+				File tar = new File(targetDir, "versions" + File.separator + minecriftVersionName + File.separator +  minecriftVersionName + ".jar");
+				s+=MC_MD5 + " " + GetMd5(tar);
+				if(checkMD5(tar, MC_MD5)) return true;
+				
+				if(mc_jar == null){
+					File vanilla = new File(targetDir, "versions" + File.separator + MINECRAFT_VERSION + File.separator + MINECRAFT_VERSION+".jar");
+					s+=MC_MD5 + " " + GetMd5(vanilla);
+					if(checkMD5(vanilla, MC_MD5)) mc_jar = vanilla;
+				}
 
-                mc_jar = new File(tempDir + "/" + MINECRAFT_VERSION + ".jar");
-                if (!mc_jar.exists()) {
-                    if (!downloadFile(mc_url, mc_jar, MC_MD5)) {
-                        finalMessage += " Error: Failed to download " + MINECRAFT_VERSION + ".jar from " + mc_url;
-                        return false;
-                    }
-                }
-                ZipInputStream input_jar = new ZipInputStream(new FileInputStream(mc_jar));
-                ZipOutputStream lib_jar= new ZipOutputStream(new FileOutputStream(lib_file));
+				if(mc_jar == null){
+					// Download the minecraft jar (we don't wont to require that it has previously been downloaded in Minecraft)
+					mc_jar = new File(tempDir + File.separator + MINECRAFT_VERSION + ".jar");
+					if (!mc_jar.exists() || !checkMD5(mc_jar, MC_MD5)) {
+						if (!downloadFile(mc_url, mc_jar, MC_MD5)) {
+							finalMessage += " Error: Failed to download " + MINECRAFT_VERSION + ".jar from " + mc_url;
+							return false;
+						}
+					}
+				}
+					
+				if(mc_jar == null) return false;
 
-                ZipEntry ze = null;
-                byte data[] = new byte[1024];
-                while ((ze = input_jar.getNextEntry()) != null) {
-                    if(!ze.isDirectory() && !ze.getName().contains("META-INF"))
-                    {
-                        lib_jar.putNextEntry(new ZipEntry(ze.getName()));
-                        int d;
-                        while( (d = input_jar.read(data)) != -1 )
-                        {
-                            lib_jar.write(data, 0, d);
-
-                        }
-                        lib_jar.closeEntry();
-                        input_jar.closeEntry();
-                    }
-                }
-                input_jar.close();
-                lib_jar.close();
-                return true;
+			InputStream src = new FileInputStream(mc_jar);
+			return copyInputStreamToFile(src, tar);
+					
             } catch (Exception e) {
                 finalMessage += " Error: "+e.getLocalizedMessage();
+				return false;
             }
-            return false; 
-			*/
-			return true;
-        }
+	}
 
         private boolean ExtractVersion() {
             if( jar_id != null )
@@ -988,13 +984,14 @@ public class Installer extends JPanel  implements PropertyChangeListener
             }
             
             monitor.setProgress(50);
-            monitor.setNote("Setting up Vivecraft as a library...");
+            monitor.setNote("Checking for base game...");
 			
-            finalMessage = "Failed: Couldn't setup Vivecraft "+MC_VERSION+" as library. Have you run "+MINECRAFT_VERSION+" at least once yet?";
+     
             if(!SetupMinecraftAsLibrary())
             {
-                monitor.close();
-                return null;
+            JOptionPane.showMessageDialog(null,
+                                         "Could not locate or download base game. The Mincraft Launcher will attempt to download it.",
+                                         "Warning!",JOptionPane.WARNING_MESSAGE);
             }
             // VIVE START - install openVR
             monitor.setProgress(52);
@@ -1444,7 +1441,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
         
         
         this.add(Box.createVerticalGlue());
-        JLabel github = linkify("Vivecraft is open source. find it on Github","https://github.com/jrbudda/Vivecraft_110","Vivecraft 1.10 Github");
+        JLabel github = linkify("Vivecraft is open source. find it on Github","https://github.com/jrbudda/Vivecraft_111","Vivecraft 1.11 Github");
         JLabel wiki = linkify("Vivecraft home page","http://www.vivecraft.org","Vivecraft Home");
         JLabel donate = linkify("If you think Vivecraft is awesome, please consider donating.","https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=JVBJLN5HJJS52&lc=US&item_name=jrbudda&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)","jrbudda's Paypal");
         JLabel optifine = linkify("Vivecraft includes OptiFine for performance. Consider donating to them as well.","http://optifine.net/donate.php","http://optifine.net/donate.php");

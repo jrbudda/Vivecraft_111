@@ -1349,7 +1349,7 @@ public class MCOpenVR
 		}
 		
 		if(pressedRAppMenu  && !lastpressedRAppMenu) { 
-			if(mc.gameSettings.keyBindSneak.isKeyDown() && mc.vrSettings.displayMirrorMode == mc.vrSettings.MIRROR_MIXED_REALITY){				
+			if(mc.gameSettings.keyBindPickBlock.isKeyDown() && mc.vrSettings.displayMirrorMode == mc.vrSettings.MIRROR_MIXED_REALITY){				
 				VRHotkeys.snapMRCam(mc);	
 			}
 		}
@@ -1660,7 +1660,7 @@ public class MCOpenVR
 		}
 
 		if(pressedA  && !lastpressedA) { //handle menu directly
-			if(mc.gameSettings.keyBindSneak.isKeyDown() && mc.vrSettings.displayMirrorMode == mc.vrSettings.MIRROR_MIXED_REALITY){				
+			if(mc.gameSettings.keyBindPickBlock.isKeyDown() && mc.vrSettings.displayMirrorMode == mc.vrSettings.MIRROR_MIXED_REALITY){				
 				VRHotkeys.snapMRCam(mc);	
 			}
 		}
