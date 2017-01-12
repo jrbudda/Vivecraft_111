@@ -21,6 +21,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Minecraft.renderPass;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityMinecart;
@@ -111,7 +112,8 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	    roomOrigin = new Vec3d(x, y, z);
         lastRoomUpdateTime = Minecraft.getMinecraft().stereoProvider.getCurrentTimeSecs();
         Minecraft.getMinecraft().entityRenderer.irpUpdatedThisFrame = onframe;
-    }
+      //  System.out.println(x + " " + y + " " + z);
+    } 
     
     private int roomScaleMovementDelay = 0;
     
@@ -134,19 +136,26 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         if(onFrame){
         	x = mc.entityRenderer.interpolatedPlayerPos.xCoord - campos.xCoord;
          
-        	if(player.isRiding() && !player.isRidingHorse()) 
-        		y = player.getRidingEntity().posY;
-            else
+        	if(player.isRiding()){
+        		if (player.getRidingEntity() instanceof EntityHorse)
+        			y = player.getRidingEntity().posY + player.getRidingEntity().getMountedYOffset();
+        		else
+        			y = player.getRidingEntity().posY;
+        	} else
             	y = mc.entityRenderer.interpolatedPlayerPos.yCoord;
 
           	z = mc.entityRenderer.interpolatedPlayerPos.zCoord - campos.zCoord;
         } else {
-             x = player.posX - campos.xCoord;
-             if(player.isRiding() && !player.isRidingHorse()) 
-            	 y = player.getRidingEntity().posY;
-             else
-            	 y = player.posY;
-             z = player.posZ - campos.zCoord;
+        	x = player.posX - campos.xCoord;
+        	if(player.isRiding()){
+        		if (player.getRidingEntity() instanceof EntityHorse)
+        			y = player.getRidingEntity().posY + player.getRidingEntity().getMountedYOffset();
+        		else
+        			y = player.getRidingEntity().posY;
+        	}
+        	else
+        		y = player.posY;
+        	z = player.posZ - campos.zCoord;
         }
         
         setRoomOrigin(x, y, z, reset, onFrame);
@@ -985,6 +994,9 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         if (!mc.vrSettings.weaponCollision)
             return;
 
+        if (mc.vrSettings.seated)
+            return;
+        
         if(mc.vrSettings.vrFreeMoveMode == mc.vrSettings.FREEMOVE_RUNINPLACE && player.moveForward > 0){
         	return; //dont hit things while RIPing.
         }
@@ -1127,43 +1139,48 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         					}
         				} else {
         					if(canact && (!mc.vrSettings.realisticClimbEnabled || block.getBlock() != Blocks.LADDER)) { 
-        						int p = 3;
-        						p += (speed - speedthresh) / 2;
+   								int p = 3;
+        						if(item instanceof ItemHoe){
+        						Minecraft.getMinecraft().playerController.
+        									processRightClickBlock(player, (WorldClient) player.world,bp,col.sideHit, col.hitVec, c==0?EnumHand.MAIN_HAND:EnumHand.OFF_HAND);
+        							}else{
+         								p += (speed - speedthresh) / 2;
 
-        						for (int i = 0; i < p; i++)
-        						{
-        							//set delay to 0
-        							clearBlockHitDelay();			
+        								for (int i = 0; i < p; i++)
+        								{
+        									//set delay to 0
+        									clearBlockHitDelay();			
 
-        							//all this comes from plaeyrControllerMP clickMouse and friends.
+        									//all this comes from plaeyrControllerMP clickMouse and friends.
 
-        							//all this does is sets the block you're currently hitting, has no effect in survival mode after that.
-        							//but if in creaive mode will clickCreative on the block
-        							mc.playerController.clickBlock(col.getBlockPos(), col.sideHit);
+        									//all this does is sets the block you're currently hitting, has no effect in survival mode after that.
+        									//but if in creaive mode will clickCreative on the block
+        									mc.playerController.clickBlock(col.getBlockPos(), col.sideHit);
 
-        							if(!getIsHittingBlock()) //seems to be the only way to tell it broke.
-        								break;
+        									if(!getIsHittingBlock()) //seems to be the only way to tell it broke.
+        										break;
 
-        							//apply destruction for survival only
-        							mc.playerController.onPlayerDamageBlock(col.getBlockPos(), col.sideHit);
+        									//apply destruction for survival only
+        									mc.playerController.onPlayerDamageBlock(col.getBlockPos(), col.sideHit);
 
-        							if(!getIsHittingBlock()) //seems to be the only way to tell it broke.
-        								break;
+        									if(!getIsHittingBlock()) //seems to be the only way to tell it broke.
+        										break;
 
-        							//something effects
-        							mc.effectRenderer.addBlockHitEffects(col.getBlockPos(), col.sideHit);
+        									//something effects
+        									mc.effectRenderer.addBlockHitEffects(col.getBlockPos(), col.sideHit);
 
+        								}
+        							}
+
+        							this.triggerHapticPulse(c, 250*p);
+        							//   System.out.println("Hit block speed =" + speed + " mot " + mot + " thresh " + speedthresh) ;            				
+        							lastWeaponSolid[c] = true;
         						}
-
-        						this.triggerHapticPulse(c, 250*p);
-        						//   System.out.println("Hit block speed =" + speed + " mot " + mot + " thresh " + speedthresh) ;            				
-        						lastWeaponSolid[c] = true;
+        						insolidBlock = true;
         					}
-        					insolidBlock = true;
         				}
         			}
         		}
-        	}
 
             if ((!inAnEntity && !insolidBlock ) || lastWeaponEndAir[c].lengthVector() ==0)
         	{

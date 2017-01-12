@@ -9,12 +9,13 @@
  
          if (passenger instanceof EntityLiving)
          {
-@@ -1187,7 +1187,7 @@
+@@ -1187,7 +1187,8 @@
              {
                  ((EntityLivingBase)passenger).renderYawOffset = this.renderYawOffset;
              }
 -        }
-+        } super.updatePassenger(passenger);
++        } else 
++        	super.updatePassenger(passenger);//VIVE move this down here, do not call setPosition twice per tick.
      }
  
      /**

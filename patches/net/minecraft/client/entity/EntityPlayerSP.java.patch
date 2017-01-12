@@ -16,7 +16,15 @@
  import net.minecraft.block.state.IBlockState;
  import net.minecraft.client.Minecraft;
  import net.minecraft.client.audio.ElytraSound;
-@@ -136,6 +144,21 @@
+@@ -34,6 +42,7 @@
+ import net.minecraft.entity.item.EntityItem;
+ import net.minecraft.entity.item.EntityMinecart;
+ import net.minecraft.entity.passive.AbstractHorse;
++import net.minecraft.entity.passive.EntityHorse;
+ import net.minecraft.init.Items;
+ import net.minecraft.init.MobEffects;
+ import net.minecraft.init.SoundEvents;
+@@ -136,6 +145,21 @@
       */
      protected int sprintToggleTimer;
  
@@ -38,7 +46,7 @@
      /** Ticks left before sprinting is disabled. */
      public int sprintingTicksLeft;
      public float renderArmYaw;
-@@ -164,8 +187,23 @@
+@@ -164,8 +188,23 @@
          this.statWriter = statFile;
          this.mc = mcIn;
          this.dimension = 0;
@@ -62,7 +70,7 @@
      /**
       * Called when the entity is attacked.
       */
-@@ -205,11 +243,29 @@
+@@ -205,11 +244,29 @@
          }
      }
  
@@ -93,7 +101,7 @@
  
      /**
       * interpolated look vector
-@@ -283,6 +339,7 @@
+@@ -283,6 +340,7 @@
              this.serverSneakState = flag1;
          }
  
@@ -101,7 +109,7 @@
          if (this.isCurrentViewEntity())
          {
              AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
-@@ -333,6 +390,11 @@
+@@ -333,6 +391,11 @@
  
              this.prevOnGround = this.onGround;
              this.autoJumpEnabled = this.mc.gameSettings.autoJump;
@@ -113,7 +121,7 @@
          }
      }
  
-@@ -1000,7 +1062,7 @@
+@@ -1000,7 +1063,7 @@
                      this.sendPlayerAbilities();
                  }
              }
@@ -122,7 +130,7 @@
              {
                  if (this.flyToggleTimer == 0)
                  {
-@@ -1088,6 +1150,11 @@
+@@ -1088,6 +1151,11 @@
  
          super.onLivingUpdate();
  
@@ -134,7 +142,7 @@
          if (this.onGround && this.capabilities.isFlying && !this.mc.playerController.isSpectatorMode())
          {
              this.capabilities.isFlying = false;
-@@ -1106,8 +1173,11 @@
+@@ -1106,8 +1174,11 @@
          if (this.getRidingEntity() instanceof EntityBoat)
          {
              EntityBoat entityboat = (EntityBoat)this.getRidingEntity();
@@ -148,7 +156,7 @@
          }
      }
  
-@@ -1138,10 +1208,44 @@
+@@ -1138,10 +1209,46 @@
       */
      public void move(MoverType type, double x, double y, double z)
      {
@@ -156,37 +164,39 @@
 -        double d1 = this.posZ;
 -        super.move(type, x, y, z);
 -        this.updateAutoJump((float)(this.posX - d0), (float)(this.posZ - d1));
++    	if(x==0 && y==0 && z==0) return;
++    	if(this.isRiding())return;
++    	
 +    	boolean client = this instanceof EntityPlayerSP;
 +    	boolean freemove = OpenVRPlayer.get().getFreeMoveMode();
 +    	boolean doY = freemove || (Minecraft.getMinecraft().vrSettings.simulateFalling && !this.isOnLadder()) && !this.isSneaking();
 +    	if(mc.vrSettings.realisticClimbEnabled) doY = true;
 +    	Vec3d roomOrigin = OpenVRPlayer.get().getRoomOriginPos_World();
-+ //   	Vec3 camloc = Minecraft.getMinecraft().roomScale.getHMDPos_World();
++    	//   	Vec3 camloc = Minecraft.getMinecraft().roomScale.getHMDPos_World();
 +
-+    	if (this.isRiding() ||  freemove && (this.moveForward != 0 || this.isElytraFlying() || Math.abs(this.motionX) > 0.01 || Math.abs(this.motionZ) > 0.01))
++    	if ( freemove && (this.moveForward != 0 || this.isElytraFlying() || Math.abs(this.motionX) > 0.01 || Math.abs(this.motionZ) > 0.01))
 +    	{
 +    		double ox = roomOrigin.xCoord - posX;
 +    		double oz = roomOrigin.zCoord - posZ;
-+            double d0 = this.posX;
-+            double d1 = this.posZ;
++    		double d0 = this.posX;
++    		double d1 = this.posZ;
 +    		super.move(type,x,y,z);
 +    		this.updateAutoJump((float)(this.posX - d0), (float)(this.posZ - d1));
 +    		if (client){	
 +    			double oy = this.posY;
-+    			if (this.isRiding() && !this.isRidingHorse()) oy = this.getRidingEntity().posY;
 +    			OpenVRPlayer.get().setRoomOrigin(
 +    					posX + ox, 
 +    					oy, 
 +    					posZ  + oz, false, false);
-+    					}
++    		}
 +    	} else {
 +    		if(doY) {      	 
 +    			super.move(type,0,y,0);
 +    			if (client){
 +    				OpenVRPlayer.get().setRoomOrigin(
-+    					OpenVRPlayer.get().getRoomOriginPos_World().xCoord, 
-+    					this.posY,
-+    					OpenVRPlayer.get().getRoomOriginPos_World().zCoord, false, false);
++    						OpenVRPlayer.get().getRoomOriginPos_World().xCoord, 
++    						this.posY,
++    						OpenVRPlayer.get().getRoomOriginPos_World().zCoord, false, false);
 +    			}
 +
 +    		} else {
@@ -197,7 +207,7 @@
      }
  
      public boolean isAutoJumpEnabled()
-@@ -1167,12 +1271,16 @@
+@@ -1167,12 +1274,16 @@
                      float f = this.getAIMoveSpeed();
                      float f1 = (float)vec3d2.lengthSquared();
  
@@ -216,7 +226,7 @@
                          vec3d2 = new Vec3d((double)(f2 * f5 - f3 * f4), vec3d2.yCoord, (double)(f3 * f5 + f2 * f4));
                          f1 = (float)vec3d2.lengthSquared();
  
-@@ -1292,4 +1400,238 @@
+@@ -1292,4 +1403,230 @@
              }
          }
      }
@@ -265,27 +275,20 @@
 +    @Override
 +    public void setPosition(double x, double y, double z)
 +    { //this is also called when riding to move this around.
++		super.setPosition(x, y, z);
++
 +    	if(this.isRiding()){   			
 +    		Vec3d roomOrigin = OpenVRPlayer.get().getRoomOriginPos_World();
-+    		double ox = roomOrigin.xCoord - posX;
-+    		double oz = roomOrigin.zCoord - posZ;
-+    		double oy = roomOrigin.yCoord - posY;
-+    		
-+    		super.setPosition(x, y, z);
-+
-+    		double py = this.getRidingEntity().posY;
-+    		if(this.isRidingHorse()){
-+    			py = posY + oy; 
-+    		}
++    		Vec3d me = OpenVRPlayer.get().getHMDPos_World();
++    		double ox = roomOrigin.xCoord - me.xCoord;
++    		double oy = roomOrigin.yCoord - me.yCoord;
++    		double oz = roomOrigin.zCoord - me.zCoord;
 +    		
 +    		OpenVRPlayer.get().setRoomOrigin(
-+    				posX + ox, 
-+    				py,
-+    				posZ + oz, false, false); 		    		
-+
-+    	} else
-+    		super.setPosition(x, y, z);
-+
++    				this.getRidingEntity().posX + ox, 
++    				this.getRidingEntity().posY + (this.getRidingEntity() instanceof EntityHorse ? this.getRidingEntity().getMountedYOffset() : 0 ),
++    				this.getRidingEntity().posZ + oz, false, false); 		    		
++    	} 
 +    }
 +        
 +    
@@ -293,7 +296,6 @@
 +    public void doDrag()
 +    {
 +
-+   	
 +    	float var3 = 0.91F;
 +
 +    	if (this.onGround)

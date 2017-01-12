@@ -317,7 +317,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
             }
               if (success) {
                 if (!checkMD5(fo, md5)){
-				JOptionPane.showMessageDialog(null, "Bad md5 for " + fo.getName() + "!" + " actual: " + GetMd5(fo).toLowerCase(),"Error downloading", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Bad md5 for " + fo.getName() + "!" + " actual: " + GetMd5(fo).toLowerCase(),"Error downloading", JOptionPane.ERROR_MESSAGE);
                     fo.delete();
                     success = false;
                 }

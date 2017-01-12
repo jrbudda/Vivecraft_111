@@ -440,7 +440,15 @@
      {
          int i = GlStateManager.glGetError();
  
-@@ -1109,28 +1334,76 @@
+@@ -1094,6 +1319,7 @@
+         finally
+         {
+             Display.destroy();
++            MCOpenVR.destroy();
+ 
+             if (!this.hasCrashed)
+             {
+@@ -1109,28 +1335,76 @@
       */
      private void runGameLoop() throws IOException
      {
@@ -538,7 +546,7 @@
          {
              while (!this.scheduledTasks.isEmpty())
              {
-@@ -1138,98 +1411,239 @@
+@@ -1138,98 +1412,239 @@
              }
          }
  
@@ -865,7 +873,7 @@
      public void updateDisplay()
      {
          this.mcProfiler.startSection("display_update");
-@@ -1342,7 +1756,7 @@
+@@ -1342,7 +1757,7 @@
      /**
       * Parameter appears to be unused
       */
@@ -874,7 +882,7 @@
      {
          if (this.mcProfiler.profilingEnabled)
          {
-@@ -1479,7 +1893,8 @@
+@@ -1479,7 +1894,8 @@
                  }
  
                  this.inGameHasFocus = true;
@@ -884,7 +892,7 @@
                  this.displayGuiScreen((GuiScreen)null);
                  this.leftClickCounter = 10000;
              }
-@@ -1514,16 +1929,16 @@
+@@ -1514,16 +1930,16 @@
          }
      }
  
@@ -904,7 +912,7 @@
              {
                  BlockPos blockpos = this.objectMouseOver.getBlockPos();
  
-@@ -1533,25 +1948,26 @@
+@@ -1533,25 +1949,26 @@
                      this.player.swingArm(EnumHand.MAIN_HAND);
                  }
              }
@@ -941,7 +949,7 @@
              }
              else if (!this.player.isRowingBoat())
              {
-@@ -1567,39 +1983,45 @@
+@@ -1567,39 +1984,45 @@
                          if (this.world.getBlockState(blockpos).getMaterial() != Material.AIR)
                          {
                              this.playerController.clickBlock(blockpos, this.objectMouseOver.sideHit);
@@ -998,7 +1006,7 @@
                  }
  
                  for (EnumHand enumhand : EnumHand.values())
-@@ -1723,27 +2145,12 @@
+@@ -1723,27 +2146,12 @@
       */
      private void resize(int width, int height)
      {
@@ -1028,7 +1036,7 @@
      }
  
      /**
-@@ -1997,6 +2404,14 @@
+@@ -1997,6 +2405,14 @@
                  this.currentScreen.handleKeyboardInput();
              }
  
@@ -1043,7 +1051,7 @@
              boolean flag = Keyboard.getEventKeyState();
  
              if (flag)
-@@ -2006,6 +2421,8 @@
+@@ -2006,6 +2422,8 @@
                      this.entityRenderer.switchUseShader();
                  }
  
@@ -1052,7 +1060,7 @@
                  boolean flag1 = false;
  
                  if (this.currentScreen == null)
-@@ -2013,6 +2430,7 @@
+@@ -2013,6 +2431,7 @@
                      if (i == 1)
                      {
                          this.displayInGameMenu();
@@ -1060,7 +1068,7 @@
                      }
  
                      flag1 = Keyboard.isKeyDown(61) && this.processKeyF3(i);
-@@ -2020,7 +2438,9 @@
+@@ -2020,7 +2439,9 @@
  
                      if (i == 59)
                      {
@@ -1071,7 +1079,7 @@
                      }
                  }
  
-@@ -2243,11 +2663,26 @@
+@@ -2243,11 +2664,26 @@
  
          if (flag)
          {
@@ -1103,7 +1111,7 @@
              if (this.currentScreen == null && this.gameSettings.keyBindCommand.isPressed())
              {
                  this.displayGuiScreen(new GuiChat("/"));
-@@ -2256,9 +2691,10 @@
+@@ -2256,9 +2692,10 @@
  
          if (this.player.isHandActive())
          {
@@ -1116,7 +1124,7 @@
              }
  
              label472:
-@@ -2284,17 +2720,27 @@
+@@ -2284,17 +2721,27 @@
                  }
              }
          }
@@ -1152,7 +1160,7 @@
  
              while (this.gameSettings.keyBindPickBlock.isPressed())
              {
-@@ -2302,12 +2748,12 @@
+@@ -2302,12 +2749,12 @@
              }
          }
  
@@ -1168,7 +1176,7 @@
      }
  
      private void runTickMouse() throws IOException
-@@ -2328,6 +2774,13 @@
+@@ -2328,6 +2775,13 @@
                      KeyBinding.onTick(i - 100);
                  }
              }
@@ -1182,7 +1190,7 @@
  
              long j = getSystemTime() - this.systemTime;
  
-@@ -2382,6 +2835,7 @@
+@@ -2382,6 +2836,7 @@
       */
      public void launchIntegratedServer(String folderName, String worldName, @Nullable WorldSettings worldSettingsIn)
      {
@@ -1190,7 +1198,7 @@
          this.loadWorld((WorldClient)null);
          System.gc();
          ISaveHandler isavehandler = this.saveLoader.getSaveLoader(folderName, false);
-@@ -2444,7 +2898,7 @@
+@@ -2444,7 +2899,7 @@
                  ;
              }
          }
@@ -1199,7 +1207,7 @@
          this.displayGuiScreen(new GuiScreenWorking());
          SocketAddress socketaddress = this.theIntegratedServer.getNetworkSystem().addLocalEndpoint();
          NetworkManager networkmanager = NetworkManager.provideLocalClient(socketaddress);
-@@ -2459,6 +2913,9 @@
+@@ -2459,6 +2914,9 @@
       */
      public void loadWorld(@Nullable WorldClient worldClientIn)
      {
@@ -1209,7 +1217,7 @@
          this.loadWorld(worldClientIn, "");
      }
  
-@@ -2608,6 +3065,7 @@
+@@ -2608,6 +3066,7 @@
          return theMinecraft == null || !theMinecraft.gameSettings.hideGUI;
      }
  
@@ -1217,7 +1225,7 @@
      public static boolean isFancyGraphicsEnabled()
      {
          return theMinecraft != null && theMinecraft.gameSettings.fancyGraphics;
-@@ -2624,7 +3082,7 @@
+@@ -2624,7 +3083,7 @@
      /**
       * Called when user clicked he's mouse middle button (pick block)
       */
@@ -1226,7 +1234,7 @@
      {
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
-@@ -3419,4 +3877,1042 @@
+@@ -3419,4 +3878,1042 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }
@@ -1253,7 +1261,7 @@
 +
 +		if (this.stereoProvider.isStereo() )
 +		{
-+			if (this.vrSettings.displayMirrorMode == vrSettings.MIRROR_OFF &&  this.vrPlayer.isHMDTracking()){
++			if (this.vrSettings.displayMirrorMode == vrSettings.MIRROR_OFF && this.vrPlayer.isHMDTracking()){
 +				return false;
 +			}else if( this.vrSettings.displayMirrorMode == vrSettings.MIRROR_MIXED_REALITY /*&& renderViewEntity != null*/) {
 +				
@@ -1709,7 +1717,7 @@
 +				GL11.glBegin(GL11.GL_TRIANGLES);
 +
 +				for (int ix = 0;ix< verts.length;ix+=2) {
-+					GL11.glVertex2f(verts[ix], verts[ix+1]);
++					GL11.glVertex2f(verts[ix] * this.vrSettings.renderScaleFactor, verts[ix+1] * this.vrSettings.renderScaleFactor);
 +				}
 +				GL11.glEnd();	
 +

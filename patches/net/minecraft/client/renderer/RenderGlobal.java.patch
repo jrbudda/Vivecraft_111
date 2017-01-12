@@ -1,14 +1,40 @@
 --- a/net/minecraft/client/renderer/RenderGlobal.java
 +++ b/net/minecraft/client/renderer/RenderGlobal.java
-@@ -4,6 +4,7 @@
+@@ -4,7 +4,9 @@
  import com.google.common.collect.Maps;
  import com.google.common.collect.Sets;
  import com.google.gson.JsonSyntaxException;
 +
  import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
++
  import java.io.IOException;
  import java.util.ArrayDeque;
-@@ -200,7 +201,7 @@
+ import java.util.ArrayList;
+@@ -19,7 +21,9 @@
+ import java.util.Map;
+ import java.util.Random;
+ import java.util.Set;
++
+ import javax.annotation.Nullable;
++
+ import net.minecraft.block.Block;
+ import net.minecraft.block.BlockChest;
+ import net.minecraft.block.BlockEnderChest;
+@@ -104,11 +108,13 @@
+ import net.minecraft.world.border.WorldBorder;
+ import net.minecraft.world.chunk.Chunk;
+ import net.minecraft.world.chunk.IChunkProvider;
++
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ import org.lwjgl.input.Keyboard;
+ import org.lwjgl.util.vector.Vector3f;
+ import org.lwjgl.util.vector.Vector4f;
++
+ import shadersmod.client.Shaders;
+ import shadersmod.client.ShadersRender;
+ 
+@@ -200,7 +206,7 @@
      public Set chunksToResortTransparency = new LinkedHashSet();
      public Set chunksToUpdateForced = new LinkedHashSet();
      private Deque visibilityDeque = new ArrayDeque();
@@ -17,7 +43,7 @@
      private List<ContainerLocalRenderInformation> renderInfosTileEntities = new ArrayList(1024);
      private List renderInfosNormal = new ArrayList(1024);
      private List renderInfosEntitiesNormal = new ArrayList(1024);
-@@ -748,6 +749,8 @@
+@@ -748,6 +754,8 @@
                              {
                                  boolean flag3 = this.mc.getRenderViewEntity() instanceof EntityLivingBase ? ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping() : false;
  
@@ -26,7 +52,7 @@
                                  if ((entity2 != this.mc.getRenderViewEntity() || this.mc.gameSettings.thirdPersonView != 0 || flag3) && (entity2.posY < 0.0D || entity2.posY >= 256.0D || this.world.isBlockLoaded(blockpos$pooledmutableblockpos.setPos(entity2))))
                                  {
                                      ++this.countEntitiesRendered;
-@@ -1111,7 +1114,8 @@
+@@ -1111,10 +1119,12 @@
          }
  
          this.mc.mcProfiler.endStartSection("culling");
@@ -35,8 +61,13 @@
 +        BlockPos blockpos1 = new BlockPos(d3, d4, d5);
          RenderChunk renderchunk = this.viewFrustum.getRenderChunk(blockpos1);
          new BlockPos(MathHelper.floor(d3 / 16.0D) * 16, MathHelper.floor(d4 / 16.0D) * 16, MathHelper.floor(d5 / 16.0D) * 16);
-         this.displayListEntitiesDirty = this.displayListEntitiesDirty || !this.chunksToUpdate.isEmpty() || viewEntity.posX != this.lastViewEntityX || viewEntity.posY != this.lastViewEntityY || viewEntity.posZ != this.lastViewEntityZ || (double)viewEntity.rotationPitch != this.lastViewEntityPitch || (double)viewEntity.rotationYaw != this.lastViewEntityYaw;
-@@ -1199,8 +1203,11 @@
+-        this.displayListEntitiesDirty = this.displayListEntitiesDirty || !this.chunksToUpdate.isEmpty() || viewEntity.posX != this.lastViewEntityX || viewEntity.posY != this.lastViewEntityY || viewEntity.posZ != this.lastViewEntityZ || (double)viewEntity.rotationPitch != this.lastViewEntityPitch || (double)viewEntity.rotationYaw != this.lastViewEntityYaw;
++        // VIVE FIX CULLING ISSUES WITH MIRROR
++        this.displayListEntitiesDirty = true; //this.displayListEntitiesDirty || !this.chunksToUpdate.isEmpty() || viewEntity.posX != this.lastViewEntityX || viewEntity.posY != this.lastViewEntityY || viewEntity.posZ != this.lastViewEntityZ || (double)viewEntity.rotationPitch != this.lastViewEntityPitch || (double)viewEntity.rotationYaw != this.lastViewEntityYaw;
+         this.lastViewEntityX = viewEntity.posX;
+         this.lastViewEntityY = viewEntity.posY;
+         this.lastViewEntityZ = viewEntity.posZ;
+@@ -1199,8 +1209,11 @@
  
                  if (set1.size() == 1)
                  {
@@ -50,7 +81,7 @@
                      set1.remove(enumfacing);
                  }
  
-@@ -1443,22 +1450,22 @@
+@@ -1443,22 +1456,22 @@
          }
      }
  
@@ -89,7 +120,7 @@
  
      public int renderBlockLayer(BlockRenderLayer blockLayerIn, double partialTicks, int pass, Entity entityIn)
      {
-@@ -1722,9 +1729,9 @@
+@@ -1722,9 +1735,9 @@
          else if (this.mc.world.provider.isSurfaceWorld())
          {
              GlStateManager.disableTexture2D();
@@ -101,7 +132,7 @@
              {
                  Shaders.disableTexture2D();
              }
-@@ -1732,7 +1739,7 @@
+@@ -1732,7 +1745,7 @@
              Vec3d vec3d = this.world.getSkyColor(this.mc.getRenderViewEntity(), partialTicks);
              vec3d = CustomColors.getSkyColor(vec3d, this.mc.world, this.mc.getRenderViewEntity().posX, this.mc.getRenderViewEntity().posY + 1.0D, this.mc.getRenderViewEntity().posZ);
  
@@ -110,7 +141,7 @@
              {
                  Shaders.setSkyColor(vec3d);
              }
-@@ -1757,14 +1764,14 @@
+@@ -1757,14 +1770,14 @@
              GlStateManager.depthMask(false);
              GlStateManager.enableFog();
  
@@ -127,7 +158,7 @@
              {
                  Shaders.preSkyList();
              }
-@@ -1788,7 +1795,7 @@
+@@ -1788,7 +1801,7 @@
  
              GlStateManager.disableFog();
  
@@ -136,7 +167,7 @@
              {
                  Shaders.disableFog();
              }
-@@ -1803,7 +1810,7 @@
+@@ -1803,7 +1816,7 @@
              {
                  GlStateManager.disableTexture2D();
  
@@ -145,7 +176,7 @@
                  {
                      Shaders.disableTexture2D();
                  }
-@@ -1846,7 +1853,7 @@
+@@ -1846,7 +1859,7 @@
  
              GlStateManager.enableTexture2D();
  
@@ -154,7 +185,7 @@
              {
                  Shaders.enableTexture2D();
              }
-@@ -1858,14 +1865,14 @@
+@@ -1858,14 +1871,14 @@
              GlStateManager.rotate(-90.0F, 0.0F, 1.0F, 0.0F);
              CustomSky.renderSky(this.world, this.renderEngine, this.world.getCelestialAngle(partialTicks), f15);
  
@@ -171,7 +202,7 @@
              {
                  Shaders.postCelestialRotate();
              }
-@@ -1905,7 +1912,7 @@
+@@ -1905,7 +1918,7 @@
  
              GlStateManager.disableTexture2D();
  
@@ -180,7 +211,7 @@
              {
                  Shaders.disableTexture2D();
              }
-@@ -1936,7 +1943,7 @@
+@@ -1936,7 +1949,7 @@
              GlStateManager.enableAlpha();
              GlStateManager.enableFog();
  
@@ -189,7 +220,7 @@
              {
                  Shaders.enableFog();
              }
-@@ -1944,7 +1951,7 @@
+@@ -1944,7 +1957,7 @@
              GlStateManager.popMatrix();
              GlStateManager.disableTexture2D();
  
@@ -198,7 +229,7 @@
              {
                  Shaders.disableTexture2D();
              }
-@@ -2024,7 +2031,7 @@
+@@ -2024,7 +2037,7 @@
              GlStateManager.popMatrix();
              GlStateManager.enableTexture2D();
  

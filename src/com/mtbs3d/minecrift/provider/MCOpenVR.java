@@ -416,7 +416,6 @@ public class MCOpenVR
 				String Type = ts[ts.length - 1];
 				String out = "";
 
-
 				if (Type.equals("Float")) {
 					out += i.getName() + " " + vrsystem.GetFloatTrackedDeviceProperty.apply(JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd, i.getInt(null), hmdErrorStore);
 				}				else if (Type.equals("String")) {
@@ -978,12 +977,12 @@ public class MCOpenVR
 
 
 	
-	public void destroy()
+	public static void destroy()
 	{
-		if (this.initialized)
+		if (initialized)
 		{
 			JOpenVRLibrary.VR_ShutdownInternal();
-			this.initialized = false;
+			initialized = false;
 		}
 	}
 
@@ -1832,6 +1831,9 @@ public class MCOpenVR
 				}
 				String str = new String(inbytes,0,len, StandardCharsets.UTF_8);
 				KeyboardSimulator.type(str); //holy shit it works.
+				break;
+			case EVREventType.EVREventType_VREvent_Quit:
+				Minecraft.getMinecraft().shutdown();
 				break;
 			default:
 				break;
