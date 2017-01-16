@@ -157,6 +157,7 @@ public class VRSettings
     public float playerEyeHeight = 1.62f;
     public boolean vehicleRotation = false;
 	public float vrWorldRotationCached;
+	public boolean menuAlwaysFollowFace;
     
     public VRSettings( Minecraft minecraft, File dataDir )
     {
@@ -344,6 +345,11 @@ public class VRSettings
                     if (optionTokens[0].equals("hudOcclusion"))
                     {
                         this.hudOcclusion = optionTokens[1].equals("true");
+                    }
+
+                    if (optionTokens[0].equals("menuAlwaysFollowFace"))
+                    {
+                        this.menuAlwaysFollowFace = optionTokens[1].equals("true");
                     }
 
                     if (optionTokens[0].equals("useCrosshairOcclusion"))
@@ -722,6 +728,8 @@ public class VRSettings
                     return var4 + "Never";
 	        case HUD_OCCLUSION:
 	        	return this.hudOcclusion ? var4 + "ON" : var4 + "OFF";
+	        case MENU_ALWAYS_FOLLOW_FACE:
+	        	return this.menuAlwaysFollowFace ? var4 + "ALWAYS" : var4 + "SEATED";
 	        case CROSSHAIR_OCCLUSION:
 	        	return this.useCrosshairOcclusion ? var4 + "ON" : var4 + "OFF";
 	        case MONO_FOV:
@@ -957,6 +965,9 @@ public class VRSettings
 	        case HUD_OCCLUSION:
 	            this.hudOcclusion = !this.hudOcclusion;
 	            break;
+	        case MENU_ALWAYS_FOLLOW_FACE:
+	            this.menuAlwaysFollowFace = !this.menuAlwaysFollowFace;
+	            break;
             case CROSSHAIR_OCCLUSION:
                 this.useCrosshairOcclusion = !this.useCrosshairOcclusion;
                 break;
@@ -1177,6 +1188,7 @@ public class VRSettings
             var5.println("renderInGameCrosshairMode:" + this.renderInGameCrosshairMode);
             var5.println("renderBlockOutlineMode:" + this.renderBlockOutlineMode);
             var5.println("hudOcclusion:" + this.hudOcclusion);
+            var5.println("menuAlwaysFollowFace:" + this.menuAlwaysFollowFace);
             var5.println("useCrosshairOcclusion:" + this.useCrosshairOcclusion);
             var5.println("crosshairScale:" + this.crosshairScale);
             var5.println("menuCrosshairScale:" + this.menuCrosshairScale);
@@ -1318,6 +1330,7 @@ public class VRSettings
         RENDER_MENU_BACKGROUND("Menu Background", false, true),
         HUD_HIDE("Hide HUD (F1)", false, true),
         HUD_OCCLUSION("HUD Occlusion", false, true),
+        MENU_ALWAYS_FOLLOW_FACE("Main Menu Follow", false, true),
         CROSSHAIR_OCCLUSION("Crosshair Occlusion", false, true),
         CHAT_FADE_AWAY("Chat Persistence", false, true),
         DUMMY("Dummy", false, true),

@@ -1,0 +1,66 @@
+--- a/net/minecraft/client/gui/achievement/GuiAchievements.java
++++ b/net/minecraft/client/gui/achievement/GuiAchievements.java
+@@ -10,6 +10,8 @@
+ import net.minecraft.client.gui.IProgressMeter;
+ import net.minecraft.client.renderer.GlStateManager;
+ import net.minecraft.client.renderer.RenderHelper;
++import net.minecraft.client.renderer.GlStateManager.DestFactor;
++import net.minecraft.client.renderer.GlStateManager.SourceFactor;
+ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+ import net.minecraft.client.renderer.texture.TextureMap;
+ import net.minecraft.client.resources.I18n;
+@@ -22,6 +24,9 @@
+ import net.minecraft.util.math.MathHelper;
+ import net.minecraft.util.text.TextComponentTranslation;
+ import org.lwjgl.input.Mouse;
++import org.lwjgl.opengl.GL11;
++
++import io.netty.handler.traffic.GlobalTrafficShapingHandler;
+ 
+ public class GuiAchievements extends GuiScreen implements IProgressMeter
+ {
+@@ -275,6 +280,7 @@
+         int i1 = k + 16;
+         int j1 = l + 17;
+         this.zLevel = 0.0F;
++        
+         GlStateManager.depthFunc(518);
+         GlStateManager.pushMatrix();
+         GlStateManager.translate((float)i1, (float)j1, -200.0F);
+@@ -350,8 +356,12 @@
+ 
+         GlStateManager.enableDepth();
+         GlStateManager.depthFunc(515);
+-        this.mc.getTextureManager().bindTexture(ACHIEVEMENT_BACKGROUND);
++        this.mc.getTextureManager().bindTexture(ACHIEVEMENT_BACKGROUND);      
+ 
++        //VIVECRAFT fix transparency
++        GlStateManager.colorMask(true, true	,true, false);
++        //
++        
+         for (int j5 = 0; j5 < AchievementList.ACHIEVEMENTS.size(); ++j5)
+         {
+             Achievement achievement1 = (Achievement)AchievementList.ACHIEVEMENTS.get(j5);
+@@ -409,7 +419,7 @@
+         GlStateManager.disableLighting();
+         GlStateManager.enableRescaleNormal();
+         GlStateManager.enableColorMaterial();
+-
++       
+         for (int i6 = 0; i6 < AchievementList.ACHIEVEMENTS.size(); ++i6)
+         {
+             Achievement achievement2 = (Achievement)AchievementList.ACHIEVEMENTS.get(i6);
+@@ -493,6 +503,13 @@
+         GlStateManager.enableBlend();
+         GlStateManager.popMatrix();
+         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
++        
++        //VIVECRAFT fix transparency
++        GlStateManager.colorMask(true, true	,true, true);
++        GlStateManager.alphaFunc(GL11.GL_GREATER, 0);
++        GlStateManager.enableAlpha();
++        ///
++        
+         this.mc.getTextureManager().bindTexture(ACHIEVEMENT_BACKGROUND);
+         this.drawTexturedModalRect(k, l, 0, 0, this.imageWidth, this.imageHeight);
+         this.zLevel = 0.0F;

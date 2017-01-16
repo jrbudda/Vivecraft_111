@@ -1,7 +1,25 @@
 package com.mtbs3d.minecrift.utils;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.List;
 
 import org.lwjgl.util.vector.Matrix3f;
 import org.lwjgl.util.vector.Matrix4f;
@@ -133,6 +151,126 @@ public class Utils
 		mat.m21 = matrix.m21;
 		mat.m22 = matrix.m22;
 		return mat;
+	}
+
+	public static String httpReadLine(String url) throws IOException {
+		HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+		conn.setReadTimeout(3000);
+		conn.setUseCaches(false);
+		conn.setDoInput(true);
+		BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		String line = br.readLine();
+		br.close();
+		conn.disconnect();
+		return line;
+	}
+
+	public static byte[] httpReadAll(String url) throws IOException {
+		HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+		conn.setReadTimeout(3000);
+		conn.setUseCaches(false);
+		conn.setDoInput(true);
+		InputStream is = conn.getInputStream();
+		ByteArrayOutputStream bout = new ByteArrayOutputStream(conn.getContentLength());
+		byte[] bytes = new byte[4096];
+		int count;
+		while ((count = is.read(bytes, 0, bytes.length)) != -1) {
+			bout.write(bytes, 0, count);
+		}
+		is.close();
+		conn.disconnect();
+		return bout.toByteArray();
+	}
+
+	public static String httpReadAllString(String url) throws IOException {
+		return new String(httpReadAll(url), StandardCharsets.UTF_8);
+	}
+
+	public static void httpReadToFile(String url, File file, boolean writeWhenComplete) throws MalformedURLException, IOException {
+		HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+		conn.setReadTimeout(3000);
+		conn.setUseCaches(false);
+		conn.setDoInput(true);
+		InputStream is = conn.getInputStream();
+		if (writeWhenComplete) {
+			ByteArrayOutputStream bout = new ByteArrayOutputStream(conn.getContentLength());
+			byte[] bytes = new byte[4096];
+			int count;
+			while ((count = is.read(bytes, 0, bytes.length)) != -1) {
+				bout.write(bytes, 0, count);
+			}
+			OutputStream out = new FileOutputStream(file);
+			out.write(bout.toByteArray());
+			out.flush();
+			out.close();
+		} else {
+			OutputStream out = new FileOutputStream(file);
+			byte[] bytes = new byte[4096];
+			int count;
+			while ((count = is.read(bytes, 0, bytes.length)) != -1) {
+				out.write(bytes, 0, count);
+			}
+			out.flush();
+			out.close();
+		}
+		is.close();
+		conn.disconnect();
+	}
+	
+    public static void httpReadToFile(String url, File file) throws IOException {
+        httpReadToFile(url, file, false);
+    }
+
+	public static List<String> httpReadList(String url) throws IOException {
+		HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+		conn.setReadTimeout(3000);
+		conn.setUseCaches(false);
+		conn.setDoInput(true);
+		BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		List<String> list = new ArrayList<String>();
+		String line;
+		while ((line = br.readLine()) != null) {
+			list.add(line);
+		}
+		br.close();
+		conn.disconnect();
+		return list;
+	}
+
+	public static String getFileChecksum(File file, String algorithm) throws FileNotFoundException, IOException, NoSuchAlgorithmException {
+		InputStream is = new FileInputStream(file);
+		byte[] bytes = new byte[(int)file.length()];
+		is.read(bytes);
+		is.close();
+		MessageDigest md = MessageDigest.getInstance(algorithm);
+		md.update(bytes);
+		Formatter fmt = new Formatter();
+		for (byte b : md.digest()) {
+			fmt.format("%02x", b);
+		}
+		String str = fmt.toString();
+		fmt.close();
+		return str;
+	}
+
+	public static byte[] readFile(File file) throws FileNotFoundException, IOException {
+		FileInputStream is = new FileInputStream(file);
+		return readFully(is);
+	}
+
+	public static String readFileString(File file) throws FileNotFoundException, IOException {
+		return new String(readFile(file), "UTF-8");
+	}
+	
+	public static byte[] readFully(InputStream in) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		byte[] bytes = new byte[4096];
+		int count;
+		while ((count = in.read(bytes, 0, bytes.length)) != -1) {
+			out.write(bytes, 0, count);
+		}
+		in.close();
+		return out.toByteArray();
 	}
     
 }

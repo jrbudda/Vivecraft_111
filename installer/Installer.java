@@ -578,7 +578,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
 					mc_jar = new File(tempDir + File.separator + MINECRAFT_VERSION + ".jar");
 					if (!mc_jar.exists() || !checkMD5(mc_jar, MC_MD5)) {
 						if (!downloadFile(mc_url, mc_jar, MC_MD5)) {
-							finalMessage += " Error: Failed to download " + MINECRAFT_VERSION + ".jar from " + mc_url;
+							JOptionPane.showMessageDialog(null, " Error: Failed to download " + MINECRAFT_VERSION + ".jar from " + mc_url, "Warning", JOptionPane.ERROR_MESSAGE);
 							return false;
 						}
 					}
@@ -587,10 +587,11 @@ public class Installer extends JPanel  implements PropertyChangeListener
 				if(mc_jar == null) return false;
 
 			InputStream src = new FileInputStream(mc_jar);
+			tar.getParentFile().mkdirs();
 			return copyInputStreamToFile(src, tar);
 					
             } catch (Exception e) {
-                finalMessage += " Error: "+e.getLocalizedMessage();
+				JOptionPane.showMessageDialog(null, " Error: "+e.getLocalizedMessage(), "Warning", JOptionPane.ERROR_MESSAGE);
 				return false;
             }
 	}

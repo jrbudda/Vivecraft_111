@@ -51,6 +51,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.*;
+
 import jopenvr.*;
 import jopenvr.JOpenVRLibrary.EGraphicsAPIConvention;
 import jopenvr.JOpenVRLibrary.EVREventType;
@@ -61,6 +62,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -1830,10 +1832,23 @@ public class MCOpenVR
 					if(b>0)len++;
 				}
 				String str = new String(inbytes,0,len, StandardCharsets.UTF_8);
-				KeyboardSimulator.type(str); //holy shit it works.
+				if (mc.currentScreen != null) { // experimental, needs testing
+					try {
+						Method m = GuiScreen.class.getDeclaredMethod("keyTyped", Character.TYPE, Integer.TYPE);
+						m.setAccessible(true);
+						for (char ch : str.toCharArray()) {
+							int[] codes = KeyboardSimulator.getCodes(ch);
+							m.invoke(mc.currentScreen, ch, codes.length > 0 ? codes[codes.length - 1] : 0);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				} else {
+					KeyboardSimulator.type(str); //holy shit it works.
+				}
 				break;
 			case EVREventType.EVREventType_VREvent_Quit:
-				Minecraft.getMinecraft().shutdown();
+				mc.shutdown();
 				break;
 			default:
 				break;
@@ -2118,6 +2133,7 @@ public class MCOpenVR
 	public static float[] getPlayAreaSize() {
 		FloatBuffer bufX = FloatBuffer.allocate(1);
 		FloatBuffer bufZ = FloatBuffer.allocate(1);
+		if (vrChaperone.GetPlayAreaSize == null) return null;
 		byte valid = vrChaperone.GetPlayAreaSize.apply(bufX, bufZ);
 		if (valid == 1) return new float[]{bufX.get(0), bufZ.get(0)};
 		return null;

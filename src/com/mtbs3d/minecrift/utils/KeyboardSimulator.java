@@ -16,6 +16,7 @@ public class KeyboardSimulator {
         try {
 			robot = new Robot();
 		} catch (AWTException e) {
+			e.printStackTrace();
 		}		
 	}
 
@@ -46,7 +47,7 @@ public class KeyboardSimulator {
         doType(chars, 0, chars.length);
 	}
     
-    private static int[] getCodes(char character) {
+    public static int[] getCodes(char character) {
         switch (character) {
 	        case 'a': return codes(VK_A); 
 	        case 'b': return codes(VK_B); 
@@ -147,8 +148,8 @@ public class KeyboardSimulator {
 	        case ' ': return codes(VK_SPACE); 
         	case '\b': return codes(VK_BACK_SPACE); 
         	case '\r': return codes(VK_ENTER); 
-	        default:
-	            throw new IllegalArgumentException("Cannot type character " + character);
+        	default: return codes();
+	        //default: throw new IllegalArgumentException("Cannot type character " + character);
         }
     }
 
@@ -158,12 +159,12 @@ public class KeyboardSimulator {
 
     private static void doType(int[] keyCodes, int offset, int length) {
     	try {
-        if (length == 0) {
-            return;
-        }
-        robot.keyPress(keyCodes[offset]);
-        doType(keyCodes, offset + 1, length - 1);
-        robot.keyRelease(keyCodes[offset]);
+	        if (length == 0) {
+	            return;
+	        }
+	        robot.keyPress(keyCodes[offset]);
+	        doType(keyCodes, offset + 1, length - 1);
+	        robot.keyRelease(keyCodes[offset]);
 		} catch (Exception e) {
 			System.out.println("Cannot type keycode: " + keyCodes[offset]);
 		}

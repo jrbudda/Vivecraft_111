@@ -36,8 +36,17 @@
          if (Config.isVignetteEnabled())
          {
              this.renderVignette(this.mc.player.getBrightness(partialTicks), scaledresolution);
-@@ -165,15 +173,6 @@
-             this.renderPumpkinOverlay(scaledresolution);
+@@ -159,21 +167,13 @@
+         }
+ 
+         ItemStack itemstack = this.mc.player.inventory.armorItemInSlot(3);
+-
++        mc.pumpkineffect = 0;
+         if (this.mc.gameSettings.thirdPersonView == 0 && itemstack.getItem() == Item.getItemFromBlock(Blocks.PUMPKIN))
+         {
+-            this.renderPumpkinOverlay(scaledresolution);
++        	mc.pumpkineffect = 1f;
++           // this.renderPumpkinOverlay(scaledresolution);
          }
  
 -        if (!this.mc.player.isPotionActive(MobEffects.NAUSEA))
@@ -52,7 +61,7 @@
  
          if (this.mc.playerController.isSpectator())
          {
-@@ -183,20 +182,47 @@
+@@ -183,20 +183,47 @@
          {
              this.renderHotbar(scaledresolution, partialTicks);
          }
@@ -105,7 +114,7 @@
              this.renderPlayerStats(scaledresolution);
          }
  
-@@ -569,6 +595,7 @@
+@@ -569,6 +596,7 @@
              int j = 182;
              int k = 91;
              this.zLevel = -90.0F;
@@ -113,7 +122,7 @@
              this.drawTexturedModalRect(i - 91, sr.getScaledHeight() - 22, 0, 0, 182, 22);
              this.drawTexturedModalRect(i - 91 - 1 + entityplayer.inventory.currentItem * 20, sr.getScaledHeight() - 22 - 1, 0, 22, 24, 22);
  
-@@ -587,7 +614,7 @@
+@@ -587,7 +615,7 @@
              this.zLevel = f;
              GlStateManager.enableRescaleNormal();
              GlStateManager.enableBlend();
@@ -122,7 +131,7 @@
              RenderHelper.enableGUIStandardItemLighting();
  
              for (int l = 0; l < 9; ++l)
-@@ -823,7 +850,7 @@
+@@ -823,7 +851,7 @@
      {
          if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
          {
@@ -131,7 +140,7 @@
              int i = MathHelper.ceil(entityplayer.getHealth());
              boolean flag = this.healthUpdateCounter > (long)this.updateCounter && (this.healthUpdateCounter - (long)this.updateCounter) / 3L % 2L == 1L;
  
-@@ -978,7 +1005,7 @@
+@@ -978,7 +1006,7 @@
                      }
                  }
              }
@@ -140,7 +149,7 @@
              Entity entity = entityplayer.getRidingEntity();
  
              if (entity == null || !(entity instanceof EntityLivingBase))
-@@ -1123,6 +1150,11 @@
+@@ -1123,6 +1151,11 @@
       */
      private void renderVignette(float lightLevel, ScaledResolution scaledRes)
      {
@@ -152,7 +161,7 @@
          if (Config.isVignetteEnabled())
          {
              lightLevel = 1.0F - lightLevel;
-@@ -1171,39 +1203,6 @@
+@@ -1171,39 +1204,6 @@
          }
      }
  
@@ -192,7 +201,7 @@
  
      private void renderHotbarItem(int p_184044_1_, int p_184044_2_, float p_184044_3_, EntityPlayer player, ItemStack stack)
      {
-@@ -1380,4 +1379,42 @@
+@@ -1380,4 +1380,42 @@
      {
          return this.overlayBoss;
      }
