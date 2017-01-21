@@ -9,17 +9,18 @@
  import net.minecraft.client.settings.GameSettings;
  
  public class MovementInputFromOptions extends MovementInput
-@@ -56,13 +59,22 @@
+@@ -56,13 +59,23 @@
              this.rightKeyDown = false;
          }
  
 -        this.jump = this.gameSettings.keyBindJump.isKeyDown();
 -        this.sneak = this.gameSettings.keyBindSneak.isKeyDown();
-+        boolean ok = Minecraft.getMinecraft().currentScreen==null;
++        Minecraft mc = Minecraft.getMinecraft();
++        boolean ok = mc.currentScreen==null && (mc.vrPlayer.getFreeMoveMode() || mc.vrSettings.simulateFalling); 
 +        
 +        //VIVECRAFT DO ok.
 +        this.jump = this.gameSettings.keyBindJump.isKeyDown() && ok;
-+        this.sneak = (Minecraft.getMinecraft().sneakTracker.sneakOverride || this.gameSettings.keyBindSneak.isKeyDown()) && ok;
++        this.sneak = (Minecraft.getMinecraft().sneakTracker.sneakOverride || this.gameSettings.keyBindSneak.isKeyDown()) && mc.currentScreen==null ;
  
          if (this.sneak)
          {

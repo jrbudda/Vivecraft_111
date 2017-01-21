@@ -3,6 +3,7 @@ package com.mtbs3d.minecrift.provider;
 
 import com.mtbs3d.minecrift.render.PlayerModelController;
 import com.mtbs3d.minecrift.settings.AutoCalibration;
+
 import de.fruitfly.ovr.enums.EyeType;
 import de.fruitfly.ovr.structs.EulerOrient;
 import de.fruitfly.ovr.structs.Matrix4f;
@@ -63,6 +64,7 @@ import com.mtbs3d.minecrift.gameplay.ParticleVRTeleportFX;
 import com.mtbs3d.minecrift.gameplay.VRMovementStyle;
 import com.mtbs3d.minecrift.render.QuaternionHelper;
 import com.mtbs3d.minecrift.settings.VRSettings;
+import com.mtbs3d.minecrift.utils.MCReflection;
 
 // VIVE
 public class OpenVRPlayer implements IRoomscaleAdapter
@@ -106,7 +108,6 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 		    		lastroomOrigin = new Vec3d(x, y, z);
 		    		Minecraft.getMinecraft().entityRenderer.interPolatedRoomOrigin = new Vec3d(x, y, z);
 		    	} else {
-		    		lastroomOrigin = new Vec3d(roomOrigin.xCoord, roomOrigin.yCoord, roomOrigin.zCoord);
 		    	}
 	    }
 	    roomOrigin = new Vec3d(x, y, z);
@@ -118,7 +119,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     private int roomScaleMovementDelay = 0;
     
     //set room 
-    public void snapRoomOriginToPlayerEntity(EntityPlayerSP player, boolean reset, boolean onFrame)
+    public void snapRoomOriginToPlayerEntity(EntityPlayerSP player, boolean reset, boolean onFrame, float nano)
     {
         if (Thread.currentThread().getName().equals("Server thread"))
             return;
@@ -137,8 +138,9 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         	x = mc.entityRenderer.interpolatedPlayerPos.xCoord - campos.xCoord;
          
         	if(player.isRiding()){
+        		
         		if (player.getRidingEntity() instanceof EntityHorse)
-        			y = player.getRidingEntity().posY + player.getRidingEntity().getMountedYOffset();
+        			y = player.getRidingEntity().getPositionEyes(nano).yCoord - player.getRidingEntity().getEyeHeight() + player.getRidingEntity().getMountedYOffset();
         		else
         			y = player.getRidingEntity().posY;
         	} else
@@ -169,9 +171,10 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     private float lastworldRotation= 0f;
 	private float lastWorldScale;
     
-	public void checkandUpdateRotateScale(boolean onFrame){
+	public void checkandUpdateRotateScale(boolean onFrame, float nano){
 		Minecraft mc = Minecraft.getMinecraft();
 		if(mc.currentScreen!=null) return;
+		
 		if(!onFrame) {
 			if(this.wfCount > 0){
 				if(this.wfCount < 40){
@@ -185,19 +188,28 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 				}
 				this.wfCount--;
 			} else 	this.worldScale =  mc.vrSettings.vrWorldScale;
+		} else {
+
 		}
+		
+		this.interpolatedWorldScale = this.worldScale*nano + this.lastWorldScale*(1-nano);
+		
 	    this.worldRotationRadians = (float) Math.toRadians(mc.vrSettings.vrWorldRotation);
 	    
 	    if (worldRotationRadians!= lastworldRotation || worldScale != lastWorldScale) {
 	    	if(mc.player!=null) 
-	    		snapRoomOriginToPlayerEntity(mc.player, true, onFrame);
+	    		snapRoomOriginToPlayerEntity(mc.player, true, onFrame, nano);
 	    }
-	    lastworldRotation = worldRotationRadians;
-	    if(!onFrame)    lastWorldScale = worldScale;		
 	}
 
 	
 	boolean initdone =false;
+	
+	public void preTick(){
+		lastWorldScale = worldScale;	
+	    lastworldRotation = worldRotationRadians;
+		lastroomOrigin = new Vec3d(roomOrigin.xCoord, roomOrigin.yCoord, roomOrigin.zCoord);
+	}
 	
     public void onLivingUpdate(EntityPlayerSP player, Minecraft mc, Random rand)
     {
@@ -227,9 +239,9 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	    
 		mc.autoFood.doProcess(mc,player);
            		
-        this.checkandUpdateRotateScale(false);
+		this.checkandUpdateRotateScale(false,1);
 
-	    mc.swimTracker.doProcess(mc,player);
+        mc.swimTracker.doProcess(mc,player);
 
 	    mc.climbTracker.doProcess(mc, player);
 
@@ -717,10 +729,11 @@ public class OpenVRPlayer implements IRoomscaleAdapter
             pos.yCoord + velocity.yCoord,
             pos.zCoord + velocity.zCoord);
 
-            RayTraceResult collision = mc.world.rayTraceBlocks(pos, newPos, !mc.player.isInWater(), true, false);
+            RayTraceResult collision = tpRaytrace(player.world, pos, newPos, !mc.player.isInWater(), true, false);
 			
             if (collision != null && collision.typeOfHit != Type.MISS)
             {
+        		
                 movementTeleportArc[i] = new Vec3d(
                 		collision.hitVec.xCoord,
                 		collision.hitVec.yCoord,
@@ -751,6 +764,190 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         }
     }
 
+    /**
+     * Performs a raycast against all blocks in the world. Args : Vec1, Vec2, stopOnLiquid,
+     * ignoreBlockWithoutBoundingBox, returnLastUncollidableBlock
+     */
+    public RayTraceResult tpRaytrace(World w, Vec3d vec31, Vec3d vec32, boolean stopOnLiquid, boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock)
+    {
+        if (!Double.isNaN(vec31.xCoord) && !Double.isNaN(vec31.yCoord) && !Double.isNaN(vec31.zCoord))
+        {
+            if (!Double.isNaN(vec32.xCoord) && !Double.isNaN(vec32.yCoord) && !Double.isNaN(vec32.zCoord))
+            {
+                int i = MathHelper.floor(vec32.xCoord);
+                int j = MathHelper.floor(vec32.yCoord);
+                int k = MathHelper.floor(vec32.zCoord);
+                int l = MathHelper.floor(vec31.xCoord);
+                int i1 = MathHelper.floor(vec31.yCoord);
+                int j1 = MathHelper.floor(vec31.zCoord);
+                BlockPos blockpos = new BlockPos(l, i1, j1);
+                IBlockState iblockstate = w.getBlockState(blockpos);
+                Block block = iblockstate.getBlock();
+
+                if (block == Blocks.WATERLILY || (!ignoreBlockWithoutBoundingBox || iblockstate.getCollisionBoundingBox(w, blockpos) != Block.NULL_AABB) && block.canCollideCheck(iblockstate, stopOnLiquid))
+                {
+                    RayTraceResult raytraceresult = iblockstate.collisionRayTrace(w, blockpos, vec31, vec32);
+
+                    if (raytraceresult != null)
+                    {
+                        return raytraceresult;
+                    }
+                }
+
+                RayTraceResult raytraceresult2 = null;
+                int k1 = 200;
+
+                while (k1-- >= 0)
+                {
+                    if (Double.isNaN(vec31.xCoord) || Double.isNaN(vec31.yCoord) || Double.isNaN(vec31.zCoord))
+                    {
+                        return null;
+                    }
+
+                    if (l == i && i1 == j && j1 == k)
+                    {
+                        return returnLastUncollidableBlock ? raytraceresult2 : null;
+                    }
+
+                    boolean flag2 = true;
+                    boolean flag = true;
+                    boolean flag1 = true;
+                    double d0 = 999.0D;
+                    double d1 = 999.0D;
+                    double d2 = 999.0D;
+
+                    if (i > l)
+                    {
+                        d0 = (double)l + 1.0D;
+                    }
+                    else if (i < l)
+                    {
+                        d0 = (double)l + 0.0D;
+                    }
+                    else
+                    {
+                        flag2 = false;
+                    }
+
+                    if (j > i1)
+                    {
+                        d1 = (double)i1 + 1.0D;
+                    }
+                    else if (j < i1)
+                    {
+                        d1 = (double)i1 + 0.0D;
+                    }
+                    else
+                    {
+                        flag = false;
+                    }
+
+                    if (k > j1)
+                    {
+                        d2 = (double)j1 + 1.0D;
+                    }
+                    else if (k < j1)
+                    {
+                        d2 = (double)j1 + 0.0D;
+                    }
+                    else
+                    {
+                        flag1 = false;
+                    }
+
+                    double d3 = 999.0D;
+                    double d4 = 999.0D;
+                    double d5 = 999.0D;
+                    double d6 = vec32.xCoord - vec31.xCoord;
+                    double d7 = vec32.yCoord - vec31.yCoord;
+                    double d8 = vec32.zCoord - vec31.zCoord;
+
+                    if (flag2)
+                    {
+                        d3 = (d0 - vec31.xCoord) / d6;
+                    }
+
+                    if (flag)
+                    {
+                        d4 = (d1 - vec31.yCoord) / d7;
+                    }
+
+                    if (flag1)
+                    {
+                        d5 = (d2 - vec31.zCoord) / d8;
+                    }
+
+                    if (d3 == -0.0D)
+                    {
+                        d3 = -1.0E-4D;
+                    }
+
+                    if (d4 == -0.0D)
+                    {
+                        d4 = -1.0E-4D;
+                    }
+
+                    if (d5 == -0.0D)
+                    {
+                        d5 = -1.0E-4D;
+                    }
+
+                    EnumFacing enumfacing;
+
+                    if (d3 < d4 && d3 < d5)
+                    {
+                        enumfacing = i > l ? EnumFacing.WEST : EnumFacing.EAST;
+                        vec31 = new Vec3d(d0, vec31.yCoord + d7 * d3, vec31.zCoord + d8 * d3);
+                    }
+                    else if (d4 < d5)
+                    {
+                        enumfacing = j > i1 ? EnumFacing.DOWN : EnumFacing.UP;
+                        vec31 = new Vec3d(vec31.xCoord + d6 * d4, d1, vec31.zCoord + d8 * d4);
+                    }
+                    else
+                    {
+                        enumfacing = k > j1 ? EnumFacing.NORTH : EnumFacing.SOUTH;
+                        vec31 = new Vec3d(vec31.xCoord + d6 * d5, vec31.yCoord + d7 * d5, d2);
+                    }
+
+                    l = MathHelper.floor(vec31.xCoord) - (enumfacing == EnumFacing.EAST ? 1 : 0);
+                    i1 = MathHelper.floor(vec31.yCoord) - (enumfacing == EnumFacing.UP ? 1 : 0);
+                    j1 = MathHelper.floor(vec31.zCoord) - (enumfacing == EnumFacing.SOUTH ? 1 : 0);
+                    blockpos = new BlockPos(l, i1, j1);
+                    IBlockState iblockstate1 = w.getBlockState(blockpos);
+                    Block block1 = iblockstate1.getBlock();
+
+                    if (!ignoreBlockWithoutBoundingBox || iblockstate1.getMaterial() == Material.PORTAL || iblockstate1.getCollisionBoundingBox(w, blockpos) != Block.NULL_AABB)
+                    {
+                        if (block1.canCollideCheck(iblockstate1, stopOnLiquid))
+                        {
+                            RayTraceResult raytraceresult1 = iblockstate1.collisionRayTrace(w, blockpos, vec31, vec32);
+
+                            if (raytraceresult1 != null)
+                            {
+                                return raytraceresult1;
+                            }
+                        }
+                        else
+                        {
+                            raytraceresult2 = new RayTraceResult(RayTraceResult.Type.MISS, vec31, enumfacing, blockpos);
+                        }
+                    }
+                }
+
+                return returnLastUncollidableBlock ? raytraceresult2 : null;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
     public void updateTeleportDestinations(EntityRenderer renderer, Minecraft mc, Entity player)
     {
         mc.mcProfiler.startSection("updateTeleportDestinations");
@@ -1199,12 +1396,12 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     }
     
 	private boolean getIsHittingBlock(){
-		return	Minecraft.getMinecraft().playerController.isHittingBlock;
+		return (Boolean)MCReflection.getField(MCReflection.isHittingBlock, Minecraft.getMinecraft().playerController);
 	}
 	
     // VIVE START - function to allow damaging blocks immediately
 	private void clearBlockHitDelay() { 
-		Minecraft.getMinecraft().playerController.blockHitDelay = 0;
+		MCReflection.setField(MCReflection.blockHitDelay, Minecraft.getMinecraft().playerController, 0);
 	}
         
 	public boolean getFreeMoveMode() { return freeMoveMode; }
@@ -1251,6 +1448,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	
 	public float worldScale =  Minecraft.getMinecraft().vrSettings.vrWorldScale;
 	public float worldRotationRadians;
+	public float interpolatedWorldScale =  Minecraft.getMinecraft().vrSettings.vrWorldScale;
 	
 	@Override
 	public boolean isHMDTracking() {
@@ -1263,7 +1461,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	
 	@Override
 	public Vec3d getHMDPos_World() {
-		Vec3d out = vecMult(MCOpenVR.getCenterEyePosition(),worldScale).add(getWalkMultOffset()).rotateYaw(worldRotationRadians);
+		Vec3d out = vecMult(MCOpenVR.getCenterEyePosition(),interpolatedWorldScale).add(getWalkMultOffset()).rotateYaw(worldRotationRadians);
 				
 		return out.addVector(roomOrigin.xCoord, roomOrigin.yCoord, roomOrigin.zCoord);
 	}
@@ -1292,7 +1490,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 		return roomOrigin;
 	}
 	
-	private Vec3d getInterpolatedRoomOriginPos_World(float nano) {
+	public Vec3d getInterpolatedRoomOriginPos_World(float nano) {
 		Vec3d out = new Vec3d(
 		lastroomOrigin.xCoord + (roomOrigin.xCoord - lastroomOrigin.xCoord) * (double)nano,
 		lastroomOrigin.yCoord + (roomOrigin.yCoord - lastroomOrigin.yCoord) * (double)nano,
@@ -1319,7 +1517,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	
 	@Override
 	public Vec3d getEyePos_World(renderPass eye) {
-		Vec3d out = vecMult(MCOpenVR.getEyePosition(eye),worldScale).add(getWalkMultOffset()).rotateYaw(worldRotationRadians);			
+		Vec3d out = vecMult(MCOpenVR.getEyePosition(eye),interpolatedWorldScale).add(getWalkMultOffset()).rotateYaw(worldRotationRadians);			
 		return out.addVector(roomOrigin.xCoord, roomOrigin.yCoord, roomOrigin.zCoord);
 	}
 	
@@ -1353,18 +1551,18 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	
 	@Override
 	public Vec3d getHMDPos_Room() {
-		return vecMult(MCOpenVR.getCenterEyePosition(),worldScale).add(getWalkMultOffset());
+		return vecMult(MCOpenVR.getCenterEyePosition(),interpolatedWorldScale).add(getWalkMultOffset());
 
 	}
 
 	@Override
 	public Vec3d getControllerPos_Room(int i) {
-		return vecMult(MCOpenVR.getAimSource(i),worldScale).add(getWalkMultOffset());
+		return vecMult(MCOpenVR.getAimSource(i),interpolatedWorldScale).add(getWalkMultOffset());
 	}
 	
 	@Override
 	public Vec3d getEyePos_Room(renderPass eye) {
-		return vecMult(MCOpenVR.getEyePosition(eye),worldScale).add(getWalkMultOffset());
+		return vecMult(MCOpenVR.getEyePosition(eye),interpolatedWorldScale).add(getWalkMultOffset());
 
 	}
 
@@ -1387,7 +1585,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 
 	@Override
 	public Vec3d getControllerPos_World(int c) {
-		Vec3d out = vecMult(MCOpenVR.getAimSource(c),worldScale).add(getWalkMultOffset());
+		Vec3d out = vecMult(MCOpenVR.getAimSource(c),interpolatedWorldScale).add(getWalkMultOffset());
 		out =out.rotateYaw(worldRotationRadians);
 		return out.addVector(roomOrigin.xCoord, roomOrigin.yCoord, roomOrigin.zCoord);
 	}

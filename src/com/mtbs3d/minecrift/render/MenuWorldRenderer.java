@@ -1,10 +1,15 @@
-package com.mtbs3d.minecrift.utils;
+package com.mtbs3d.minecrift.render;
 
 import java.lang.reflect.Method;
+import java.util.Random;
 
 import org.lwjgl.opengl.GL11;
 
+import com.google.common.base.Throwables;
 import com.mtbs3d.minecrift.provider.OpenVRPlayer;
+import com.mtbs3d.minecrift.utils.FakeBlockAccess;
+import com.mtbs3d.minecrift.utils.MCReflection;
+import com.mtbs3d.minecrift.utils.Utils;
 
 import shadersmod.client.Shaders;
 import net.minecraft.block.state.IBlockState;
@@ -30,6 +35,7 @@ import net.minecraft.src.Config;
 import net.minecraft.src.CustomColors;
 import net.minecraft.src.CustomSky;
 import net.minecraft.src.Reflector;
+import net.minecraft.src.TextureUtils;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.ResourceLocation;
@@ -65,6 +71,7 @@ public class MenuWorldRenderer {
     private VertexBuffer skyVBO;
     private VertexBuffer sky2VBO;
     public MenuCloudRenderer cloudRenderer;
+    private Random rand;
     private boolean init;
     private boolean ready;
 	
@@ -76,6 +83,8 @@ public class MenuWorldRenderer {
         this.vertexBufferFormat = new VertexFormat();
         this.vertexBufferFormat.addElement(new VertexFormatElement(0, VertexFormatElement.EnumType.FLOAT, VertexFormatElement.EnumUsage.POSITION, 3));
         this.cloudRenderer = new MenuCloudRenderer(mc);
+        this.rand = new Random();
+        this.rand.nextInt(); // toss some bits in the bin
 	}
 	
 	public void render() {
@@ -120,14 +129,19 @@ public class MenuWorldRenderer {
 			// TODO: Figure out why AO doesn't work correctly here.
 			int ao = mc.gameSettings.ambientOcclusion;
 			mc.gameSettings.ambientOcclusion = 0;
-            Blocks.LEAVES.setGraphicsLevel(true);
-            Blocks.LEAVES2.setGraphicsLevel(true);
+			boolean shaders = Shaders.shaderPackLoaded;
+			Shaders.shaderPackLoaded = false;
+			DefaultVertexFormats.updateVertexFormats();
+			Blocks.LEAVES.setGraphicsLevel(true);
+			Blocks.LEAVES2.setGraphicsLevel(true);
+			TextureUtils.resourcesReloaded(Config.getResourceManager());
 			vertexBuffers = new VertexBuffer[3];
 			BlockRendererDispatcher blockRenderer = mc.getBlockRendererDispatcher();
+			int ground = rand.nextInt(1000) == 0 ? blockAccess.getGround() + 100 : blockAccess.getGround(); // lol
 			for (int i = 0; i < 3; i++) {
 				net.minecraft.client.renderer.VertexBuffer vertBuffer = new net.minecraft.client.renderer.VertexBuffer(2097152);
 				vertBuffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-				vertBuffer.setTranslation(-blockAccess.getXSize() / 2, -blockAccess.getGround(), -blockAccess.getZSize() / 2);
+				vertBuffer.setTranslation(-blockAccess.getXSize() / 2, -ground, -blockAccess.getZSize() / 2);
 				vertBuffer.setBlockLayer(i == 0 ? BlockRenderLayer.SOLID : (i == 1 ? BlockRenderLayer.CUTOUT : BlockRenderLayer.TRANSLUCENT));
 				for (int x = 0; x < blockAccess.getXSize(); x++) {
 					for (int y = 0; y < blockAccess.getYSize(); y++) {
@@ -149,7 +163,6 @@ public class MenuWorldRenderer {
 								}
 								blockRenderer.renderBlock(state, pos, blockAccess, vertBuffer);
 							}
-							//if (state.getBlock() != Blocks.STONE && state.getBlock() != Blocks.AIR) System.out.println(state.getBlock());
 						}
 					}
 				}
@@ -160,6 +173,8 @@ public class MenuWorldRenderer {
 				vertexBuffers[i].bufferData(vertBuffer.getByteBuffer());
 			}
 			mc.gameSettings.ambientOcclusion = ao;
+			Shaders.shaderPackLoaded = shaders;
+			DefaultVertexFormats.updateVertexFormats();
 			ready = true;
 		}
 	}
@@ -179,13 +194,7 @@ public class MenuWorldRenderer {
 	public void setWorld(FakeBlockAccess blockAccess) {
 		this.blockAccess = blockAccess;
 		this.worldProvider = blockAccess.getDimensionType().createDimension();
-		try {
-			Method m = WorldProvider.class.getDeclaredMethod("generateLightBrightnessTable");
-			m.setAccessible(true);
-			m.invoke(this.worldProvider);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		MCReflection.invokeMethod(MCReflection.generateLightBrightnessTable, this.worldProvider);
         this.lightmapUpdateNeeded = true;
 	}
 	
@@ -354,7 +363,7 @@ public class MenuWorldRenderer {
             GlStateManager.disableTexture2D();
 
             GlStateManager.color(0.0F, 0.0F, 0.0F);
-            double d0 = mc.roomScale.getHMDPos_Room().yCoord - 63;
+            double d0 = y - 63;
 
             if (d0 < 0.0D)
             {
@@ -810,10 +819,7 @@ public class MenuWorldRenderer {
         }
 
         this.skyVBO = new VertexBuffer(this.vertexBufferFormat);
-        //this.renderSky(vertexbuffer, 16.0F, false);
-        Method m = RenderGlobal.class.getDeclaredMethod("renderSky", net.minecraft.client.renderer.VertexBuffer.class, Float.TYPE, Boolean.TYPE);
-        m.setAccessible(true);
-        m.invoke(mc.renderGlobal, vertexbuffer, 16.0F, false);
+        mc.renderGlobal.renderSky(vertexbuffer, 16.0F, false);
         vertexbuffer.finishDrawing();
         vertexbuffer.reset();
         this.skyVBO.bufferData(vertexbuffer.getByteBuffer());
@@ -828,10 +834,7 @@ public class MenuWorldRenderer {
             this.sky2VBO.deleteGlBuffers();
         }
         this.sky2VBO = new VertexBuffer(this.vertexBufferFormat);
-        //this.renderSky(vertexbuffer, -16.0F, true);
-        Method m = RenderGlobal.class.getDeclaredMethod("renderSky", net.minecraft.client.renderer.VertexBuffer.class, Float.TYPE, Boolean.TYPE);
-        m.setAccessible(true);
-        m.invoke(mc.renderGlobal, vertexbuffer, -16.0F, false);
+        mc.renderGlobal.renderSky(vertexbuffer, -16.0F, true);
         vertexbuffer.finishDrawing();
         vertexbuffer.reset();
         this.sky2VBO.bufferData(vertexbuffer.getByteBuffer());
@@ -848,10 +851,7 @@ public class MenuWorldRenderer {
         }
 
         this.starVBO = new VertexBuffer(this.vertexBufferFormat);
-        //this.renderStars(vertexbuffer);
-        Method m = RenderGlobal.class.getDeclaredMethod("renderStars", net.minecraft.client.renderer.VertexBuffer.class);
-        m.setAccessible(true);
-        m.invoke(mc.renderGlobal, vertexbuffer);
+        mc.renderGlobal.renderStars(vertexbuffer);
         vertexbuffer.finishDrawing();
         vertexbuffer.reset();
         this.starVBO.bufferData(vertexbuffer.getByteBuffer());

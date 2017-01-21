@@ -14,9 +14,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Enchantments;
 import net.minecraft.init.Items;
 import net.minecraft.item.EnumAction;
+import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemBow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketCustomPayload;
@@ -126,7 +128,7 @@ public class BowTracker {
 
 		float notchDistThreshold = (float) (0.3 * minecraft.vrPlayer.worldScale);
 		
-		ItemStack ammo = ((ItemBow) bow.getItem()).findAmmoItemStack(player);
+		ItemStack ammo = findAmmoItemStack(player);
 		
 		if(ammo !=null && notchDist <= notchDistThreshold && controllersDot <= notchDotThreshold)
 		{
@@ -227,8 +229,51 @@ public class BowTracker {
 	}
 	
 	
-	
-	
+    public ItemStack findAmmoItemStack(EntityPlayer player){
+        boolean flag = player.capabilities.isCreativeMode || EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, player.getHeldItemMainhand()) > 0;
+        ItemStack itemstack = this.findAmmo(player);
+
+        if (itemstack != null || flag)
+        {
+            if (itemstack == null)
+            {
+                return new ItemStack(Items.ARROW);
+            }
+        }
+        return itemstack;
+    }
+    
+    //The 2 methods below are from ItemBow.
+    private ItemStack findAmmo(EntityPlayer player)
+    {
+        if (this.isArrow(player.getHeldItem(EnumHand.OFF_HAND)))
+        {
+            return player.getHeldItem(EnumHand.OFF_HAND);
+        }
+        else if (this.isArrow(player.getHeldItem(EnumHand.MAIN_HAND)))
+        {
+            return player.getHeldItem(EnumHand.MAIN_HAND);
+        }
+        else
+        {
+            for (int i = 0; i < player.inventory.getSizeInventory(); ++i)
+            {
+                ItemStack itemstack = player.inventory.getStackInSlot(i);
+
+                if (this.isArrow(itemstack))
+                {
+                    return itemstack;
+                }
+            }
+
+            return ItemStack.EMPTY;
+        }
+    }
+
+    protected boolean isArrow(ItemStack stack)
+    {
+        return stack.getItem() instanceof ItemArrow;
+    }
 	
 }
 

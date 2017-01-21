@@ -31,7 +31,7 @@
  
      public Framebuffer(int width, int height, boolean useDepthIn)
      {
-@@ -32,10 +40,38 @@
+@@ -32,10 +40,42 @@
          this.framebufferColor[1] = 1.0F;
          this.framebufferColor[2] = 1.0F;
          this.framebufferColor[3] = 0.0F;
@@ -42,9 +42,8 @@
 +    public Framebuffer(String name, int width, int height, boolean useDepth, boolean generateMipMaps)
 +    {
 +        this(name, width, height, useDepth, generateMipMaps, false, 0,-1);
-     }
- 
--    public void createBindFramebuffer(int width, int height)
++    }
++
 +    
 +    public Framebuffer(String name, int width, int height, boolean useDepth, boolean generateMipMaps, boolean multisample, int multisamplecount, int textureID)
 +    {
@@ -66,13 +65,18 @@
 +//        }
 +
 +        this.createBindFramebuffer(width, height, textureID);
+     }
+ 
+-    public void createBindFramebuffer(int width, int height)
++    public void createBindFramebuffer(int width, int height){
++    	this.createBindFramebuffer(-width, height, -1);
 +    }
-+
++    
 +    public void createBindFramebuffer(int width, int height, int textureId)
      {
          if (!OpenGlHelper.isFramebufferEnabled())
          {
-@@ -51,7 +87,7 @@
+@@ -51,7 +91,7 @@
                  this.deleteFramebuffer();
              }
  
@@ -81,7 +85,7 @@
              this.checkFramebufferComplete();
              OpenGlHelper.glBindFramebuffer(OpenGlHelper.GL_FRAMEBUFFER, 0);
          }
-@@ -85,7 +121,7 @@
+@@ -85,7 +125,7 @@
          }
      }
  
@@ -90,7 +94,7 @@
      {
          this.framebufferWidth = width;
          this.framebufferHeight = height;
-@@ -99,13 +135,31 @@
+@@ -99,13 +139,31 @@
          else
          {
              this.framebufferObject = OpenGlHelper.glGenFramebuffers();
@@ -124,7 +128,7 @@
              this.setFramebufferFilter(9728);
              GlStateManager.bindTexture(this.framebufferTexture);
              GlStateManager.glTexImage2D(3553, 0, 32856, this.framebufferTextureWidth, this.framebufferTextureHeight, 0, 6408, 5121, (IntBuffer)null);
-@@ -114,9 +168,14 @@
+@@ -114,9 +172,14 @@
  
              if (this.useDepth)
              {
@@ -142,7 +146,7 @@
              }
  
              this.framebufferClear();
-@@ -137,6 +196,7 @@
+@@ -137,6 +200,7 @@
              GlStateManager.bindTexture(0);
          }
      }
@@ -150,7 +154,7 @@
  
      public void checkFramebufferComplete()
      {
-@@ -175,6 +235,13 @@
+@@ -175,6 +239,13 @@
          }
      }
  
@@ -164,7 +168,7 @@
      public void unbindFramebufferTexture()
      {
          if (OpenGlHelper.isFramebufferEnabled())
-@@ -214,10 +281,15 @@
+@@ -214,10 +285,15 @@
  
      public void framebufferRender(int width, int height)
      {
@@ -182,7 +186,7 @@
      {
          if (OpenGlHelper.isFramebufferEnabled())
          {
-@@ -230,12 +302,12 @@
+@@ -230,12 +306,12 @@
              GlStateManager.matrixMode(5888);
              GlStateManager.loadIdentity();
              GlStateManager.translate(0.0F, 0.0F, -2000.0F);
@@ -197,7 +201,7 @@
              {
                  GlStateManager.disableBlend();
                  GlStateManager.enableColorMaterial();
-@@ -276,4 +348,13 @@
+@@ -276,4 +352,26 @@
          GlStateManager.clear(i);
          this.unbindFramebuffer();
      }
@@ -210,4 +214,17 @@
 +        sb.append("Tex ID: " + framebufferTexture).append("\n");
 +        return sb.toString();
 +    }
++    
++    
++    //Forge Support
++    public boolean isStencilEnabled(){
++    	return true;
++    }
++    
++    public boolean enableStencil()
++    {
++        return true;
++    }
++    
++    
  }

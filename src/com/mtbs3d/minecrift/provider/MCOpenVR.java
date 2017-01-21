@@ -40,6 +40,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketClientStatus;
 import net.minecraft.network.play.client.CPacketClientStatus.State;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import optifine.Utils;
 
@@ -62,7 +63,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -214,13 +214,13 @@ public class MCOpenVR
 		return "openvr";
 	}
 
-	static KeyBinding hotbarNext = new KeyBinding("Hotbar Next", 201, "key.categories.gameplay");
-	static KeyBinding hotbarPrev = new KeyBinding("Hotbar Prev", 209, "key.categories.gameplay");
-	static KeyBinding rotateLeft = new KeyBinding("Rotate Left", 203, "key.categories.movement");
-	static KeyBinding rotateRight = new KeyBinding("Rotate Right", 205, "key.categories.movement");
-	static KeyBinding walkabout = new KeyBinding("Walkabout", 207, "key.categories.movement");
-	static KeyBinding rotateFree = new KeyBinding("Rotate Free", 199, "key.categories.movement");
-	static KeyBinding quickTorch = new KeyBinding("Quick Torch", 210, "key.categories.gameplay");
+	static KeyBinding hotbarNext = new KeyBinding("Hotbar Next", 201, "Vivecraft");
+	static KeyBinding hotbarPrev = new KeyBinding("Hotbar Prev", 209, "Vivecraft");
+	static KeyBinding rotateLeft = new KeyBinding("Rotate Left", 203, "Vivecraft");
+	static KeyBinding rotateRight = new KeyBinding("Rotate Right", 205, "Vivecraft");
+	static KeyBinding walkabout = new KeyBinding("Walkabout", 207, "Vivecraft");
+	static KeyBinding rotateFree = new KeyBinding("Rotate Free", 199, "Vivecraft");
+	static KeyBinding quickTorch = new KeyBinding("Quick Torch", 210, "Vivecraft");
 
 	
 	
@@ -608,7 +608,7 @@ public class MCOpenVR
 	public static void poll(long frameIndex)
 	{
 		Minecraft.getMinecraft().mcProfiler.startSection("input");
-		
+		boolean sleeping = (mc.world !=null && mc.player != null && mc.player.isPlayerSleeping());		
 	if(!mc.vrSettings.seated){
 		pollInputEvents();
 
@@ -618,7 +618,6 @@ public class MCOpenVR
 
 		
 		if(mc.world != null){
-			boolean sleeping = (mc.player != null && mc.player.isPlayerSleeping());
 			if(MCOpenVR.isVive){
 				processControllerButtons(sleeping, mc.currentScreen != null);
 				processTouchpadSampleBuffer();
@@ -626,9 +625,8 @@ public class MCOpenVR
 				processControllerButtonsOculus(sleeping, mc.currentScreen != null);
 				processTouchpadSampleBufferOculus();
 			}
-			processVRFunctions(sleeping, mc.currentScreen != null);
 		}
-		
+			
 		// GUI controls
 
 		Minecraft.getMinecraft().mcProfiler.endStartSection("gui");
@@ -641,6 +639,8 @@ public class MCOpenVR
 			processHotbar();
 		}
 	}
+	
+		processVRFunctions(sleeping, mc.currentScreen != null);
 	
 		Minecraft.getMinecraft().mcProfiler.endStartSection("updatePose");
 		updatePose();
@@ -839,9 +839,6 @@ public class MCOpenVR
 			mc.controllerPosY = controllerPos.y;
 			mc.controllerPosZ = controllerPos.z;
 		}
-
-		mc.currentScreen.mouseOffsetX = -1;
-		mc.currentScreen.mouseOffsetY = -1;
 
 		boolean lastpressedShift,pressedshift,lastpressedleftclick,
 		lastpressedrightclick,lastpressedmiddleclick,pressedleftclick,pressedrightclick,pressedmiddleclick;
@@ -1687,13 +1684,6 @@ public class MCOpenVR
 			moveModeSwitchcount = 0;
 		}
 		
-		//no jump key if cant.Not a good place for this check.
-		if(mc.gameSettings.keyBindJump.isPressed()) {
-			if(!mc.vrPlayer.getFreeMoveMode() && !mc.vrSettings.simulateFalling) {
-				mc.gameSettings.keyBindJump.unpressKey();
-			}
-		}
-
 		if(rotateLeft.isPressed()){
 			mc.vrSettings.vrWorldRotation+=mc.vrSettings.vrWorldRotationIncrement;
 			mc.vrSettings.vrWorldRotation = mc.vrSettings.vrWorldRotation % 360;
@@ -1725,7 +1715,7 @@ public class MCOpenVR
 				else {
 					mc.vrSettings.vrWorldRotation = walkaboutYawStart - yaw;
 					mc.vrSettings.vrWorldRotation %= 360; // Prevent stupidly large values (can they even happen here?)
-					mc.vrPlayer.checkandUpdateRotateScale(true);
+				//	mc.vrPlayer.checkandUpdateRotateScale(true);
 				}
 			} else {
 				isWalkingAbout = false;
@@ -1752,7 +1742,7 @@ public class MCOpenVR
 				}
 				else {
 					mc.vrSettings.vrWorldRotation = walkaboutYawStart + yaw;
-					mc.vrPlayer.checkandUpdateRotateScale(true);
+				//	mc.vrPlayer.checkandUpdateRotateScale(true,0);
 				}
 			} else {
 				isFreeRotate = false;
@@ -1834,11 +1824,9 @@ public class MCOpenVR
 				String str = new String(inbytes,0,len, StandardCharsets.UTF_8);
 				if (mc.currentScreen != null) { // experimental, needs testing
 					try {
-						Method m = GuiScreen.class.getDeclaredMethod("keyTyped", Character.TYPE, Integer.TYPE);
-						m.setAccessible(true);
 						for (char ch : str.toCharArray()) {
 							int[] codes = KeyboardSimulator.getCodes(ch);
-							m.invoke(mc.currentScreen, ch, codes.length > 0 ? codes[codes.length - 1] : 0);
+							mc.currentScreen.keyTypedPublic(ch, codes.length > 0 ? codes[codes.length - 1] : 0);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -2131,9 +2119,9 @@ public class MCOpenVR
 	 * @return Play area size or null if not valid
 	 */
 	public static float[] getPlayAreaSize() {
+		if (vrChaperone == null || vrChaperone.GetPlayAreaSize == null) return null;
 		FloatBuffer bufX = FloatBuffer.allocate(1);
 		FloatBuffer bufZ = FloatBuffer.allocate(1);
-		if (vrChaperone.GetPlayAreaSize == null) return null;
 		byte valid = vrChaperone.GetPlayAreaSize.apply(bufX, bufZ);
 		if (valid == 1) return new float[]{bufX.get(0), bufZ.get(0)};
 		return null;
@@ -2172,6 +2160,7 @@ public class MCOpenVR
 			//TODO reset scale things
 			MCOpenVR.guiScale = 2.0f;
 			mc.vrPlayer.worldScale = 1;
+			mc.vrPlayer.interpolatedWorldScale = 1;
 			mc.vrSettings.vrWorldRotationCached = mc.vrSettings.vrWorldRotation;
 			mc.vrSettings.vrWorldRotation = 0;
 			mc.vrPlayer.worldRotationRadians = (float) Math.toRadians( mc.vrSettings.vrWorldRotation);
@@ -2233,7 +2222,7 @@ public class MCOpenVR
 					|| (newScreen instanceof GuiRepair)
 					;
 
-			if(appearOverBlock && mc.objectMouseOver !=null){	
+			if(appearOverBlock && mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK){	
 
 				guiScale =(float) (Math.sqrt(mc.vrPlayer.worldScale) * 2);
 				guiPos_World =new Vector3f((float) mc.objectMouseOver.getBlockPos().getX() + 0.5f,
@@ -2499,7 +2488,6 @@ public class MCOpenVR
 					mc.vrSettings.vrWorldRotation += rotSpeed * rotMul * mc.getFrameDelta();
 					mc.vrSettings.vrWorldRotation %= 360; // Prevent stupidly large values
 					hmdForwardYaw = (float)Math.toDegrees(Math.atan2(headDirection.x, headDirection.z));    
-					mc.vrPlayer.checkandUpdateRotateScale(true);
 					Mouse.setCursorPosition(leftedge,Mouse.getY());
 					h=-rotStart;
 				}
@@ -2507,7 +2495,6 @@ public class MCOpenVR
 					mc.vrSettings.vrWorldRotation -= rotSpeed * rotMul * mc.getFrameDelta();
 					mc.vrSettings.vrWorldRotation %= 360; // Prevent stupidly large values
 					hmdForwardYaw = (float)Math.toDegrees(Math.atan2(headDirection.x, headDirection.z));    
-					mc.vrPlayer.checkandUpdateRotateScale(true);
 					Mouse.setCursorPosition(rightedge,Mouse.getY());
 					h=rotStart;
 				}

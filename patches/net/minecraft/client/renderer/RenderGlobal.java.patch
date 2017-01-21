@@ -43,6 +43,24 @@
      private List<ContainerLocalRenderInformation> renderInfosTileEntities = new ArrayList(1024);
      private List renderInfosNormal = new ArrayList(1024);
      private List renderInfosEntitiesNormal = new ArrayList(1024);
+@@ -391,7 +397,7 @@
+         }
+     }
+ 
+-    private void renderSky(VertexBuffer worldRendererIn, float posY, boolean reverseX)
++    public void renderSky(VertexBuffer worldRendererIn, float posY, boolean reverseX)
+     {
+         int i = 64;
+         int j = 6;
+@@ -454,7 +460,7 @@
+         }
+     }
+ 
+-    private void renderStars(VertexBuffer worldRendererIn)
++    public void renderStars(VertexBuffer worldRendererIn)
+     {
+         Random random = new Random(10842L);
+         worldRendererIn.begin(7, DefaultVertexFormats.POSITION);
 @@ -748,6 +754,8 @@
                              {
                                  boolean flag3 = this.mc.getRenderViewEntity() instanceof EntityLivingBase ? ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping() : false;

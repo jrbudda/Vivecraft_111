@@ -10,19 +10,7 @@
  import java.awt.Toolkit;
  import java.awt.datatransfer.ClipboardOwner;
  import java.awt.datatransfer.DataFlavor;
-@@ -48,6 +51,11 @@
-     private static final Set<String> PROTOCOLS = Sets.newHashSet(new String[] {"http", "https"});
-     private static final Splitter NEWLINE_SPLITTER = Splitter.on('\n');
- 
-+	/** MINECRIFT */
-+	public static int mouseOffsetX = 0;
-+	public static int mouseOffsetY = 0;
-+	/** END MINECRIFT */
-+    
-     /** Reference to the Minecraft object. */
-     protected Minecraft mc;
- 
-@@ -66,7 +74,7 @@
+@@ -66,7 +69,7 @@
      public boolean allowUserInput;
  
      /** The FontRenderer used by GuiScreen */
@@ -31,7 +19,7 @@
  
      /** The button that was just pressed. */
      private GuiButton selectedButton;
-@@ -78,6 +86,7 @@
+@@ -78,6 +81,7 @@
       */
      private int touchValue;
      private URI clickedLinkURI;
@@ -39,7 +27,7 @@
  
      /**
       * Draws the screen and all the components in it.
-@@ -103,6 +112,10 @@
+@@ -103,6 +107,10 @@
      {
          if (keyCode == 1)
          {
@@ -50,7 +38,18 @@
              this.mc.displayGuiScreen((GuiScreen)null);
  
              if (this.mc.currentScreen == null)
-@@ -558,7 +571,18 @@
+@@ -111,6 +119,10 @@
+             }
+         }
+     }
++    
++    public void keyTypedPublic(char typedChar, int keyCode) throws IOException {
++    	keyTyped(typedChar, keyCode);
++    }
+ 
+     protected <T extends GuiButton> T addButton(T p_189646_1_)
+     {
+@@ -558,7 +570,18 @@
          {
              while (Mouse.next())
              {
@@ -69,37 +68,23 @@
              }
          }
  
-@@ -576,10 +600,29 @@
-      */
-     public void handleMouseInput() throws IOException
-     {
-+
-         int i = Mouse.getEventX() * this.width / this.mc.displayWidth;
+@@ -580,6 +603,15 @@
          int j = this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1;
          int k = Mouse.getEventButton();
  
 +		/** MINECRIFT */
-+
 +    	if (mc.stereoProvider.isStereo()){
 +    		if(!MCOpenVR.controllerMouseValid){
 +				if (mc.mouseHelper.deltaX > 0 || mc.mouseHelper.deltaY> 0 )
 +        			MCOpenVR.controllerMouseValid = true;
 +				}
-+			}
-+    	
-+        // Reset mouse offset
-+        mouseOffsetX = -1;
-+        mouseOffsetY = -1;
-+        
-+//        int var1 = getMouseX();
-+//        int var2 = getMouseY();
-+//        int var3 = Mouse.getEventButton();
++			}  	      
 +		/** END MINECRIFT */
 +        
          if (Mouse.getEventButtonState())
          {
              if (this.mc.gameSettings.touchscreen && this.touchValue++ > 0)
-@@ -613,13 +656,20 @@
+@@ -613,13 +645,20 @@
       */
      public void handleKeyboardInput() throws IOException
      {
@@ -121,7 +106,7 @@
          this.mc.dispatchKeypresses();
      }
  
-@@ -649,7 +699,16 @@
+@@ -649,7 +688,16 @@
      {
          if (this.mc.world != null)
          {
@@ -139,7 +124,7 @@
          }
          else
          {
-@@ -727,7 +786,7 @@
+@@ -727,7 +775,7 @@
       */
      public static boolean isShiftKeyDown()
      {
@@ -148,7 +133,7 @@
      }
  
      /**
-@@ -765,4 +824,93 @@
+@@ -765,4 +813,75 @@
      {
          this.setWorldAndResolution(mcIn, w, h);
      }
@@ -213,32 +198,14 @@
 +    public int getMouseX()
 +    {
 +        int mX = Mouse.getX() * this.mc.currentScreen.width / this.mc.displayWidth;
-+        mX += (this.mouseOffsetX == -1 ? 0 : this.mouseOffsetX);
 +        return mX;
 +    }
 +
 +    public int getMouseY()
 +    {
 +        int mY = this.mc.currentScreen.height - Mouse.getY() * this.mc.currentScreen.height / this.mc.displayHeight - 1;
-+        mY += (this.mouseOffsetY == -1 ? 0 : this.mouseOffsetY);
 +        return mY;
 +    }
 +
-+    public int getActualMouseX()
-+    {
-+        int mX = Mouse.getX() * this.mc.currentScreen.width / this.mc.displayHeight;
-+        return mX;
-+    }
-+
-+    public int getActualMouseY()
-+    {
-+        int mY = this.mc.currentScreen.height - Mouse.getY() * this.mc.currentScreen.height / this.mc.displayHeight - 1;
-+        return mY;
-+    }
-+
-+    public List getButtonList()
-+    {
-+        return this.buttonList;
-+    }
 +    
  }
