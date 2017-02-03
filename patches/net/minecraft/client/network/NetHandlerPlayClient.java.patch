@@ -21,7 +21,20 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
-@@ -323,6 +330,17 @@
+@@ -294,6 +301,12 @@
+         this.guiScreenServer = p_i46300_2_;
+         this.netManager = networkManagerIn;
+         this.profile = profileIn;
++        
++        //VIVECRAFT
++        NetworkHelper.serverAllowsClimbey =false;
++        NetworkHelper.serverWantsData = false;
++        NetworkHelper.serverSupportsDirectTeleport = false;
++        //
+     }
+ 
+     /**
+@@ -323,6 +336,17 @@
          this.gameController.playerController.setGameType(packetIn.getGameType());
          this.gameController.gameSettings.sendSettingsToServer();
          this.netManager.sendPacket(new CPacketCustomPayload("MC|Brand", (new PacketBuffer(Unpooled.buffer())).writeString(ClientBrandRetriever.getClientModName())));
@@ -39,7 +52,7 @@
      }
  
      /**
-@@ -850,6 +868,10 @@
+@@ -850,6 +874,10 @@
      public void handleDisconnect(SPacketDisconnect packetIn)
      {
          this.netManager.closeChannel(packetIn.getReason());
@@ -50,7 +63,7 @@
      }
  
      /**
-@@ -926,8 +948,24 @@
+@@ -926,8 +954,24 @@
          }
          else
          {
@@ -77,7 +90,7 @@
      }
  
      /**
-@@ -2008,6 +2046,50 @@
+@@ -2008,6 +2052,56 @@
              String s1 = packetbuffer3.readString(256);
              this.gameController.getSoundHandler().stop(s1, SoundCategory.getByName(s));
          }
@@ -101,6 +114,12 @@
 +        		break;
 +        	case REQUESTDATA:
 +        		NetworkHelper.serverWantsData = true;
++        		break;
++        	case CLIMBING:
++        		NetworkHelper.serverAllowsClimbey = true;
++        		break;
++        	case TELEPORT:
++        		NetworkHelper.serverSupportsDirectTeleport = true;
 +        		break;
 +        	case UBERPACKET:
 +        		Long hi = packetbuffer.readLong();

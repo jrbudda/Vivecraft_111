@@ -125,7 +125,7 @@ public class GuiHUDSettings extends BaseGuiSettings
                 this.guivrSettings.hudOpacity = 0.95f;
                 this.guivrSettings.menuBackground = false;
                 this.guivrSettings.vrHudLockMode = guivrSettings.HUD_LOCK_HAND;
-                this.guivrSettings.hudOcclusion = true;
+                this.guivrSettings.hudOcclusion = false;
                 this.guivrSettings.menuAlwaysFollowFace = false;
 
                 Minecraft.getMinecraft().vrSettings.saveOptions();

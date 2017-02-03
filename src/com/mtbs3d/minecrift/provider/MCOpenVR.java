@@ -131,30 +131,32 @@ public class MCOpenVR
 	static float laimPitch = 0;
 	static float laimYaw = 0;
 
-	static Vec3d[] aimSource = new Vec3d[2];
+	static Vec3d[] aimSource = new Vec3d[3];
 
 	static Vector3f headDirection = new Vector3f();
 	static Vector3f controllerDirection = new Vector3f();
 	static Vector3f lcontrollerDirection = new Vector3f();
-
+	static Vector3f thirdcontrollerDirection = new Vector3f();
+	
 	static Vector3f offset=new Vector3f(0,0,0);
 
-	static boolean[] controllerTracking = new boolean[2];
+	static boolean[] controllerTracking = new boolean[3];
 	
 	// Controllers
 	private static int RIGHT_CONTROLLER = 0;
 	private static int LEFT_CONTROLLER = 1;
-	private static Matrix4f[] controllerPose = new Matrix4f[2];
-	private static Matrix4f[] controllerRotation = new Matrix4f[2];
-	private static Matrix4f[] handRotation = new Matrix4f[2];
-	private static int[] controllerDeviceIndex = new int[2];
-	private static VRControllerState_t.ByReference[] inputStateRefernceArray = new VRControllerState_t.ByReference[2];
-	private static VRControllerState_t[] lastControllerState = new VRControllerState_t[2];
-	private static VRControllerState_t[] controllerStateReference = new VRControllerState_t[2];
+	private static int THIRD_CONTROLLER = 2;
+	private static Matrix4f[] controllerPose = new Matrix4f[3];
+	private static Matrix4f[] controllerRotation = new Matrix4f[3];
+	private static Matrix4f[] handRotation = new Matrix4f[3];
+	private static int[] controllerDeviceIndex = new int[3];
+	private static VRControllerState_t.ByReference[] inputStateRefernceArray = new VRControllerState_t.ByReference[3];
+	private static VRControllerState_t[] lastControllerState = new VRControllerState_t[3];
+	private static VRControllerState_t[] controllerStateReference = new VRControllerState_t[3];
 	private static final int maxControllerVelocitySamples = 5;
-	private static Vec3d[][] controllerVelocitySamples = new Vec3d[2][maxControllerVelocitySamples];
-	private static int[] controllerVelocitySampleCount = new int[2];
-	private static Matrix4f[] controllerTipTransform = new Matrix4f[2];
+	private static Vec3d[][] controllerVelocitySamples = new Vec3d[3][maxControllerVelocitySamples];
+	private static int[] controllerVelocitySampleCount = new int[3];
+	private static Matrix4f[] controllerTipTransform = new Matrix4f[3];
 	
 	// Vive axes
 	private static int k_EAxis_Trigger = 1;
@@ -190,10 +192,11 @@ public class MCOpenVR
 	static int pollsSinceLastChange = 0;
 
 	// Touchpad samples
-	private static Vector2f[][] touchpadSamples = new Vector2f[2][5];
-	private static int[] touchpadSampleCount = new int[2];
+	private static Vector2f[][] touchpadSamples = new Vector2f[3][5];
+	private static int[] touchpadSampleCount = new int[3];
 
-	private static float[] inventory_swipe = new float[2];
+	private static float[] inventory_swipeX = new float[3];
+	private static float[] inventory_swipeY = new float[3];
 	
 	static boolean headIsTracking;
 	
@@ -221,14 +224,15 @@ public class MCOpenVR
 	static KeyBinding walkabout = new KeyBinding("Walkabout", 207, "Vivecraft");
 	static KeyBinding rotateFree = new KeyBinding("Rotate Free", 199, "Vivecraft");
 	static KeyBinding quickTorch = new KeyBinding("Quick Torch", 210, "Vivecraft");
-
-	
+//	static KeyBinding scrollUp = new KeyBinding("Scroll Up", -1, "Vivecraft");
+//	static KeyBinding scrollDown = new KeyBinding("Scroll Down", -1, "Vivecraft");
+//someday.
 	
 	public MCOpenVR()
 	{
 		super();
 
-		for (int c=0;c<2;c++)
+		for (int c=0;c<3;c++)
 		{
 			aimSource[c] = new Vec3d(0.0D, 0.0D, 0.0D);
 			for (int sample = 0; sample < 5; sample++)
@@ -260,7 +264,7 @@ public class MCOpenVR
 			{
 				controllerVelocitySamples[c][i] = new Vec3d(0, 0, 0);
 			}
-		}
+		}		
 	}
 
 	private static boolean tried;
@@ -418,6 +422,7 @@ public class MCOpenVR
 				String Type = ts[ts.length - 1];
 				String out = "";
 
+				
 				if (Type.equals("Float")) {
 					out += i.getName() + " " + vrsystem.GetFloatTrackedDeviceProperty.apply(JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd, i.getInt(null), hmdErrorStore);
 				}				else if (Type.equals("String")) {
@@ -623,7 +628,6 @@ public class MCOpenVR
 				processTouchpadSampleBuffer();
 			}else {
 				processControllerButtonsOculus(sleeping, mc.currentScreen != null);
-				processTouchpadSampleBufferOculus();
 			}
 		}
 			
@@ -689,6 +693,7 @@ public class MCOpenVR
 		
 		if(mc.player == null) return;
 		if(mc.player.inventory == null) return;
+		if(mc.climbTracker.isGrabbingLadder()) return;
 		
 		Vec3d main = getAimSource(0);
 		Vec3d off = getAimSource(1);
@@ -986,17 +991,6 @@ public class MCOpenVR
 	}
 
 	
-	public void beginFrame()
-	{
-		beginFrame(0);
-	}
-
-	
-	public void beginFrame(long frameIndex)
-	{
-
-	}
-
 	
 //	
 //	public HmdParameters getHMDInfo()
@@ -1072,14 +1066,19 @@ public class MCOpenVR
 	{
 		controllerDeviceIndex[RIGHT_CONTROLLER] = -1;
 		controllerDeviceIndex[LEFT_CONTROLLER] = -1;
-		
-			if(mc.vrSettings.vrReverseHands){
-				controllerDeviceIndex[RIGHT_CONTROLLER]  = vrsystem.GetTrackedDeviceIndexForControllerRole.apply(JOpenVRLibrary.ETrackedControllerRole.ETrackedControllerRole_TrackedControllerRole_LeftHand);
-				controllerDeviceIndex[LEFT_CONTROLLER] = vrsystem.GetTrackedDeviceIndexForControllerRole.apply(JOpenVRLibrary.ETrackedControllerRole.ETrackedControllerRole_TrackedControllerRole_RightHand);
-			}else {
-				controllerDeviceIndex[LEFT_CONTROLLER]  = vrsystem.GetTrackedDeviceIndexForControllerRole.apply(JOpenVRLibrary.ETrackedControllerRole.ETrackedControllerRole_TrackedControllerRole_LeftHand);
-				controllerDeviceIndex[RIGHT_CONTROLLER] = vrsystem.GetTrackedDeviceIndexForControllerRole.apply(JOpenVRLibrary.ETrackedControllerRole.ETrackedControllerRole_TrackedControllerRole_RightHand);
-			}
+
+		if(mc.vrSettings.vrReverseHands){
+			controllerDeviceIndex[RIGHT_CONTROLLER]  = vrsystem.GetTrackedDeviceIndexForControllerRole.apply(JOpenVRLibrary.ETrackedControllerRole.ETrackedControllerRole_TrackedControllerRole_LeftHand);
+			controllerDeviceIndex[LEFT_CONTROLLER] = vrsystem.GetTrackedDeviceIndexForControllerRole.apply(JOpenVRLibrary.ETrackedControllerRole.ETrackedControllerRole_TrackedControllerRole_RightHand);
+		}else {
+			controllerDeviceIndex[LEFT_CONTROLLER]  = vrsystem.GetTrackedDeviceIndexForControllerRole.apply(JOpenVRLibrary.ETrackedControllerRole.ETrackedControllerRole_TrackedControllerRole_LeftHand);
+			controllerDeviceIndex[RIGHT_CONTROLLER] = vrsystem.GetTrackedDeviceIndexForControllerRole.apply(JOpenVRLibrary.ETrackedControllerRole.ETrackedControllerRole_TrackedControllerRole_RightHand);
+		}
+
+		//int temp[] = new int[JOpenVRLibrary.k_unMaxTrackedDeviceCount];
+
+		//	vrsystem.GetSortedTrackedDeviceIndicesOfClass.apply(JOpenVRLibrary.ETrackedDeviceClass.ETrackedDeviceClass_TrackedDeviceClass_Controller, temp, temp.length, 0)
+
 	}
 
 	private static void updateControllerButtonState()
@@ -1348,7 +1347,8 @@ public class MCOpenVR
 		
 		if(pressedRAppMenu  && !lastpressedRAppMenu) { 
 			if(mc.gameSettings.keyBindPickBlock.isKeyDown() && mc.vrSettings.displayMirrorMode == mc.vrSettings.MIRROR_MIXED_REALITY){				
-				VRHotkeys.snapMRCam(mc);	
+				VRHotkeys.snapMRCam(mc,0);
+				mc.vrSettings.saveOptions();
 			}
 		}
 	}
@@ -1370,6 +1370,11 @@ public class MCOpenVR
 		boolean lastTouchedRTrigger = lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;	
 		boolean lastTouchedRStick = (lastControllerState[RIGHT_CONTROLLER].ulButtonTouched & k_buttonTouchpad) > 0;
 
+		boolean lastpressedRStickRight  = lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x  > 0.5 ;		
+		boolean lastpressedRStickLeft  = lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x  < -0.5 ;
+		boolean lastpressedRStickDown = lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y < -0.5 ;		
+		boolean lastpressedRStickUp  = lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y  > 0.5 ;
+
 		//current
 		boolean pressedRHandTrigger = (controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_button_HandTrigger) > 0;		
 		boolean pressedB = (controllerStateReference[RIGHT_CONTROLLER].ulButtonPressed & k_buttonAppMenu) > 0;
@@ -1384,6 +1389,12 @@ public class MCOpenVR
 		boolean TouchedRTrigger = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_Trigger].x > triggerThreshold;
 		boolean TouchedRStick = (controllerStateReference[RIGHT_CONTROLLER].ulButtonTouched & k_buttonTouchpad) > 0;
 
+		boolean pressedRStickRight  = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x  > 0.5 ;		
+		boolean pressedRStickLeft  = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x  < -0.5 ;
+		boolean pressedRStickDown = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y < -0.5 ;		
+		boolean pressedRStickUp  = controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y  > 0.5 ;
+
+		
 		if(!gui){ //ignore the left, right, middle mouse buttons
 			//R GRIP
 			if (pressedRHandTrigger && !lastpressedRHandTrigger) {
@@ -1431,7 +1442,24 @@ public class MCOpenVR
 		if (TouchedRStick && !lastTouchedRStick) {
 			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_TOUCH.ordinal()].press();
 		}
-
+		//R Stick Left
+		if (pressedRStickLeft && !lastpressedRStickLeft) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_LEFT.ordinal()].press();
+		}
+		//R Stick Right
+		if (pressedRStickRight && !lastpressedRStickRight) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_RIGHT.ordinal()].press();
+		}
+		//R Stick Up
+		if (pressedRStickUp && !lastpressedRStickUp) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_UP.ordinal()].press();
+		}
+		//R Stick Down
+		if (pressedRStickDown && !lastpressedRStickDown) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_DOWN.ordinal()].press();
+		}
+		
+		
 		//R GRIP
 		if (!pressedRHandTrigger && lastpressedRHandTrigger) {
 			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_HAND_TRIGGER_PRESS.ordinal()].unpress();
@@ -1475,6 +1503,23 @@ public class MCOpenVR
 			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_TOUCH.ordinal()].unpress();
 		}
 
+		//R Stick Left
+		if (!pressedRStickLeft && lastpressedRStickLeft) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_LEFT.ordinal()].unpress();
+		}
+		//R Stick Right
+		if (!pressedRStickRight && lastpressedRStickRight) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_RIGHT.ordinal()].unpress();
+		}
+		//R Stick Up
+		if (!pressedRStickUp && lastpressedRStickUp) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_UP.ordinal()].unpress();
+		}
+		//R Stick Down
+		if (!pressedRStickDown && lastpressedRStickDown) {
+			mc.vrSettings.buttonMappings[ViveButtons.OCULUS_RIGHT_STICK_DOWN.ordinal()].unpress();
+		}
+		
 		// LEFT controller
 		//last
 		boolean lastpressedLHandTrigger = (lastControllerState[LEFT_CONTROLLER].ulButtonPressed & k_buttonGrip) > 0;		
@@ -1659,10 +1704,21 @@ public class MCOpenVR
 
 		if(pressedA  && !lastpressedA) { //handle menu directly
 			if(mc.gameSettings.keyBindPickBlock.isKeyDown() && mc.vrSettings.displayMirrorMode == mc.vrSettings.MIRROR_MIXED_REALITY){				
-				VRHotkeys.snapMRCam(mc);	
+				VRHotkeys.snapMRCam(mc,0);
+				mc.vrSettings.saveOptions();
 			}
 		}
 
+		if(pressedRStickUp && !lastpressedRStickUp){
+			KeyboardSimulator.robot.mouseWheel(-25);
+			mc.vrPlayer.triggerHapticPulse(0, 100);
+		}
+		
+		if(pressedRStickDown && !lastpressedRStickDown){
+			KeyboardSimulator.robot.mouseWheel(25);
+			mc.vrPlayer.triggerHapticPulse(0, 100);
+		}
+		
 	}
 
 	private static void processVRFunctions(boolean sleeping, boolean gui) {
@@ -1750,9 +1806,17 @@ public class MCOpenVR
 		}
 		
 		
-		if(hotbarNext.isPressed()) changeHotbar(-1);
+		if(hotbarNext.isPressed()) {
+			changeHotbar(-1);
+			mc.vrPlayer.triggerHapticPulse(0, 250);
+			mc.vrPlayer.triggerHapticPulse(1, 250);
+		}
 		
-		if(hotbarPrev.isPressed()) changeHotbar(1);
+		if(hotbarPrev.isPressed()){
+			changeHotbar(1);
+			mc.vrPlayer.triggerHapticPulse(0, 250);
+			mc.vrPlayer.triggerHapticPulse(1, 250);
+		}
 		
 		if(quickTorch.isPressed() && mc.player != null){
 		    for (int slot=0;slot<9;slot++)
@@ -1825,8 +1889,18 @@ public class MCOpenVR
 				if (mc.currentScreen != null) { // experimental, needs testing
 					try {
 						for (char ch : str.toCharArray()) {
-							int[] codes = KeyboardSimulator.getCodes(ch);
-							mc.currentScreen.keyTypedPublic(ch, codes.length > 0 ? codes[codes.length - 1] : 0);
+							switch (ch) {
+								case '\r':
+								case '\n':
+								case '\t':
+								case '\b':
+									KeyboardSimulator.type(ch);
+									break;
+								default:
+									int[] codes = KeyboardSimulator.getCodes(ch);
+									mc.currentScreen.keyTypedPublic(ch, codes.length > 0 ? codes[codes.length - 1] : 0);
+									break;
+							}
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -1870,21 +1944,16 @@ public class MCOpenVR
 			touchpadSamples[controller][sample].y = 0;
 		}
 		touchpadSampleCount[controller] = 0;
-		inventory_swipe[controller] = 0;
+		inventory_swipeX[controller] = 0;
+		inventory_swipeY[controller] = 0;
 	}
+	
 
 	private static void processTouchpadSampleBuffer()
-	{
-		if (mc.player == null)
-			return;
-
-		if (mc.currentScreen != null){
-		// right touchpad controls mousewheel
-			int c =0;
+	{ 
+		for(int c=0;c<2;c++){
 			boolean touchpadPressed = (controllerStateReference[c].ulButtonPressed & k_buttonTouchpad) > 0;
-
-			if (touchpadSampleCount[c] > 3 && !touchpadPressed)
-			{
+			if (touchpadSampleCount[c] > 5 && !touchpadPressed){
 				int sample = touchpadSampleCount[c] - 5;
 				if (sample < 0)
 					sample = 0;
@@ -1892,109 +1961,68 @@ public class MCOpenVR
 				int nextSample = (sample + 1) % 5;
 
 				float deltaY = touchpadSamples[c][nextSample].y - touchpadSamples[c][sample].y;
-				inventory_swipe[c] += deltaY;
-
-				float swipeDistancePerInventorySlot = 0.4f;
-				if (inventory_swipe[c] > swipeDistancePerInventorySlot)
-				{
-					short duration = 225;
-					vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[c], 0, duration);
-					KeyboardSimulator.robot.mouseWheel(-25);
-					inventory_swipe[c] -= swipeDistancePerInventorySlot;
-				} else if (inventory_swipe[c] < -swipeDistancePerInventorySlot)
-				{
-					KeyboardSimulator.robot.mouseWheel(25);
-					short duration = 225;
-					vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[c], 0, duration);
-					inventory_swipe[c] += swipeDistancePerInventorySlot;
-				}
-			}
-		} else 	{
-		// left touchpad controls inventory
-			int c =1;
-			boolean touchpadPressed = (controllerStateReference[c].ulButtonPressed & k_buttonTouchpad) > 0;
-
-			if (touchpadSampleCount[c] > 3 && !touchpadPressed)
-			{
-				int sample = touchpadSampleCount[c] - 5;
-				if (sample < 0)
-					sample = 0;
-				sample = sample % 5;
-				int nextSample = (sample + 1) % 5;
-
 				float deltaX = touchpadSamples[c][nextSample].x - touchpadSamples[c][sample].x;
-				inventory_swipe[c] += deltaX;
 
-				float swipeDistancePerInventorySlot = 0.4f;
-				if (inventory_swipe[c] > swipeDistancePerInventorySlot)
+				inventory_swipeY[c] += deltaY;
+				inventory_swipeX[c] += deltaX;
+
+				float swipeDistancePerInventorySlot = 0.5f;
+				if (inventory_swipeX[c] > swipeDistancePerInventorySlot)
 				{
-					mc.player.inventory.changeCurrentItem(-1);
-					short duration = 250;
-					vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[c], 0, duration);
-
-					inventory_swipe[c] -= swipeDistancePerInventorySlot;
-				} else if (inventory_swipe[c] < -swipeDistancePerInventorySlot)
+					inventory_swipeX[c] -= swipeDistancePerInventorySlot;
+					if(c==0)
+						mc.vrSettings.buttonMappings[ViveButtons.BUTTON_RIGHT_TOUCHPAD_SWIPE_RIGHT.ordinal()].press();
+					else 
+						mc.vrSettings.buttonMappings[ViveButtons.BUTTON_LEFT_TOUCHPAD_SWIPE_RIGHT.ordinal()].press();
+				} else if (inventory_swipeX[c] < -swipeDistancePerInventorySlot)
 				{
-					mc.player.inventory.changeCurrentItem(1);
-
-					short duration = 250;
-					vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[c], 0, duration);
-					inventory_swipe[c] += swipeDistancePerInventorySlot;
+					inventory_swipeX[c] += swipeDistancePerInventorySlot;
+					if(c==0)
+						mc.vrSettings.buttonMappings[ViveButtons.BUTTON_RIGHT_TOUCHPAD_SWIPE_LEFT.ordinal()].press();
+					else 
+						mc.vrSettings.buttonMappings[ViveButtons.BUTTON_LEFT_TOUCHPAD_SWIPE_LEFT.ordinal()].press();
 				}
+
+				if (inventory_swipeY[c] > swipeDistancePerInventorySlot)
+				{
+					inventory_swipeY[c] -= swipeDistancePerInventorySlot;
+					if(c==0){
+						if (mc.currentScreen != null){
+							mc.vrPlayer.triggerHapticPulse(0, 100);
+							KeyboardSimulator.robot.mouseWheel(-25); //still hardcoded GUI scrolling
+						}else
+							mc.vrSettings.buttonMappings[ViveButtons.BUTTON_RIGHT_TOUCHPAD_SWIPE_UP.ordinal()].press();
+					}else
+						mc.vrSettings.buttonMappings[ViveButtons.BUTTON_LEFT_TOUCHPAD_SWIPE_UP.ordinal()].press();
+
+
+				} else if (inventory_swipeY[c] < -swipeDistancePerInventorySlot)
+				{
+					inventory_swipeY[c] += swipeDistancePerInventorySlot;
+					if(c==0){
+						if (mc.currentScreen != null){
+							mc.vrPlayer.triggerHapticPulse(0, 100);
+							KeyboardSimulator.robot.mouseWheel(25); //still hardcoded GUI scrolling
+						}else
+							mc.vrSettings.buttonMappings[ViveButtons.BUTTON_RIGHT_TOUCHPAD_SWIPE_DOWN.ordinal()].press();
+					}else
+						mc.vrSettings.buttonMappings[ViveButtons.BUTTON_LEFT_TOUCHPAD_SWIPE_DOWN.ordinal()].press();
+				}		
 			}
 		}
 	}
 
-	private static void processTouchpadSampleBufferOculus()
-	{
-		if (mc.player == null)
-			return;
 
-		if (mc.currentScreen != null){
-			// right touchpad controls mousewheel
-
-			if (controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y > 0.5 &&
-					lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y < 0.5 
-					){
-				KeyboardSimulator.robot.mouseWheel(-25);
-				short duration = 100;
-				vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[0], 0, duration);
-			}	
-			
-			if (controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y < -0.5 &&
-					lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].y > -0.5 
-					){
-				KeyboardSimulator.robot.mouseWheel(25);
-				short duration = 100;
-				vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[0], 0, duration);
-			}	
-
-		} else 	{
-			if (controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x > 0.5 &&
-					lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x < 0.5 
-					){
-				mc.player.inventory.changeCurrentItem(-1);
-				short duration = 250;
-				vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[0], 0, duration);
-			}	
-
-			if (controllerStateReference[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x < -0.5 &&
-					lastControllerState[RIGHT_CONTROLLER].rAxis[k_EAxis_TouchPad].x > -0.5 
-					){
-				mc.player.inventory.changeCurrentItem(1);
-				short duration = 250;
-				vrsystem.TriggerHapticPulse.apply(controllerDeviceIndex[0], 0, duration);
-			}			
-		}
-	}
-	
+	static boolean derp = false;
 	private static void updatePose()
 	{
 		if ( vrsystem == null || vrCompositor == null )
 			return;
 
-		vrCompositor.WaitGetPoses.apply(hmdTrackedDevicePoseReference, JOpenVRLibrary.k_unMaxTrackedDeviceCount, null, 0);
-
+		
+		int ret = vrCompositor.WaitGetPoses.apply(hmdTrackedDevicePoseReference, JOpenVRLibrary.k_unMaxTrackedDeviceCount, null, 0);
+		if(ret>0)System.out.println("Compositor Error: GetPoseError " + OpenVRStereoRenderer.getCompostiorError(ret)); 
+		controllerDeviceIndex[THIRD_CONTROLLER] = -1;
 		for (int nDevice = 0; nDevice < JOpenVRLibrary.k_unMaxTrackedDeviceCount; ++nDevice )
 		{
 			hmdTrackedDevicePoses[nDevice].read();
@@ -2002,14 +2030,16 @@ public class MCOpenVR
 			{
 				jopenvr.OpenVRUtil.convertSteamVRMatrix3ToMatrix4f(hmdTrackedDevicePoses[nDevice].mDeviceToAbsoluteTracking, poseMatrices[nDevice]);
 				deviceVelocity[nDevice] = new Vec3d(hmdTrackedDevicePoses[nDevice].vVelocity.v[0],hmdTrackedDevicePoses[nDevice].vVelocity.v[1],hmdTrackedDevicePoses[nDevice].vVelocity.v[2]);
-			
-//				deviceVelocity[nDevice].xCoord = hmdTrackedDevicePoses[nDevice].vVelocity.v[0];
-//				deviceVelocity[nDevice].yCoord = hmdTrackedDevicePoses[nDevice].vVelocity.v[1];
-//				deviceVelocity[nDevice].zCoord = hmdTrackedDevicePoses[nDevice].vVelocity.v[2];
+			}		
+			if(mc.vrSettings.displayMirrorMode == VRSettings.MIRROR_MIXED_REALITY){
+				int c = vrsystem.GetTrackedDeviceClass.apply(nDevice);
+				int r = vrsystem.GetControllerRoleForTrackedDeviceIndex.apply(nDevice);
+				if(!derp) System.out.println("Device: " + nDevice + " class " + c + " role " + r);
+				if((c == 2 && r == 0) || c == 3) controllerDeviceIndex[THIRD_CONTROLLER] = nDevice;
 			}
 		}
-
-		if ( hmdTrackedDevicePoses[JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd].bPoseIsValid != 0 )
+		derp = true;
+		if (hmdTrackedDevicePoses[JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd].bPoseIsValid != 0 )
 		{
 			OpenVRUtil.Matrix4fCopy(poseMatrices[JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd], hmdPose);
 			headIsTracking = true;
@@ -2023,7 +2053,7 @@ public class MCOpenVR
 
 		findControllerDevices();
 
-		for (int c=0;c<2;c++)
+		for (int c=0;c<3;c++)
 		{
 			if (controllerDeviceIndex[c] != -1)
 			{
@@ -2033,12 +2063,12 @@ public class MCOpenVR
 			else
 			{
 				controllerTracking[c] = false;
-     			//OpenVRUtil.Matrix4fSetIdentity(controllerPose[c]);
+				//OpenVRUtil.Matrix4fSetIdentity(controllerPose[c]);
 			}
 		}
 
 		getTipTransforms();
-		
+
 		updateAim();
 
 	}
@@ -2297,7 +2327,7 @@ public class MCOpenVR
     Vector3f forward = new Vector3f(0,0,-1);
 	
 	Vec3d getAimVector( int controller ) {
-		Matrix4f aimRotation = controller == 0 ? controllerRotation[0]: controllerRotation[1];
+		Matrix4f aimRotation = controllerRotation[controller];
         Vector3f controllerDirection = aimRotation.transform(forward);
 		Vec3d out = new Vec3d(controllerDirection.x, controllerDirection.y,controllerDirection.z);
 		return out;
@@ -2306,11 +2336,11 @@ public class MCOpenVR
 	
 	
 	public static Matrix4f getAimRotation( int controller ) {
-		return controller == 0 ? controllerRotation[0]: controllerRotation[1];
+		return controllerRotation[controller];
 	}
 	
 	public static Matrix4f getHandRotation( int controller ) {
-		return controller == 0 ? handRotation[0]: handRotation[1];
+		return handRotation[controller];
 	}
 	
 	
@@ -2392,197 +2422,237 @@ public class MCOpenVR
 			return;
 		Vector3f forward = new Vector3f(0,0,-1);
 		
-		hmdRotation.M[0][0] = hmdPose.M[0][0];
-		hmdRotation.M[0][1] = hmdPose.M[0][1];
-		hmdRotation.M[0][2] = hmdPose.M[0][2];
-		hmdRotation.M[0][3] = 0.0F;
-		hmdRotation.M[1][0] = hmdPose.M[1][0];
-		hmdRotation.M[1][1] = hmdPose.M[1][1];
-		hmdRotation.M[1][2] = hmdPose.M[1][2];
-		hmdRotation.M[1][3] = 0.0F;
-		hmdRotation.M[2][0] = hmdPose.M[2][0];
-		hmdRotation.M[2][1] = hmdPose.M[2][1];
-		hmdRotation.M[2][2] = hmdPose.M[2][2];
-		hmdRotation.M[2][3] = 0.0F;
-		hmdRotation.M[3][0] = 0.0F;
-		hmdRotation.M[3][1] = 0.0F;
-		hmdRotation.M[3][2] = 0.0F;
-		hmdRotation.M[3][3] = 1.0F;
-		
-		headDirection = hmdRotation.transform(forward);
-		
-		Vec3d eye = getCenterEyePosition();
-		hmdHistory.add(eye);
-		Vector3f v3 = MCOpenVR.hmdRotation.transform(new Vector3f(0,-.1f, .1f));
-		hmdPivotHistory.add(new Vec3d(v3.x+eye.xCoord, v3.y+eye.yCoord, v3.z+eye.zCoord));
-						
-		handRotation[0].M[0][0] = controllerPose[0].M[0][0];
-		handRotation[0].M[0][1] = controllerPose[0].M[0][1];
-		handRotation[0].M[0][2] = controllerPose[0].M[0][2];
-		handRotation[0].M[0][3] = 0.0F;
-		handRotation[0].M[1][0] = controllerPose[0].M[1][0];
-		handRotation[0].M[1][1] = controllerPose[0].M[1][1];
-		handRotation[0].M[1][2] = controllerPose[0].M[1][2];
-		handRotation[0].M[1][3] = 0.0F;
-		handRotation[0].M[2][0] = controllerPose[0].M[2][0];
-		handRotation[0].M[2][1] = controllerPose[0].M[2][1];
-		handRotation[0].M[2][2] = controllerPose[0].M[2][2];
-		handRotation[0].M[2][3] = 0.0F;
-		handRotation[0].M[3][0] = 0.0F;
-		handRotation[0].M[3][1] = 0.0F;
-		handRotation[0].M[3][2] = 0.0F;
-		handRotation[0].M[3][3] = 1.0F;	
-		
-		if(mc.vrSettings.seated){
-			controllerPose[0] = hmdPose.inverted().inverted();
-			controllerPose[1] = hmdPose.inverted().inverted();
-		} else	
-			controllerPose[0] = Matrix4f.multiply(controllerPose[0], controllerTipTransform[0]);
-		
-		// grab controller position in tracker space, scaled to minecraft units
-		Vector3f controllerPos = OpenVRUtil.convertMatrix4ftoTranslationVector(controllerPose[0]);
-		aimSource[0] = new Vec3d(
-			 controllerPos.x,
-			 controllerPos.y,
-			 controllerPos.z);
+		{//hmd
+			hmdRotation.M[0][0] = hmdPose.M[0][0];
+			hmdRotation.M[0][1] = hmdPose.M[0][1];
+			hmdRotation.M[0][2] = hmdPose.M[0][2];
+			hmdRotation.M[0][3] = 0.0F;
+			hmdRotation.M[1][0] = hmdPose.M[1][0];
+			hmdRotation.M[1][1] = hmdPose.M[1][1];
+			hmdRotation.M[1][2] = hmdPose.M[1][2];
+			hmdRotation.M[1][3] = 0.0F;
+			hmdRotation.M[2][0] = hmdPose.M[2][0];
+			hmdRotation.M[2][1] = hmdPose.M[2][1];
+			hmdRotation.M[2][2] = hmdPose.M[2][2];
+			hmdRotation.M[2][3] = 0.0F;
+			hmdRotation.M[3][0] = 0.0F;
+			hmdRotation.M[3][1] = 0.0F;
+			hmdRotation.M[3][2] = 0.0F;
+			hmdRotation.M[3][3] = 1.0F;
 
-		controllerHistory[0].add(aimSource[0]);
-	
-		// build matrix describing controller rotation
-		controllerRotation[0].M[0][0] = controllerPose[0].M[0][0];
-		controllerRotation[0].M[0][1] = controllerPose[0].M[0][1];
-		controllerRotation[0].M[0][2] = controllerPose[0].M[0][2];
-		controllerRotation[0].M[0][3] = 0.0F;
-		controllerRotation[0].M[1][0] = controllerPose[0].M[1][0];
-		controllerRotation[0].M[1][1] = controllerPose[0].M[1][1];
-		controllerRotation[0].M[1][2] = controllerPose[0].M[1][2];
-		controllerRotation[0].M[1][3] = 0.0F;
-		controllerRotation[0].M[2][0] = controllerPose[0].M[2][0];
-		controllerRotation[0].M[2][1] = controllerPose[0].M[2][1];
-		controllerRotation[0].M[2][2] = controllerPose[0].M[2][2];
-		controllerRotation[0].M[2][3] = 0.0F;
-		controllerRotation[0].M[3][0] = 0.0F;
-		controllerRotation[0].M[3][1] = 0.0F;
-		controllerRotation[0].M[3][2] = 0.0F;
-		controllerRotation[0].M[3][3] = 1.0F;
+			headDirection = hmdRotation.transform(forward);
 
-		if(mc.vrSettings.seated && mc.currentScreen == null){
-			org.lwjgl.util.vector.Matrix4f temp = new org.lwjgl.util.vector.Matrix4f();
-			
-			float hRange = 110;
-			float vRange = 180;
-			double h = Mouse.getX() / (double) mc.displayWidth * hRange - (hRange / 2);
-			double v = Mouse.getY() / (double) mc.displayHeight * vRange - (vRange / 2);
+			Vec3d eye = getCenterEyePosition();
+			hmdHistory.add(eye);
+			Vector3f v3 = MCOpenVR.hmdRotation.transform(new Vector3f(0,-.1f, .1f));
+			hmdPivotHistory.add(new Vec3d(v3.x+eye.xCoord, v3.y+eye.yCoord, v3.z+eye.zCoord));
+		}
+		
+		{//right controller
+			handRotation[0].M[0][0] = controllerPose[0].M[0][0];
+			handRotation[0].M[0][1] = controllerPose[0].M[0][1];
+			handRotation[0].M[0][2] = controllerPose[0].M[0][2];
+			handRotation[0].M[0][3] = 0.0F;
+			handRotation[0].M[1][0] = controllerPose[0].M[1][0];
+			handRotation[0].M[1][1] = controllerPose[0].M[1][1];
+			handRotation[0].M[1][2] = controllerPose[0].M[1][2];
+			handRotation[0].M[1][3] = 0.0F;
+			handRotation[0].M[2][0] = controllerPose[0].M[2][0];
+			handRotation[0].M[2][1] = controllerPose[0].M[2][1];
+			handRotation[0].M[2][2] = controllerPose[0].M[2][2];
+			handRotation[0].M[2][3] = 0.0F;
+			handRotation[0].M[3][0] = 0.0F;
+			handRotation[0].M[3][1] = 0.0F;
+			handRotation[0].M[3][2] = 0.0F;
+			handRotation[0].M[3][3] = 1.0F;	
 
-			double nPitch=-v;
+			if(mc.vrSettings.seated){
+				controllerPose[0] = hmdPose.inverted().inverted();
+				controllerPose[1] = hmdPose.inverted().inverted();
+			} else	
+				controllerPose[0] = Matrix4f.multiply(controllerPose[0], controllerTipTransform[0]);
 
-			if(Display.isActive()){
-				float rotStart = mc.vrSettings.keyholeX;
-				float rotSpeed = 2000 * mc.vrSettings.xSensitivity;
-				int leftedge=(int)((-rotStart + (hRange / 2)) *(double) mc.displayWidth / hRange )+1;
-				int rightedge=(int)((rotStart + (hRange / 2)) *(double) mc.displayWidth / hRange )-1;
-				float rotMul = ((float)Math.abs(h) - rotStart) / ((hRange / 2) - rotStart); // Scaled 0...1 from rotStart to FOV edge
-				if(rotMul > 0.15) rotMul = 0.15f;
-				
-				if(h < -rotStart){
-					mc.vrSettings.vrWorldRotation += rotSpeed * rotMul * mc.getFrameDelta();
-					mc.vrSettings.vrWorldRotation %= 360; // Prevent stupidly large values
-					hmdForwardYaw = (float)Math.toDegrees(Math.atan2(headDirection.x, headDirection.z));    
-					Mouse.setCursorPosition(leftedge,Mouse.getY());
-					h=-rotStart;
+			// grab controller position in tracker space, scaled to minecraft units
+			Vector3f controllerPos = OpenVRUtil.convertMatrix4ftoTranslationVector(controllerPose[0]);
+			aimSource[0] = new Vec3d(
+					controllerPos.x,
+					controllerPos.y,
+					controllerPos.z);
+
+			controllerHistory[0].add(aimSource[0]);
+
+			// build matrix describing controller rotation
+			controllerRotation[0].M[0][0] = controllerPose[0].M[0][0];
+			controllerRotation[0].M[0][1] = controllerPose[0].M[0][1];
+			controllerRotation[0].M[0][2] = controllerPose[0].M[0][2];
+			controllerRotation[0].M[0][3] = 0.0F;
+			controllerRotation[0].M[1][0] = controllerPose[0].M[1][0];
+			controllerRotation[0].M[1][1] = controllerPose[0].M[1][1];
+			controllerRotation[0].M[1][2] = controllerPose[0].M[1][2];
+			controllerRotation[0].M[1][3] = 0.0F;
+			controllerRotation[0].M[2][0] = controllerPose[0].M[2][0];
+			controllerRotation[0].M[2][1] = controllerPose[0].M[2][1];
+			controllerRotation[0].M[2][2] = controllerPose[0].M[2][2];
+			controllerRotation[0].M[2][3] = 0.0F;
+			controllerRotation[0].M[3][0] = 0.0F;
+			controllerRotation[0].M[3][1] = 0.0F;
+			controllerRotation[0].M[3][2] = 0.0F;
+			controllerRotation[0].M[3][3] = 1.0F;
+
+			if(mc.vrSettings.seated && mc.currentScreen == null){
+				org.lwjgl.util.vector.Matrix4f temp = new org.lwjgl.util.vector.Matrix4f();
+
+				float hRange = 110;
+				float vRange = 180;
+				double h = Mouse.getX() / (double) mc.displayWidth * hRange - (hRange / 2);
+				double v = Mouse.getY() / (double) mc.displayHeight * vRange - (vRange / 2);
+
+				double nPitch=-v;
+
+				if(Display.isActive()){
+					float rotStart = mc.vrSettings.keyholeX;
+					float rotSpeed = 2000 * mc.vrSettings.xSensitivity;
+					int leftedge=(int)((-rotStart + (hRange / 2)) *(double) mc.displayWidth / hRange )+1;
+					int rightedge=(int)((rotStart + (hRange / 2)) *(double) mc.displayWidth / hRange )-1;
+					float rotMul = ((float)Math.abs(h) - rotStart) / ((hRange / 2) - rotStart); // Scaled 0...1 from rotStart to FOV edge
+					if(rotMul > 0.15) rotMul = 0.15f;
+
+					if(h < -rotStart){
+						mc.vrSettings.vrWorldRotation += rotSpeed * rotMul * mc.getFrameDelta();
+						mc.vrSettings.vrWorldRotation %= 360; // Prevent stupidly large values
+						hmdForwardYaw = (float)Math.toDegrees(Math.atan2(headDirection.x, headDirection.z));    
+						Mouse.setCursorPosition(leftedge,Mouse.getY());
+						h=-rotStart;
+					}
+					if(h > rotStart){
+						mc.vrSettings.vrWorldRotation -= rotSpeed * rotMul * mc.getFrameDelta();
+						mc.vrSettings.vrWorldRotation %= 360; // Prevent stupidly large values
+						hmdForwardYaw = (float)Math.toDegrees(Math.atan2(headDirection.x, headDirection.z));    
+						Mouse.setCursorPosition(rightedge,Mouse.getY());
+						h=rotStart;
+					}
+
+					double ySpeed=0.5 * mc.vrSettings.ySensitivity;
+					nPitch=aimPitch+(v)*ySpeed;
+					nPitch=MathHelper.clamp(nPitch,-89.9,89.9);
+					Mouse.setCursorPosition(Mouse.getX(),mc.displayHeight/2);
+
 				}
-				if(h > rotStart){
-					mc.vrSettings.vrWorldRotation -= rotSpeed * rotMul * mc.getFrameDelta();
-					mc.vrSettings.vrWorldRotation %= 360; // Prevent stupidly large values
-					hmdForwardYaw = (float)Math.toDegrees(Math.atan2(headDirection.x, headDirection.z));    
-					Mouse.setCursorPosition(rightedge,Mouse.getY());
-					h=rotStart;
-				}
+				temp.rotate((float) Math.toRadians(-nPitch), new org.lwjgl.util.vector.Vector3f(1,0,0));
 
-				double ySpeed=0.5 * mc.vrSettings.ySensitivity;
-				nPitch=aimPitch+(v)*ySpeed;
-				nPitch=MathHelper.clamp(nPitch,-90,90);
-				Mouse.setCursorPosition(Mouse.getX(),mc.displayHeight/2);
+				temp.rotate((float) Math.toRadians(-180 + h - hmdForwardYaw), new org.lwjgl.util.vector.Vector3f(0,1,0));
 
+				controllerRotation[0].M[0][0] = temp.m00;
+				controllerRotation[0].M[0][1] = temp.m01;
+				controllerRotation[0].M[0][2] = temp.m02;
+
+				controllerRotation[0].M[1][0] = temp.m10;
+				controllerRotation[0].M[1][1] = temp.m11;
+				controllerRotation[0].M[1][2] = temp.m12;
+
+				controllerRotation[0].M[2][0] = temp.m20;
+				controllerRotation[0].M[2][1] = temp.m21;
+				controllerRotation[0].M[2][2] = temp.m22;
 			}
-			temp.rotate((float) Math.toRadians(-nPitch), new org.lwjgl.util.vector.Vector3f(1,0,0));
-			
-			temp.rotate((float) Math.toRadians(-180 + h - hmdForwardYaw), new org.lwjgl.util.vector.Vector3f(0,1,0));
-			
-			controllerRotation[0].M[0][0] = temp.m00;
-			controllerRotation[0].M[0][1] = temp.m01;
-			controllerRotation[0].M[0][2] = temp.m02;
-			
-			controllerRotation[0].M[1][0] = temp.m10;
-			controllerRotation[0].M[1][1] = temp.m11;
-			controllerRotation[0].M[1][2] = temp.m12;
-			
-			controllerRotation[0].M[2][0] = temp.m20;
-			controllerRotation[0].M[2][1] = temp.m21;
-			controllerRotation[0].M[2][2] = temp.m22;
+
+			// Calculate aim angles from controller orientation
+			// Minecraft entities don't have a roll, so just base it on a direction
+			controllerDirection = controllerRotation[0].transform(forward);
+			aimPitch = (float)Math.toDegrees(Math.asin(controllerDirection.y/controllerDirection.length()));
+			aimYaw = (float)Math.toDegrees(Math.atan2(controllerDirection.x, controllerDirection.z));
 		}
 		
-		// Calculate aim angles from controller orientation
-		// Minecraft entities don't have a roll, so just base it on a direction
-		controllerDirection = controllerRotation[0].transform(forward);
-		aimPitch = (float)Math.toDegrees(Math.asin(controllerDirection.y/controllerDirection.length()));
-		aimYaw = (float)Math.toDegrees(Math.atan2(controllerDirection.x, controllerDirection.z));
+		{//left controller
+			handRotation[1].M[0][0] = controllerPose[1].M[0][0];
+			handRotation[1].M[0][1] = controllerPose[1].M[0][1];
+			handRotation[1].M[0][2] = controllerPose[1].M[0][2];
+			handRotation[1].M[0][3] = 0.0F;
+			handRotation[1].M[1][0] = controllerPose[1].M[1][0];
+			handRotation[1].M[1][1] = controllerPose[1].M[1][1];
+			handRotation[1].M[1][2] = controllerPose[1].M[1][2];
+			handRotation[1].M[1][3] = 0.0F;
+			handRotation[1].M[2][0] = controllerPose[1].M[2][0];
+			handRotation[1].M[2][1] = controllerPose[1].M[2][1];
+			handRotation[1].M[2][2] = controllerPose[1].M[2][2];
+			handRotation[1].M[2][3] = 0.0F;
+			handRotation[1].M[3][0] = 0.0F;
+			handRotation[1].M[3][1] = 0.0F;
+			handRotation[1].M[3][2] = 0.0F;
+			handRotation[1].M[3][3] = 1.0F;	
 
+			// update off hand aim
+			if(!mc.vrSettings.seated) 
+				controllerPose[1] = Matrix4f.multiply(controllerPose[1], controllerTipTransform[1]);
 
-		handRotation[1].M[0][0] = controllerPose[1].M[0][0];
-		handRotation[1].M[0][1] = controllerPose[1].M[0][1];
-		handRotation[1].M[0][2] = controllerPose[1].M[0][2];
-		handRotation[1].M[0][3] = 0.0F;
-		handRotation[1].M[1][0] = controllerPose[1].M[1][0];
-		handRotation[1].M[1][1] = controllerPose[1].M[1][1];
-		handRotation[1].M[1][2] = controllerPose[1].M[1][2];
-		handRotation[1].M[1][3] = 0.0F;
-		handRotation[1].M[2][0] = controllerPose[1].M[2][0];
-		handRotation[1].M[2][1] = controllerPose[1].M[2][1];
-		handRotation[1].M[2][2] = controllerPose[1].M[2][2];
-		handRotation[1].M[2][3] = 0.0F;
-		handRotation[1].M[3][0] = 0.0F;
-		handRotation[1].M[3][1] = 0.0F;
-		handRotation[1].M[3][2] = 0.0F;
-		handRotation[1].M[3][3] = 1.0F;	
-		
-		// update off hand aim
-		if(!mc.vrSettings.seated) 
-			controllerPose[1] = Matrix4f.multiply(controllerPose[1], controllerTipTransform[1]);
-		
-		Vector3f leftControllerPos = OpenVRUtil.convertMatrix4ftoTranslationVector(controllerPose[1]);
-		aimSource[1] = new Vec3d(
-				leftControllerPos.x,
-				leftControllerPos.y,
-				leftControllerPos.z);
-		controllerHistory[1].add(aimSource[1]);
+			Vector3f leftControllerPos = OpenVRUtil.convertMatrix4ftoTranslationVector(controllerPose[1]);
+			aimSource[1] = new Vec3d(
+					leftControllerPos.x,
+					leftControllerPos.y,
+					leftControllerPos.z);
+			controllerHistory[1].add(aimSource[1]);
 
-		// build matrix describing controller rotation
-		controllerRotation[1].M[0][0] = controllerPose[1].M[0][0];
-		controllerRotation[1].M[0][1] = controllerPose[1].M[0][1];
-		controllerRotation[1].M[0][2] = controllerPose[1].M[0][2];
-		controllerRotation[1].M[0][3] = 0.0F;
-		controllerRotation[1].M[1][0] = controllerPose[1].M[1][0];
-		controllerRotation[1].M[1][1] = controllerPose[1].M[1][1];
-		controllerRotation[1].M[1][2] = controllerPose[1].M[1][2];
-		controllerRotation[1].M[1][3] = 0.0F;
-		controllerRotation[1].M[2][0] = controllerPose[1].M[2][0];
-		controllerRotation[1].M[2][1] = controllerPose[1].M[2][1];
-		controllerRotation[1].M[2][2] = controllerPose[1].M[2][2];
-		controllerRotation[1].M[2][3] = 0.0F;
-		controllerRotation[1].M[3][0] = 0.0F;
-		controllerRotation[1].M[3][1] = 0.0F;
-		controllerRotation[1].M[3][2] = 0.0F;
-		controllerRotation[1].M[3][3] = 1.0F;
+			// build matrix describing controller rotation
+			controllerRotation[1].M[0][0] = controllerPose[1].M[0][0];
+			controllerRotation[1].M[0][1] = controllerPose[1].M[0][1];
+			controllerRotation[1].M[0][2] = controllerPose[1].M[0][2];
+			controllerRotation[1].M[0][3] = 0.0F;
+			controllerRotation[1].M[1][0] = controllerPose[1].M[1][0];
+			controllerRotation[1].M[1][1] = controllerPose[1].M[1][1];
+			controllerRotation[1].M[1][2] = controllerPose[1].M[1][2];
+			controllerRotation[1].M[1][3] = 0.0F;
+			controllerRotation[1].M[2][0] = controllerPose[1].M[2][0];
+			controllerRotation[1].M[2][1] = controllerPose[1].M[2][1];
+			controllerRotation[1].M[2][2] = controllerPose[1].M[2][2];
+			controllerRotation[1].M[2][3] = 0.0F;
+			controllerRotation[1].M[3][0] = 0.0F;
+			controllerRotation[1].M[3][1] = 0.0F;
+			controllerRotation[1].M[3][2] = 0.0F;
+			controllerRotation[1].M[3][3] = 1.0F;
 
-		if(mc.vrSettings.seated){
-			aimSource[1] = getCenterEyePosition();
-			aimSource[0] = getCenterEyePosition();
+			if(mc.vrSettings.seated){
+				aimSource[1] = getCenterEyePosition();
+				aimSource[0] = getCenterEyePosition();
+			}
+
+			lcontrollerDirection = controllerRotation[1].transform(forward);
+			laimPitch = (float)Math.toDegrees(Math.asin(lcontrollerDirection.y/lcontrollerDirection.length()));
+			laimYaw = (float)Math.toDegrees(Math.atan2(lcontrollerDirection.x, lcontrollerDirection.z));
 		}
 		
-		lcontrollerDirection = controllerRotation[1].transform(forward);
-		laimPitch = (float)Math.toDegrees(Math.asin(lcontrollerDirection.y/lcontrollerDirection.length()));
-		laimYaw = (float)Math.toDegrees(Math.atan2(lcontrollerDirection.x, lcontrollerDirection.z));
+		boolean debugThirdController = false;
+		if(controllerTracking[2] || debugThirdController){ //third controller
+			Vector3f thirdControllerPos = OpenVRUtil.convertMatrix4ftoTranslationVector(controllerPose[2]);
+			aimSource[2] = new Vec3d(
+					thirdControllerPos.x,
+					thirdControllerPos.y,
+					thirdControllerPos.z);
+
+			// build matrix describing controller rotation
+			controllerRotation[2].M[0][0] = controllerPose[2].M[0][0];
+			controllerRotation[2].M[0][1] = controllerPose[2].M[0][1];
+			controllerRotation[2].M[0][2] = controllerPose[2].M[0][2];
+			controllerRotation[2].M[0][3] = 0.0F;
+			controllerRotation[2].M[1][0] = controllerPose[2].M[1][0];
+			controllerRotation[2].M[1][1] = controllerPose[2].M[1][1];
+			controllerRotation[2].M[1][2] = controllerPose[2].M[1][2];
+			controllerRotation[2].M[1][3] = 0.0F;
+			controllerRotation[2].M[2][0] = controllerPose[2].M[2][0];
+			controllerRotation[2].M[2][1] = controllerPose[2].M[2][1];
+			controllerRotation[2].M[2][2] = controllerPose[2].M[2][2];
+			controllerRotation[2].M[2][3] = 0.0F;
+			controllerRotation[2].M[3][0] = 0.0F;
+			controllerRotation[2].M[3][1] = 0.0F;
+			controllerRotation[2].M[3][2] = 0.0F;
+			controllerRotation[2].M[3][3] = 1.0F;
+
+			thirdcontrollerDirection = controllerRotation[2].transform(forward);
+
+			if(controllerDeviceIndex[THIRD_CONTROLLER]!=-1 && mc.vrSettings.displayMirrorMode == VRSettings.MIRROR_MIXED_REALITY || debugThirdController) {
+				VRHotkeys.snapMRCam(mc, debugThirdController ? 0 : 2);
+			}
+			
+		}
+		
 		
 	}
 

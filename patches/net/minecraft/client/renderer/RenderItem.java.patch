@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/renderer/RenderItem.java
 +++ b/net/minecraft/client/renderer/RenderItem.java
-@@ -170,16 +170,37 @@
+@@ -170,16 +170,38 @@
          }
      }
  
@@ -36,12 +36,13 @@
              if (model.isBuiltInRenderer())
              {
 -                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-+            	//VIVE do things.      	
-+                GlStateManager.color(1.0F, 1.0F, 1.0F, fade );
++            	//VIVECRAFT
++            	GlStateManager.color(1.0F, 1.0F, 1.0F, fade );
++                
                  GlStateManager.enableRescaleNormal();
                  TileEntityItemStackRenderer.instance.renderByItem(stack);
              }
-@@ -191,7 +212,13 @@
+@@ -191,7 +213,21 @@
                      this.modelLocation = null;
                  }
  
@@ -51,12 +52,20 @@
 +                if(fade < 1){
 +                    c =  (int)(fade*255) << 24 | 255 << 16 | 255 << 8 | 255;
 +                }
-+                              
++                   
++                if(stack.getDisplayName().equals("Jump Boots"))
++                {
++                	c=(int)(255) << 24 | 255 << 8 ;
++                } else if (stack.getDisplayName().equals("Climb Claws"))
++                {
++                	c=(int)(255) << 24 | 130 <<16 | 0 << 8 | 75 ;
++                }
++                        
 +                this.renderModel(model,c, stack);
  
                  if (stack.hasEffect() && (!Config.isCustomItems() || !CustomItems.renderCustomEffect(this, stack, model)))
                  {
-@@ -322,7 +349,7 @@
+@@ -322,7 +358,7 @@
          if (!stack.isEmpty())
          {
              IBakedModel ibakedmodel = this.getItemModelWithOverrides(stack, (World)null, (EntityLivingBase)null);
@@ -65,7 +74,7 @@
          }
      }
  
-@@ -351,16 +378,16 @@
+@@ -351,16 +387,16 @@
          }
      }
  
@@ -85,7 +94,7 @@
      {
          if (!stack.isEmpty())
          {
-@@ -388,7 +415,7 @@
+@@ -388,7 +424,7 @@
                  }
              }
  
@@ -94,7 +103,7 @@
              GlStateManager.cullFace(GlStateManager.CullFace.BACK);
              GlStateManager.popMatrix();
              GlStateManager.disableRescaleNormal();
-@@ -434,7 +461,7 @@
+@@ -434,7 +470,7 @@
              bakedmodel.getItemCameraTransforms().applyTransform(ItemCameraTransforms.TransformType.GUI);
          }
  
@@ -103,13 +112,14 @@
          GlStateManager.disableAlpha();
          GlStateManager.disableRescaleNormal();
          GlStateManager.disableLighting();
-@@ -1148,6 +1175,9 @@
+@@ -1148,6 +1184,10 @@
          this.registerItem(Items.DIAMOND_HORSE_ARMOR, "diamond_horse_armor");
          this.registerItem(Items.LEAD, "lead");
          this.registerItem(Items.NAME_TAG, "name_tag");
 +        this.registerItem(Items.EATME_CAKE, "cake");
 +        this.registerItem(Items.DRIINKME_BOTTLE, "bottle_drinkable");
-+        
++    //  this.registerItem(Items.JUMP_BOOTS, "leather_boots");
++    //  this.registerItem(Items.CLIMB_CLAWS, "shears");
          this.itemModelMesher.register(Items.BANNER, new ItemMeshDefinition()
          {
              public ModelResourceLocation getModelLocation(ItemStack stack)

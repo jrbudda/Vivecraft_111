@@ -98,6 +98,10 @@ public class Utils
 		return new Vector3f((float)vector.xCoord, (float)vector.yCoord, (float)vector.zCoord);
 	}
 
+	public static Vec3d convertToVec3d(Vector3 vector) {
+		return new Vec3d(vector.getX(), vector.getY(), vector.getZ());
+	}
+
 	public static Quaternion quatLerp(Quaternion start, Quaternion end, float fraction) {
 		Quaternion quat = new Quaternion();
 		quat.w = start.w + (end.w - start.w) * fraction;
@@ -105,6 +109,13 @@ public class Utils
 		quat.y = start.y + (end.y - start.y) * fraction;
 		quat.z = start.z + (end.z - start.z) * fraction;
 		return quat;
+	}
+	
+	public static Vec3d vecLerp(Vec3d start, Vec3d end, double fraction) {
+		double x = start.xCoord + (end.xCoord - start.xCoord) * fraction;
+		double y = start.yCoord + (end.yCoord - start.yCoord) * fraction;
+		double z = start.zCoord + (end.zCoord - start.zCoord) * fraction;
+		return new Vec3d(x, y, z);
 	}
 
 	public static Matrix4f matrix3to4(Matrix3f matrix) {

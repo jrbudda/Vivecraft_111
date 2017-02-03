@@ -29,7 +29,6 @@ public class SwimTracker {
 		if(!p.isInWater() && !p.isInLava())
 			return false;
 		
-		//Block block=p.worldObj.getBlockState(p.getPosition().add(0,0.7,0)).getBlock();
 		return true;
 	}
 

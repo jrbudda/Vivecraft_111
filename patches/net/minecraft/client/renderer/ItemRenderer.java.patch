@@ -424,7 +424,7 @@
              }
          }
  
-@@ -343,200 +413,510 @@
+@@ -343,200 +413,527 @@
          this.rotateArm(partialTicks);
          GlStateManager.enableRescaleNormal();
  
@@ -696,6 +696,20 @@
 +	    							item instanceof ItemFlintAndSteel)
 +	    						
 +	    					{
++    						
++	    						if(itemstack.getDisplayName()=="Climb Claws"){
++    							    							
++		    						GlStateManager.scale(0.3, 0.3, 0.3);
++	        						GlStateManager.translate(-.025f, .12f, .25f);
++	        						GlStateManager.rotate(90, 0, 0, 1);	
++	        						
++	        						if((mc.gameSettings.keyBindAttack.isKeyDown() && rightSide) ||
++	        								((mc.climbTracker.isGrabbingLadder() || !mc.player.onGround) && mc.gameSettings.keyBindForward.isKeyDown() && !rightSide)) {
++	        							GlStateManager.translate(0f, 0f, -.2f);	
++	        						}
++	        						
++	    						}
++	    						
 +	    						if(vive){
 +		    						GlStateManager.translate(0f, -.025f, -0.1f);		
 +		    						GlStateManager.scale(0.6, 0.6, 0.6);	
@@ -715,6 +729,7 @@
 +		    						GlStateManager.rotate(-45F - 39.4f, 1.0F, 0.0F, 0.0F);
 +		    						GlStateManager.rotate(90.0F, 0.0F, 1.0F, 0.0F);
 +	    						}
++	    						
 +
 +	    					}
 +	    					else if(item instanceof ItemShield){
@@ -808,10 +823,9 @@
 +	
 +	    					}
 +	    					else { //NORMAL ITEMS
-+	    						GlStateManager.translate(0f, 0f, -0.1f);		
-+	    						GlStateManager.scale(0.3, 0.3, 0.3);
-+	    						GlStateManager.rotate(-i*45.0F, 0.0F, 1.0F, 0.0F);
-+	    					
++		    						GlStateManager.translate(0f, 0f, -0.1f);		
++		    						GlStateManager.scale(0.3, 0.3, 0.3);
++		    						GlStateManager.rotate(-i*45.0F, 0.0F, 1.0F, 0.0F);
 +	    					}
 +	    					z++;
 +	
@@ -819,6 +833,9 @@
 +	
 +	    				this.itemRenderer.ismainhand = mainHand;
 +	    				this.itemRenderer.isfphand = true;
++	    				
++	    				
++
 +    				
 +	    				//VIVE use 'NONE' transforms.
 +	    				if(!thing)
@@ -1079,7 +1096,7 @@
          vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
          vertexbuffer.pos(-1.0D, -1.0D, -0.5D).tex((double)f7, (double)f9).endVertex();
          vertexbuffer.pos(1.0D, -1.0D, -0.5D).tex((double)f6, (double)f9).endVertex();
-@@ -560,17 +940,14 @@
+@@ -560,17 +957,14 @@
              VertexBuffer vertexbuffer = tessellator.getBuffer();
              float f = this.mc.player.getBrightness(partialTicks);
              GlStateManager.color(f, f, f, 0.5F);

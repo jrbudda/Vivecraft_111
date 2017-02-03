@@ -190,6 +190,7 @@ public class OpenVRStereoRenderer implements IStereoProvider
 		RenderTextureSet textureSet = new RenderTextureSet();
 		textureSet.leftEyeTextureIds.add(LeftEyeTextureId);
 		textureSet.rightEyeTextureIds.add(RightEyeTextureId);
+		
 		return textureSet;
 	}
 
@@ -210,6 +211,7 @@ public class OpenVRStereoRenderer implements IStereoProvider
 
 	
 	public void endFrame() throws RenderConfigException {
+
 		if(MCOpenVR.vrCompositor.Submit == null) return;
 		
 		int lret = MCOpenVR.vrCompositor.Submit.apply(
@@ -222,15 +224,16 @@ public class OpenVRStereoRenderer implements IStereoProvider
 				MCOpenVR.texType1, null,
 				JOpenVRLibrary.EVRSubmitFlags.EVRSubmitFlags_Submit_Default);
 
+
+		MCOpenVR.vrCompositor.PostPresentHandoff.apply();
+		
 		if(lret + rret > 0){
 			throw new RenderConfigException("Compositor Error","Texture submission error: Left/Right " + getCompostiorError(lret) + "/" + getCompostiorError(rret));		
 		}
-
-		MCOpenVR.vrCompositor.PostPresentHandoff.apply();
 	}
 
 	
-	public String getCompostiorError(int code){
+	public static String getCompostiorError(int code){
 		switch (code){
 		case EVRCompositorError.EVRCompositorError_VRCompositorError_DoNotHaveFocus:
 			return "DoesNotHaveFocus";

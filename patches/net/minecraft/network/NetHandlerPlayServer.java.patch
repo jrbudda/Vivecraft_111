@@ -60,7 +60,18 @@
                              }
  
                              this.playerEntity.setPositionAndRotation(d4, d5, d6, f, f1);
-@@ -1785,5 +1793,24 @@
+@@ -543,8 +551,8 @@
+ 
+                                 if (flag2 && (flag || !flag1))
+                                 {
+-                                    this.setPlayerLocation(d0, d1, d2, f, f1);
+-                                    return;
++                                  //  this.setPlayerLocation(d0, d1, d2, f, f1);
++                                 //   return;
+                                 }
+                             }
+ 
+@@ -1785,5 +1793,26 @@
                  LOGGER.error((String)"Couldn\'t pick item", (Throwable)exception);
              }
          }
@@ -75,6 +86,8 @@
 +            	String ver = Minecraft.getMinecraft().minecriftVerString;
 +            	sendPacket(NetworkHelper.getVivecraftServerPacket(PacketDiscriminators.VERSION,ver));
 +            	sendPacket(NetworkHelper.getVivecraftServerPacket(PacketDiscriminators.REQUESTDATA, new byte[]{}));  
++            	sendPacket(NetworkHelper.getVivecraftServerPacket(PacketDiscriminators.CLIMBING, new byte[]{}));
++            	sendPacket(NetworkHelper.getVivecraftServerPacket(PacketDiscriminators.TELEPORT, new byte[]{}));  
 +
 +        		break;
 +        		

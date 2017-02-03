@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/entity/EntityPlayerSP.java
 +++ b/net/minecraft/client/entity/EntityPlayerSP.java
-@@ -1,7 +1,15 @@
+@@ -1,7 +1,19 @@
  package net.minecraft.client.entity;
  
 +import java.lang.reflect.Field;
@@ -8,15 +8,19 @@
  import javax.annotation.Nullable;
 +
 +import com.mtbs3d.minecrift.api.IRoomscaleAdapter;
++import com.mtbs3d.minecrift.api.NetworkHelper;
++import com.mtbs3d.minecrift.api.NetworkHelper.PacketDiscriminators;
 +import com.mtbs3d.minecrift.provider.OpenVRPlayer;
 +import com.mtbs3d.minecrift.settings.VRSettings;
 +import com.mtbs3d.minecrift.utils.Utils;
 +
++import io.netty.buffer.ByteBuf;
++import io.netty.buffer.Unpooled;
 +import jopenvr.VR_IVRSystem_FnTable.GetEyeToHeadTransform_callback;
  import net.minecraft.block.state.IBlockState;
  import net.minecraft.client.Minecraft;
  import net.minecraft.client.audio.ElytraSound;
-@@ -34,11 +42,13 @@
+@@ -34,11 +46,13 @@
  import net.minecraft.entity.item.EntityItem;
  import net.minecraft.entity.item.EntityMinecart;
  import net.minecraft.entity.passive.AbstractHorse;
@@ -30,7 +34,15 @@
  import net.minecraft.item.Item;
  import net.minecraft.item.ItemElytra;
  import net.minecraft.item.ItemStack;
-@@ -56,6 +66,7 @@
+@@ -47,6 +61,7 @@
+ import net.minecraft.network.play.client.CPacketChatMessage;
+ import net.minecraft.network.play.client.CPacketClientStatus;
+ import net.minecraft.network.play.client.CPacketCloseWindow;
++import net.minecraft.network.play.client.CPacketCustomPayload;
+ import net.minecraft.network.play.client.CPacketEntityAction;
+ import net.minecraft.network.play.client.CPacketInput;
+ import net.minecraft.network.play.client.CPacketPlayer;
+@@ -56,6 +71,7 @@
  import net.minecraft.potion.Potion;
  import net.minecraft.potion.PotionEffect;
  import net.minecraft.stats.StatBase;
@@ -38,7 +50,7 @@
  import net.minecraft.stats.StatisticsManager;
  import net.minecraft.tileentity.CommandBlockBaseLogic;
  import net.minecraft.tileentity.TileEntityCommandBlock;
-@@ -136,6 +147,21 @@
+@@ -136,6 +152,21 @@
       */
      protected int sprintToggleTimer;
  
@@ -60,7 +72,7 @@
      /** Ticks left before sprinting is disabled. */
      public int sprintingTicksLeft;
      public float renderArmYaw;
-@@ -164,8 +190,23 @@
+@@ -164,8 +195,23 @@
          this.statWriter = statFile;
          this.mc = mcIn;
          this.dimension = 0;
@@ -84,11 +96,12 @@
      /**
       * Called when the entity is attacked.
       */
-@@ -205,11 +246,29 @@
+@@ -205,11 +251,30 @@
          }
      }
  
 +    private float startmountrotate;
++	public boolean teleported;
 +    
      public void dismountRidingEntity()
      {
@@ -115,7 +128,7 @@
  
      /**
       * interpolated look vector
-@@ -283,6 +342,7 @@
+@@ -283,6 +348,7 @@
              this.serverSneakState = flag1;
          }
  
@@ -123,7 +136,67 @@
          if (this.isCurrentViewEntity())
          {
              AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
-@@ -333,6 +393,11 @@
+@@ -295,26 +361,39 @@
+             boolean flag2 = d0 * d0 + d1 * d1 + d2 * d2 > 9.0E-4D || this.positionUpdateTicks >= 20;
+             boolean flag3 = d3 != 0.0D || d4 != 0.0D;
+ 
+-            if (this.isRiding())
+-            {
+-                this.connection.sendPacket(new CPacketPlayer.PositionRotation(this.motionX, -999.0D, this.motionZ, this.rotationYaw, this.rotationPitch, this.onGround));
+-                flag2 = false;
+-            }
+-            else if (flag2 && flag3)
+-            {
+-                this.connection.sendPacket(new CPacketPlayer.PositionRotation(this.posX, axisalignedbb.minY, this.posZ, this.rotationYaw, this.rotationPitch, this.onGround));
+-            }
+-            else if (flag2)
+-            {
+-                this.connection.sendPacket(new CPacketPlayer.Position(this.posX, axisalignedbb.minY, this.posZ, this.onGround));
+-            }
+-            else if (flag3)
+-            {
+-                this.connection.sendPacket(new CPacketPlayer.Rotation(this.rotationYaw, this.rotationPitch, this.onGround));
+-            }
+-            else if (this.prevOnGround != this.onGround)
+-            {
+-                this.connection.sendPacket(new CPacketPlayer(this.onGround));
++            if(teleported){
++            	teleported = false;
++            	flag2 = true;
++            	ByteBuf payload = Unpooled.buffer();
++            	payload.writeFloat((float) this.posX);
++            	payload.writeFloat((float) this.posY);
++            	payload.writeFloat((float) this.posZ);
++            	byte[] out = new byte[payload.readableBytes()];
++            	payload.readBytes(out);
++            	CPacketCustomPayload pack = NetworkHelper.getVivecraftClientPacket(PacketDiscriminators.TELEPORT,out);
++            	this.connection.sendPacket(pack);
++            } else{
++            	if (this.isRiding())
++            	{
++            		this.connection.sendPacket(new CPacketPlayer.PositionRotation(this.motionX, -999.0D, this.motionZ, this.rotationYaw, this.rotationPitch, this.onGround));
++            		flag2 = false;
++            	}
++            	else if (flag2 && flag3)
++            	{
++            		this.connection.sendPacket(new CPacketPlayer.PositionRotation(this.posX, axisalignedbb.minY, this.posZ, this.rotationYaw, this.rotationPitch, this.onGround));
++            	}
++            	else if (flag2)
++            	{
++            		this.connection.sendPacket(new CPacketPlayer.Position(this.posX, axisalignedbb.minY, this.posZ, this.onGround));
++            	}
++            	else if (flag3)
++            	{
++            		this.connection.sendPacket(new CPacketPlayer.Rotation(this.rotationYaw, this.rotationPitch, this.onGround));
++            	}
++            	else if (this.prevOnGround != this.onGround)
++            	{
++            		this.connection.sendPacket(new CPacketPlayer(this.onGround));
++            	}
+             }
+ 
+             if (flag2)
+@@ -333,6 +412,11 @@
  
              this.prevOnGround = this.onGround;
              this.autoJumpEnabled = this.mc.gameSettings.autoJump;
@@ -135,7 +208,7 @@
          }
      }
  
-@@ -1000,7 +1065,7 @@
+@@ -1000,7 +1084,7 @@
                      this.sendPlayerAbilities();
                  }
              }
@@ -144,7 +217,7 @@
              {
                  if (this.flyToggleTimer == 0)
                  {
-@@ -1088,6 +1153,10 @@
+@@ -1088,6 +1172,10 @@
  
          super.onLivingUpdate();
  
@@ -155,7 +228,7 @@
          if (this.onGround && this.capabilities.isFlying && !this.mc.playerController.isSpectatorMode())
          {
              this.capabilities.isFlying = false;
-@@ -1106,8 +1175,11 @@
+@@ -1106,8 +1194,11 @@
          if (this.getRidingEntity() instanceof EntityBoat)
          {
              EntityBoat entityboat = (EntityBoat)this.getRidingEntity();
@@ -169,7 +242,7 @@
          }
      }
  
-@@ -1138,10 +1210,46 @@
+@@ -1138,10 +1229,47 @@
       */
      public void move(MoverType type, double x, double y, double z)
      {
@@ -179,6 +252,7 @@
 -        this.updateAutoJump((float)(this.posX - d0), (float)(this.posZ - d1));
 +    	if(x==0 && y==0 && z==0) return;
 +    	if(this.isRiding())return;
++    	if(mc.jumpTracker.isjumping()) return;
 +    	
 +    	boolean client = this instanceof EntityPlayerSP;
 +    	boolean freemove = OpenVRPlayer.get().getFreeMoveMode();
@@ -220,7 +294,7 @@
      }
  
      public boolean isAutoJumpEnabled()
-@@ -1167,12 +1275,16 @@
+@@ -1167,12 +1295,16 @@
                      float f = this.getAIMoveSpeed();
                      float f1 = (float)vec3d2.lengthSquared();
  
@@ -239,7 +313,7 @@
                          vec3d2 = new Vec3d((double)(f2 * f5 - f3 * f4), vec3d2.yCoord, (double)(f3 * f5 + f2 * f4));
                          f1 = (float)vec3d2.lengthSquared();
  
-@@ -1292,4 +1404,285 @@
+@@ -1292,4 +1424,314 @@
              }
          }
      }
@@ -324,6 +398,10 @@
 +    	this.motionZ /= zFactor;
 +    	//
 +
++    	if(!this.onGround && !this.isElytraFlying() && !this.hasNoGravity() && mc.jumpTracker.isClimbeyJumpEquipped()) return; //no drag for jump boots.
++    	
++    	if(mc.climbTracker.isGrabbingLadder()) return; //no drag for climb.
++	
 +    	int inertiaFactor = Minecraft.getMinecraft().vrSettings.inertiaFactor;
 +    	double addFactor = VRSettings.getInertiaAddFactor(inertiaFactor);
 +
@@ -524,4 +602,29 @@
 +    	}
 +    }
 +    
++	public boolean isClimbeyJumpEquipped(){
++		
++		if(this.getItemStackFromSlot(EntityEquipmentSlot.FEET) != null){
++			if(this.getItemStackFromSlot(EntityEquipmentSlot.FEET).getDisplayName().equals("Jump Boots")) 
++				return true;
++		}
++		
++		return false;
++		
++	}
++	
++	public boolean isClimbeyClimbEquipped(){
++		
++		if(this.getHeldItemMainhand() != null){
++			if(this.getHeldItemMainhand().getDisplayName().equals("Climb Claws")) 
++				return true;
++		}
++		
++		if(this.getHeldItemOffhand() != null){
++			if(this.getHeldItemOffhand().getDisplayName().equals("Climb Claws")) 
++				return true;
++		}
++		
++		return false;
++	}
  }

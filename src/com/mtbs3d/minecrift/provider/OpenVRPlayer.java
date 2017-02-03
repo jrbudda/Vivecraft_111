@@ -215,8 +215,6 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     {
     	if(!player.initFromServer) return;
     	
-        updateSwingAttack();
-
 	    if(!initdone){
 
 		    System.out.println("<Debug info start>");
@@ -233,7 +231,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 
 	    mc.rowTracker.doProcess(mc, player);
 
-	    mc.jumpTracker.doProcess(mc, player);
+	    mc.jumpTracker.doProcess(player);
    
 	    mc.sneakTracker.doProcess(mc, player);
 	    
@@ -243,7 +241,9 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 
         mc.swimTracker.doProcess(mc,player);
 
-	    mc.climbTracker.doProcess(mc, player);
+	    mc.climbTracker.doProcess(player);
+	    
+        updateSwingAttack();
 
 	    AutoCalibration.logHeadPos(MCOpenVR.hmdPivotHistory.latest());
 
@@ -446,7 +446,8 @@ public class OpenVRPlayer implements IRoomscaleAdapter
             if(this.noTeleportClient){
             	String tp = "/tp " + mc.player.getName() + " " + dest.xCoord + " " +dest.yCoord + " " + dest.zCoord;      
             	mc.player.sendChatMessage(tp);
-            } else {
+            } else {          
+            	if(NetworkHelper.serverSupportsDirectTeleport)	player.teleported = true;
                 player.setPositionAndUpdate(dest.xCoord, dest.yCoord, dest.zCoord);
             }
 
@@ -512,15 +513,16 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     		roomScaleMovementDelay--;
     		return;
     	}
+    	Minecraft mc = Minecraft.getMinecraft();
+
     	if(player.isSneaking()) {return;} //jrbudda : prevent falling off things or walking up blocks while moving in room scale.
     	if(player.isRiding()) return; //dont fall off the tracks man
     	if(player.isDead) return; //
     	if(player.isPlayerSleeping()) return; //
-    	
+    	if(mc.jumpTracker.isjumping()) return; //
     	if(Math.abs(player.motionX) > 0.01) return;
     	if(Math.abs(player.motionZ) > 0.01) return;
     	
-    	Minecraft mc = Minecraft.getMinecraft();
     	float playerHalfWidth = player.width / 2.0F;
 
     	// move player's X/Z coords as the HMD moves around the room
@@ -572,7 +574,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     	}
 
     	//             test for climbing up a block
-    	else if ((mc.vrSettings.walkUpBlocks || (player.isOnLadder() && mc.vrSettings.realisticClimbEnabled)) && player.fallDistance == 0)
+    	else if ((mc.vrSettings.walkUpBlocks || (mc.climbTracker.isGrabbingLadder() && mc.vrSettings.realisticClimbEnabled)) && player.fallDistance == 0)
     	{
     		if (torso == null)
     		{
@@ -1202,6 +1204,8 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         	return; //dont hit things while blocking.
         }
         
+        if(mc.jumpTracker.isjumping()) return;
+        
         mc.mcProfiler.startSection("updateSwingAttack");
         
         Vec3d forward = new Vec3d(0,0,-1);
@@ -1291,7 +1295,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         	{
         		Entity hitEntity = (Entity) entities.get(e);
         		if (hitEntity.canBeCollidedWith() && !(hitEntity == mc.getRenderViewEntity().getRidingEntity()) )			{
-        			if(hitEntity instanceof EntityAnimal && !tool && !lastWeaponSolid[c]){
+        			if(mc.vrSettings.animaltouching && hitEntity instanceof EntityAnimal && !tool && !lastWeaponSolid[c]){
         				mc.playerController.interactWithEntity(player, hitEntity, c==0?EnumHand.MAIN_HAND:EnumHand.OFF_HAND);
         			} 
         			else 
@@ -1308,6 +1312,11 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 
 
         	if(!inAnEntity){
+        		if(mc.climbTracker.isClimbeyClimb()){
+        			if(c == 0 && mc.gameSettings.keyBindAttack.isKeyDown() || !tool ) continue;
+        			if(c == 1 && mc.gameSettings.keyBindForward.isKeyDown() || !tool ) continue;
+        		}
+        		
         		BlockPos bp =null;
         		bp = new BlockPos(weaponEnd[c]);
         		IBlockState block = mc.world.getBlockState(bp);
@@ -1317,8 +1326,8 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         		// and damage the block it collides with... 
 
         		RayTraceResult col = mc.world.rayTraceBlocks(lastWeaponEndAir[c], weaponEnd[c], true, false, true);
-
-        		if (shouldIlookatMyHand[c] || (col != null && col.typeOfHit == Type.BLOCK))
+        		boolean flag = col!=null && col.getBlockPos().equals(bp); //fix ladder but prolly break everything else.
+        		if (flag && (shouldIlookatMyHand[c] || (col != null && col.typeOfHit == Type.BLOCK)))
         		{
         			this.shouldIlookatMyHand[c] = false;
         			if (!(material == material.AIR))
@@ -1336,48 +1345,48 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         					}
         				} else {
         					if(canact && (!mc.vrSettings.realisticClimbEnabled || block.getBlock() != Blocks.LADDER)) { 
-   								int p = 3;
+        						int p = 3;
         						if(item instanceof ItemHoe){
-        						Minecraft.getMinecraft().playerController.
-        									processRightClickBlock(player, (WorldClient) player.world,bp,col.sideHit, col.hitVec, c==0?EnumHand.MAIN_HAND:EnumHand.OFF_HAND);
-        							}else{
-         								p += (speed - speedthresh) / 2;
+        							Minecraft.getMinecraft().playerController.
+        							processRightClickBlock(player, (WorldClient) player.world,bp,col.sideHit, col.hitVec, c==0?EnumHand.MAIN_HAND:EnumHand.OFF_HAND);
+        						}else{
+        							p += (speed - speedthresh) / 2;
 
-        								for (int i = 0; i < p; i++)
-        								{
-        									//set delay to 0
-        									clearBlockHitDelay();			
+        							for (int i = 0; i < p; i++)
+        							{
+        								//set delay to 0
+        								clearBlockHitDelay();			
+        								boolean test = mc.climbTracker.isGrabbingLadder();
+        								//all this comes from plaeyrControllerMP clickMouse and friends.
 
-        									//all this comes from plaeyrControllerMP clickMouse and friends.
+        								//all this does is sets the block you're currently hitting, has no effect in survival mode after that.
+        								//but if in creaive mode will clickCreative on the block
+        								mc.playerController.clickBlock(col.getBlockPos(), col.sideHit);
 
-        									//all this does is sets the block you're currently hitting, has no effect in survival mode after that.
-        									//but if in creaive mode will clickCreative on the block
-        									mc.playerController.clickBlock(col.getBlockPos(), col.sideHit);
+        								if(!getIsHittingBlock()) //seems to be the only way to tell it broke.
+        									break;
 
-        									if(!getIsHittingBlock()) //seems to be the only way to tell it broke.
-        										break;
+        								//apply destruction for survival only
+        								mc.playerController.onPlayerDamageBlock(col.getBlockPos(), col.sideHit);
 
-        									//apply destruction for survival only
-        									mc.playerController.onPlayerDamageBlock(col.getBlockPos(), col.sideHit);
+        								if(!getIsHittingBlock()) //seems to be the only way to tell it broke.
+        									break;
 
-        									if(!getIsHittingBlock()) //seems to be the only way to tell it broke.
-        										break;
+        								//something effects
+        								mc.effectRenderer.addBlockHitEffects(col.getBlockPos(), col.sideHit);
 
-        									//something effects
-        									mc.effectRenderer.addBlockHitEffects(col.getBlockPos(), col.sideHit);
-
-        								}
         							}
-
-        							this.triggerHapticPulse(c, 250*p);
-        							//   System.out.println("Hit block speed =" + speed + " mot " + mot + " thresh " + speedthresh) ;            				
-        							lastWeaponSolid[c] = true;
         						}
-        						insolidBlock = true;
+
+        						this.triggerHapticPulse(c, 250*p);
+        						//   System.out.println("Hit block speed =" + speed + " mot " + mot + " thresh " + speedthresh) ;            				
+        						lastWeaponSolid[c] = true;
         					}
+        					insolidBlock = true;
         				}
         			}
         		}
+        	}
 
             if ((!inAnEntity && !insolidBlock ) || lastWeaponEndAir[c].lengthVector() ==0)
         	{
@@ -1609,8 +1618,15 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	}
 
 	@Override
+	public float getControllerRoll_World(int controller) {
+		org.lwjgl.util.vector.Matrix4f mat = (org.lwjgl.util.vector.Matrix4f)new org.lwjgl.util.vector.Matrix4f().load(getControllerMatrix_World(controller));
+		return (float)-Math.toDegrees(Math.atan2(mat.m10, mat.m11));
+	}
+
+	@Override
 	public Vec3d getControllerDir_World(int c) {
 		Vector3f v3 = c==0?MCOpenVR.controllerDirection : MCOpenVR.lcontrollerDirection;
+		if(c==2)v3=MCOpenVR.thirdcontrollerDirection;
 		Vec3d out = new Vec3d(v3.x, v3.y, v3.z).rotateYaw(worldRotationRadians);
 		return out;
 	}

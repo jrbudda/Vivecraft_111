@@ -13,6 +13,7 @@ public class VRControllerButtonMapping {
 	public String FunctionDesc = "none";
 	public char FunctionExt = 0;
 	public KeyBinding key;
+	private boolean unpress;
 	
 	public VRControllerButtonMapping(ViveButtons button, String function) {
 		this.Button = button;
@@ -23,8 +24,16 @@ public class VRControllerButtonMapping {
 	public String toString() {
 		return Button.toString() + ":" + FunctionDesc + ( FunctionExt !=0  ? "_" + FunctionExt:"");
 	};
+	
+	public void tick() {
+		if (this.unpress) {
+			actuallyUnpress();
+			this.unpress = false;
+		}
+	}
 
 	public void press(){	
+		this.unpress = false;
 		if(this.FunctionDesc.equals("none")) return;
 		if(key!=null){
 			key.pressKey();
@@ -53,6 +62,10 @@ public class VRControllerButtonMapping {
 	}
 	
 	public void unpress(){
+		this.unpress = true;
+	}
+	
+	private void actuallyUnpress() {
 		if(this.FunctionDesc.equals("none")) return;
 		if(key!=null) {
 			key.unpressKey();

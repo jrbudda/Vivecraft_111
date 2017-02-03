@@ -179,10 +179,9 @@ public class ModelPlayerVR extends ModelBiped
         		
         		this.bipedHead.rotateAngleX = (float) -pitch1;
         		
-        		Vec3d diff = rotInfo.leftArmPos.subtract(rotInfo.rightArmPos);
-        		
-        		double ltor = Math.atan2(-diff.xCoord, diff.zCoord) + Math.PI/2;       		
-        		if(rotInfo.seated) ltor = -yaw1;
+        		Vec3d diff = rotInfo.leftArmPos.subtract(rotInfo.rightArmPos).rotateYaw((float)-Math.PI/2);
+        		if(rotInfo.seated) diff = rotInfo.rightArmRot;
+        		double ltor = Math.atan2(-diff.xCoord, diff.zCoord);     		
         	
 //        		this.bipedHead.rotateAngleY = (float) (0);
         		this.bipedHead.rotateAngleY = (float) (Math.PI -yaw1 - ltor);
@@ -227,6 +226,8 @@ public class ModelPlayerVR extends ModelBiped
         
         		this.bipedRightArm.setRotationPoint((float)rotatedrarm.xCoord, (float)rotatedrarm.yCoord, (float)rotatedrarm.zCoord);
         		
+				rightShoulder.isHidden = rotInfo.seated;
+				leftshoulder.isHidden = rotInfo.seated;
         		
         		if(!rotInfo.seated){
 

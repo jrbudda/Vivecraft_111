@@ -13,14 +13,14 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
     {
             VRSettings.VrOptions.WEAPON_COLLISION,
             VRSettings.VrOptions.REALISTIC_JUMP,
-            VRSettings.VrOptions.ALLOW_MODE_SWITCH,
+            VRSettings.VrOptions.ANIMAL_TOUCHING,
             VRSettings.VrOptions.REALISTIC_SNEAK,
             VRSettings.VrOptions.BCB_ON,
             VRSettings.VrOptions.REALISTIC_CLIMB,
             VRSettings.VrOptions.WALK_MULTIPLIER,
-            VRSettings.VrOptions.REALISTIC_SWIM,
-            VRSettings.VrOptions.DUMMY,
             VRSettings.VrOptions.REALISTIC_ROW,
+            VRSettings.VrOptions.ALLOW_MODE_SWITCH,
+            VRSettings.VrOptions.REALISTIC_SWIM
     };
 
     static VRSettings.VrOptions[] teleportSettings = new VRSettings.VrOptions[]
@@ -35,7 +35,8 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
     		VRSettings.VrOptions.FREEMOVE_MODE,
             VRSettings.VrOptions.MOVEMENT_MULTIPLIER,
             VRSettings.VrOptions.INERTIA_FACTOR,
-            VRSettings.VrOptions.FOV_REDUCTION
+            VRSettings.VrOptions.FOV_REDUCTION,
+
     };
     
     public GuiLocomotionSettings(GuiScreen guiScreen, VRSettings guivrSettings) {
@@ -162,9 +163,10 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
             {
                 vr.inertiaFactor = VRSettings.INERTIA_NORMAL;
                 vr.movementSpeedMultiplier = 1f;
-                vr.simulateFalling = false;
+                vr.simulateFalling = true;
                 //jrbudda//
                 vr.weaponCollision = true;
+                vr.animaltouching = true;
                 vr.vrAllowCrawling = false;
                 vr.vrAllowLocoModeSwotch = true;
                 vr.vrFreeMove = false;
@@ -271,6 +273,11 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
                     return new String[] {
                             "If enabled, you can swing your pickaxe at blocks to",
                             "mine them, or your sword at enemies to hit them."
+                    } ;
+                case ANIMAL_TOUCHING:
+                    return new String[] {
+                            "If enabled, touching a passive mob (animal) without a",
+                            "weapon will right-click (interact) instead of attacking."                       
                     } ;
                 // VIVE END - new options
                     //JRBUDDA
