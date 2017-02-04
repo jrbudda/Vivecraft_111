@@ -277,7 +277,8 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
                 case ANIMAL_TOUCHING:
                     return new String[] {
                             "If enabled, touching a passive mob (animal) without a",
-                            "weapon will right-click (interact) instead of attacking."                       
+                            "weapon will right-click (interact) instead of attacking.",
+                            "Turn off for Piggy Slapping, Josh.",
                     } ;
                 // VIVE END - new options
                     //JRBUDDA

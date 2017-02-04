@@ -207,6 +207,12 @@ public class MCOpenVR
 	private static float walkaboutYawStart;
 	private static float hmdForwardYaw;
 	
+	public static boolean mrMovingCamActive;
+	public static Vec3d mrControllerPos = Vec3d.ZERO;
+	public static float mrControllerPitch;
+	public static float mrControllerYaw;
+	public static float mrControllerRoll;
+	
 	public static float rtbX, rtbY;
 	
 	public String getName() {
@@ -2649,6 +2655,9 @@ public class MCOpenVR
 
 			if(controllerDeviceIndex[THIRD_CONTROLLER]!=-1 && mc.vrSettings.displayMirrorMode == VRSettings.MIRROR_MIXED_REALITY || debugThirdController) {
 				VRHotkeys.snapMRCam(mc, debugThirdController ? 0 : 2);
+				mrMovingCamActive = true;
+			} else {
+				mrMovingCamActive = false;
 			}
 			
 		}

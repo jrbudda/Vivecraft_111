@@ -107,7 +107,7 @@ public class ClimbTracker {
 		boolean nope = false;
 		
 		boolean jump = false;
-		
+		boolean ladder = false;
 		for(int c=0;c<2;c++){
 			Vec3d controllerPos=mc.roomScale.getControllerPos_World(c);
 			BlockPos bp = new BlockPos(controllerPos);
@@ -116,6 +116,7 @@ public class ClimbTracker {
 			box[c] = bs.getCollisionBoundingBox(mc.world, bp);
 			
 			if(!mc.climbTracker.isClimbeyClimb()){	
+				ladder = true;
 				if(b == Blocks.LADDER || b ==Blocks.VINE){
 					int meta = b.getMetaFromState(bs);
 					Vec3d cpos = controllerPos.subtract(bp.getX(), bp.getY(), bp.getZ());
@@ -128,19 +129,22 @@ public class ClimbTracker {
 						inblock[c] = cpos.xCoord > .9 && (cpos.zCoord > .1 && cpos.zCoord < .9);
 					} else if (meta == 5){
 						inblock[c] = cpos.xCoord < .1 && (cpos.zCoord > .1 && cpos.zCoord < .9);
-					}			
+					}	
+
+					button[c]=inblock[c];
+
 				} else {
 					if(latchStart[c].subtract(controllerPos).lengthSquared() > 0.25) 
 						inblock[c] = false;
+					button[c] = wasbutton[c];
 				}
-				button[c]=inblock[c];
 			} else { //Climbey
 				//TODO whitelist by block type
 				
 				if(c == 0)
 					button[c] = mc.gameSettings.keyBindAttack.isKeyDown() || mc.gameSettings.keyBindUseItem.isKeyDown();
 				else 
-					button[c] = mc.gameSettings.keyBindForward.isKeyDown() && mc.player.movementInput.forwardKeyDown == false;
+					button[c] = mc.gameSettings.keyBindForward.isKeyDown() && !mc.player.onGround;
 
 				inblock[c] = box[c] != null && box[c].offset(bp).isVecInside(controllerPos);				
 			}						
@@ -150,7 +154,6 @@ public class ClimbTracker {
 				if(!inblock[c])mc.vrPlayer.triggerHapticPulse(c, 200);
 				latched[c] = false;
 				jump = true;
-				System.out.println("1" + c);
 			} 
 
 			if(!latched[c] && !nope){
@@ -161,7 +164,6 @@ public class ClimbTracker {
 					latchStartBodyY[c] = player.posY;
 					latchStartController = c;
 					latched[c] = true;
-					System.out.println("2" + c);
 					if(c==0){
 						latched[1] = false;
 						nope = true;
@@ -192,7 +194,7 @@ public class ClimbTracker {
 		}		
 		
 		
-		if(!wantjump) 
+		if(!wantjump && !ladder) 
 			wantjump = mc.gameSettings.keyBindJump.isKeyDown() && mc.jumpTracker.isClimbeyJumpEquipped();
 		
 		jump &= wantjump;
@@ -222,8 +224,10 @@ public class ClimbTracker {
 		
 		if(!jump){
 			player.motionY = -delta.yCoord;
-			player.motionX = -delta.xCoord;
-			player.motionZ = -delta.zCoord;
+			if(!ladder){
+				player.motionX = -delta.xCoord;
+				player.motionZ = -delta.zCoord;
+			}
 			BlockPos b = new BlockPos(latchStart[latchStartController]);
 			double yheight = latchStart[latchStartController].subtract(b.getX(), b.getY(), b.getZ()).yCoord;
 			if(!wantjump && box[latchStartController] != null && yheight > box[latchStartController].maxY*.8 && canstand(b, player)){		
@@ -255,6 +259,7 @@ public class ClimbTracker {
 			if (player.isPotionActive(MobEffects.JUMP_BOOST))
 				m=m.scale((player.getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier() + 1.5));
 			
+						
 			player.motionX=-m.xCoord;
 			player.motionY=-m.yCoord;
 			player.motionZ=-m.zCoord;

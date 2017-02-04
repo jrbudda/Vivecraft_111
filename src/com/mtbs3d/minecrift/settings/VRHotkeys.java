@@ -231,7 +231,7 @@ public class VRHotkeys {
 
 		org.lwjgl.util.vector.Vector4f vec = new org.lwjgl.util.vector.Vector4f(mc.vrSettings.mrMovingCamOffsetX, mc.vrSettings.mrMovingCamOffsetY, mc.vrSettings.mrMovingCamOffsetZ, 1);
 		org.lwjgl.util.vector.Matrix4f matrix = new org.lwjgl.util.vector.Matrix4f();
-		matrix.rotate((float)Math.toRadians(mc.vrSettings.vrFixedCamrotRoll), new org.lwjgl.util.vector.Vector3f(0, 0, -1));
+		matrix.rotate((float)Math.toRadians(mc.vrSettings.vrFixedCamrotRoll), new org.lwjgl.util.vector.Vector3f(0, 0, 1));
 		matrix.rotate((float)Math.toRadians(mc.vrSettings.vrFixedCamrotPitch), new org.lwjgl.util.vector.Vector3f(-1, 0, 0));
 		matrix.rotate((float)Math.toRadians(mc.vrSettings.vrFixedCamrotYaw), new org.lwjgl.util.vector.Vector3f(0, -1, 0));
 		org.lwjgl.util.vector.Matrix4f.transform(matrix, vec, vec);
@@ -240,5 +240,10 @@ public class VRHotkeys {
 		mc.vrSettings.vrFixedCamposX = ((float)pos.xCoord + vec.x) / mc.vrPlayer.worldScale;
 		mc.vrSettings.vrFixedCamposY = ((float)pos.yCoord + vec.y) / mc.vrPlayer.worldScale;
 		mc.vrSettings.vrFixedCamposZ = ((float)pos.zCoord + vec.z) / mc.vrPlayer.worldScale;
+		
+		MCOpenVR.mrControllerPos = Minecraft.getMinecraft().roomScale.getControllerPos_Room(controller);
+		MCOpenVR.mrControllerPitch = -Minecraft.getMinecraft().roomScale.getControllerPitch_World(controller);
+		MCOpenVR.mrControllerYaw = Minecraft.getMinecraft().roomScale.getControllerYaw_World(controller) + mc.vrSettings.vrWorldRotation;
+		MCOpenVR.mrControllerRoll = Minecraft.getMinecraft().roomScale.getControllerRoll_World(controller);
 	}
 }
