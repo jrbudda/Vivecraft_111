@@ -57,7 +57,7 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
         GuiSmallButtonEx mode = new GuiSmallButtonEx(VRSettings.VrOptions.MOVE_MODE.returnEnumOrdinal(), this.width / 2 - 68, this.height / 6 + 102,VRSettings.VrOptions.MOVE_MODE, this.guivrSettings.getKeyBinding(VRSettings.VrOptions.MOVE_MODE));
         mode.setEventHandler(this);
         this.buttonList.add(mode);
-        if(mc.vrSettings.vrFreeMove)
+        if(mc.vrPlayer.getFreeMoveMode())
         	addButtons(freeMoveSettings,134);
         else
         	addButtons(teleportSettings,134);        
@@ -181,6 +181,8 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
                 vr.realisticRowEnabled = true;
                 vr.vehicleRotation = false;
                 vr.useFOVReduction = false;
+                vr.walkUpBlocks = true;
+                vr.seatedUseHMD = false;
                 //end jrbudda
                 
                 Minecraft.getMinecraft().gameSettings.viewBobbing = true;

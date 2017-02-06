@@ -16,6 +16,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemShears;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.BlockPos;
@@ -83,7 +85,7 @@ public class JumpTracker {
 
 			boolean jump = false;
 			if(!ok[0] && c0Latched){ //let go right
-				mc.vrPlayer.triggerHapticPulse(0, 200);
+				MCOpenVR.triggerHapticPulse(0, 200);
 				jump = true;
 			}
 
@@ -91,11 +93,11 @@ public class JumpTracker {
 				latchStart[0] = mc.roomScale.getControllerPos_Room(0).add(mc.roomScale.getControllerPos_Room(1)).scale(0.5);
 				latchStartOrigin[0] = mc.roomScale.getRoomOriginPos_World();
 				latchStartPlayer[0] = mc.player.getPositionVector();
-				mc.vrPlayer.triggerHapticPulse(0, 1000);
+				MCOpenVR.triggerHapticPulse(0, 1000);
 			}
 
 			if(!ok[1] && c1Latched){ //let go left
-				mc.vrPlayer.triggerHapticPulse(1, 200);
+				MCOpenVR.triggerHapticPulse(1, 200);
 				jump = true;
 			}
 
@@ -103,7 +105,7 @@ public class JumpTracker {
 				latchStart[1] = mc.roomScale.getControllerPos_Room(0).add(mc.roomScale.getControllerPos_Room(1)).scale(0.5);
 				latchStartOrigin[1] = mc.roomScale.getRoomOriginPos_World();
 				latchStartPlayer[1] = mc.player.getPositionVector();
-				mc.vrPlayer.triggerHapticPulse(1, 1000);
+				MCOpenVR.triggerHapticPulse(1, 1000);
 			}
 
 			c0Latched = ok[0];
@@ -119,14 +121,20 @@ public class JumpTracker {
 			Vec3d pl = latchStartPlayer[c].subtract(delta);
 
 			if(!jump && isjumping()){ //bzzzzzz
-				mc.vrPlayer.triggerHapticPulse(0, 200);
-				mc.vrPlayer.triggerHapticPulse(1, 200);
+				MCOpenVR.triggerHapticPulse(0, 200);
+				MCOpenVR.triggerHapticPulse(1, 200);
 			}
 
 			if(jump){
 				Vec3d m = (MCOpenVR.controllerHistory[0].netMovement(0.3).add(MCOpenVR.controllerHistory[1].netMovement(0.3))).scale(1.0f);
+	
+				//cap
+				float limit = 1.5f;
+				if(m.lengthVector() > limit) m = m.scale(limit/m.lengthVector());
+						
 				if (player.isPotionActive(MobEffects.JUMP_BOOST))
 					m=m.scale((player.getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier() + 1.5));
+				
 				if(delta.yCoord < 0 && m.yCoord < 0){
 
 					player.motionX=-m.xCoord;
@@ -139,7 +147,8 @@ public class JumpTracker {
 					pl = pl.addVector(player.motionX, player.motionY, player.motionZ);					
 					player.setPosition(pl.xCoord, pl.yCoord, pl.zCoord);
 					mc.vrPlayer.snapRoomOriginToPlayerEntity(player, false, false, 0);
-					
+					mc.player.addExhaustion(.3f);    
+
 				} else {
 					mc.vrPlayer.setRoomOrigin(latchStartOrigin[0].xCoord, latchStartOrigin[0].yCoord, latchStartOrigin[0].zCoord, false, false);
 				}
@@ -156,5 +165,13 @@ public class JumpTracker {
 
 
 
+	}
+
+	public boolean isBoots(ItemStack i) {
+		if(i.isEmpty())return false;
+		if(!i.hasDisplayName()) return false;
+		if((i.getItem() != Items.LEATHER_BOOTS)) return false;
+		if(!(i.getTagCompound().getBoolean("Unbreakable"))) return false;
+		return i.getDisplayName().equals("Jump Boots");
 	}
 }

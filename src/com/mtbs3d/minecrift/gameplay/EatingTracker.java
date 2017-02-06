@@ -88,7 +88,7 @@ private Random r = new Random();
 				long t = player.getItemInUseCount();
 				if(t>0)
 					if(t%5 <= crunchiness)
-						minecraft.vrPlayer.triggerHapticPulse(c, 700 );
+						MCOpenVR.triggerHapticPulse(c, 700 );
 
 				if(Minecraft.getSystemTime()-eatStart > eattime)
 					eating[c]=false;

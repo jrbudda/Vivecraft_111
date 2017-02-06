@@ -1,6 +1,14 @@
 --- a/net/minecraft/client/renderer/RenderItem.java
 +++ b/net/minecraft/client/renderer/RenderItem.java
-@@ -170,16 +170,38 @@
+@@ -56,6 +56,7 @@
+ import net.minecraft.tileentity.TileEntityStructure;
+ import net.minecraft.util.BlockRenderLayer;
+ import net.minecraft.util.EnumFacing;
++import net.minecraft.util.EnumHand;
+ import net.minecraft.util.ReportedException;
+ import net.minecraft.util.ResourceLocation;
+ import net.minecraft.util.math.MathHelper;
+@@ -170,16 +171,45 @@
          }
      }
  
@@ -19,20 +27,27 @@
 +            float fade = 1;
 +            
 +            EntityPlayerSP p = Minecraft.getMinecraft().player;
-+            
-+            if(p!=null){
-+            	fade= p.getCooledAttackStrength(par1);
-+              
++                       
++            if(p!=null && isfphand){
++               
++            	fade= p.getCooledAttackStrength(0)*.75f + .25f;
++        	
 +            	if(p.isSneaking()) 
 +                	fade =0.75f;
 +                
 +                if(p.isActiveItemStackBlocking() && p.getActiveItemStack() != stack) 
 +                	fade =0.75f;   
++
++                if(stack.getItem() == Items.SHIELD)
++                	if(p.isActiveItemStackBlocking())
++                		fade = 1;
++                	else
++                		fade = 0.75f;
++
++                if(fade < 0.1) fade = 0.1f;
++                if(fade > 1) fade = 1f;
 +            }
-+                    
-+            if(fade < 0.1) fade = 0.1f;
-+            if(!isfphand) fade = 1;
-+            
++                          
              if (model.isBuiltInRenderer())
              {
 -                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -42,30 +57,30 @@
                  GlStateManager.enableRescaleNormal();
                  TileEntityItemStackRenderer.instance.renderByItem(stack);
              }
-@@ -191,7 +213,21 @@
+@@ -191,7 +221,21 @@
                      this.modelLocation = null;
                  }
  
 -                this.renderModel(model, stack);
 +                int c = -1;
-+                
 +                if(fade < 1){
-+                    c =  (int)(fade*255) << 24 | 255 << 16 | 255 << 8 | 255;
++                    int b = (int) (fade * 255);
++                    c =  b << 24 | 255 << 16 | 255 << 8 | 255;
 +                }
 +                   
-+                if(stack.getDisplayName().equals("Jump Boots"))
++                if (Minecraft.getMinecraft().jumpTracker.isBoots(stack))
 +                {
-+                	c=(int)(255) << 24 | 255 << 8 ;
-+                } else if (stack.getDisplayName().equals("Climb Claws"))
++                	c = (255) << 24 | 255 << 8 ;
++                } else if (Minecraft.getMinecraft().climbTracker.isClaws(stack))
 +                {
-+                	c=(int)(255) << 24 | 130 <<16 | 0 << 8 | 75 ;
++                	c = (255) << 24 | 130 <<16 | 0 << 8 | 75 ;
 +                }
-+                        
++                              
 +                this.renderModel(model,c, stack);
  
                  if (stack.hasEffect() && (!Config.isCustomItems() || !CustomItems.renderCustomEffect(this, stack, model)))
                  {
-@@ -322,7 +358,7 @@
+@@ -322,7 +366,7 @@
          if (!stack.isEmpty())
          {
              IBakedModel ibakedmodel = this.getItemModelWithOverrides(stack, (World)null, (EntityLivingBase)null);
@@ -74,7 +89,7 @@
          }
      }
  
-@@ -351,16 +387,16 @@
+@@ -351,16 +395,16 @@
          }
      }
  
@@ -94,7 +109,7 @@
      {
          if (!stack.isEmpty())
          {
-@@ -388,7 +424,7 @@
+@@ -388,7 +432,7 @@
                  }
              }
  
@@ -103,7 +118,7 @@
              GlStateManager.cullFace(GlStateManager.CullFace.BACK);
              GlStateManager.popMatrix();
              GlStateManager.disableRescaleNormal();
-@@ -434,7 +470,7 @@
+@@ -434,7 +478,7 @@
              bakedmodel.getItemCameraTransforms().applyTransform(ItemCameraTransforms.TransformType.GUI);
          }
  
@@ -112,7 +127,7 @@
          GlStateManager.disableAlpha();
          GlStateManager.disableRescaleNormal();
          GlStateManager.disableLighting();
-@@ -1148,6 +1184,10 @@
+@@ -1148,6 +1192,10 @@
          this.registerItem(Items.DIAMOND_HORSE_ARMOR, "diamond_horse_armor");
          this.registerItem(Items.LEAD, "lead");
          this.registerItem(Items.NAME_TAG, "name_tag");

@@ -242,7 +242,7 @@
          }
      }
  
-@@ -1138,10 +1229,47 @@
+@@ -1138,10 +1229,42 @@
       */
      public void move(MoverType type, double x, double y, double z)
      {
@@ -254,14 +254,13 @@
 +    	if(this.isRiding())return;
 +    	if(mc.jumpTracker.isjumping()) return;
 +    	
-+    	boolean client = this instanceof EntityPlayerSP;
 +    	boolean freemove = OpenVRPlayer.get().getFreeMoveMode();
 +    	boolean doY = freemove || (Minecraft.getMinecraft().vrSettings.simulateFalling && !this.isOnLadder()) && !this.isSneaking();
 +    	if(mc.climbTracker.isActive(this)) doY = true;
 +    	Vec3d roomOrigin = OpenVRPlayer.get().getRoomOriginPos_World();
 +    	//   	Vec3 camloc = Minecraft.getMinecraft().roomScale.getHMDPos_World();
 +
-+    	if ( freemove && (this.moveForward != 0 || this.isElytraFlying() || Math.abs(this.motionX) > 0.01 || Math.abs(this.motionZ) > 0.01))
++    	if ( (mc.climbTracker.isGrabbingLadder() || freemove || mc.swimTracker.isActive(this)) && (this.moveForward != 0 || this.isElytraFlying() || Math.abs(this.motionX) > 0.01 || Math.abs(this.motionZ) > 0.01))
 +    	{
 +    		double ox = roomOrigin.xCoord - posX;
 +    		double oz = roomOrigin.zCoord - posZ;
@@ -269,22 +268,18 @@
 +    		double d1 = this.posZ;
 +    		super.move(type,x,y,z);
 +    		this.updateAutoJump((float)(this.posX - d0), (float)(this.posZ - d1));
-+    		if (client){	
 +    			double oy = this.posY;
 +    			OpenVRPlayer.get().setRoomOrigin(
 +    					posX + ox, 
 +    					oy, 
 +    					posZ  + oz, false, false);
-+    		}
 +    	} else {
 +    		if(doY) {      	 
 +    			super.move(type,0,y,0);
-+    			if (client){
 +    				OpenVRPlayer.get().setRoomOrigin(
 +    						OpenVRPlayer.get().getRoomOriginPos_World().xCoord, 
 +    						this.posY,
 +    						OpenVRPlayer.get().getRoomOriginPos_World().zCoord, false, false);
-+    			}
 +
 +    		} else {
 +    			this.onGround = true; //
@@ -294,7 +289,7 @@
      }
  
      public boolean isAutoJumpEnabled()
-@@ -1167,12 +1295,16 @@
+@@ -1167,12 +1290,16 @@
                      float f = this.getAIMoveSpeed();
                      float f1 = (float)vec3d2.lengthSquared();
  
@@ -313,7 +308,7 @@
                          vec3d2 = new Vec3d((double)(f2 * f5 - f3 * f4), vec3d2.yCoord, (double)(f3 * f5 + f2 * f4));
                          f1 = (float)vec3d2.lengthSquared();
  
-@@ -1292,4 +1424,314 @@
+@@ -1292,4 +1419,316 @@
              }
          }
      }
@@ -373,7 +368,7 @@
 +    		
 +    		OpenVRPlayer.get().setRoomOrigin(
 +    				this.getRidingEntity().posX + ox, 
-+    				this.getRidingEntity().posY + (this.getRidingEntity() instanceof EntityHorse ? this.getRidingEntity().getMountedYOffset() : 0 ),
++    				this.getRidingEntity().posY + this.getRidingEntity().getMountedYOffset(),
 +    				this.getRidingEntity().posZ + oz, false, false); 		    		
 +    	} 
 +    }
@@ -473,7 +468,9 @@
 +            // Account for pitch if required
 +    		   	
 +    		if(mc.vrSettings.seated){
-+            	directionVec=directionVec.rotateYaw(-con.getControllerYaw_World(1) * PIOVER180);	    		
++    			int c = 0;
++    			if(mc.vrSettings.seatedUseHMD) c = 1;
++            	directionVec=directionVec.rotateYaw(-con.getControllerYaw_World(c) * PIOVER180);	    		
 +    		}else{
 +        		if(this.capabilities.isFlying || this.inWater){
 +        			switch (mc.vrSettings.vrFreeMoveMode){
@@ -605,8 +602,8 @@
 +	public boolean isClimbeyJumpEquipped(){
 +		
 +		if(this.getItemStackFromSlot(EntityEquipmentSlot.FEET) != null){
-+			if(this.getItemStackFromSlot(EntityEquipmentSlot.FEET).getDisplayName().equals("Jump Boots")) 
-+				return true;
++			if(mc.jumpTracker.isBoots(this.getItemStackFromSlot(EntityEquipmentSlot.FEET))) 
++					return true;
 +		}
 +		
 +		return false;
@@ -616,12 +613,12 @@
 +	public boolean isClimbeyClimbEquipped(){
 +		
 +		if(this.getHeldItemMainhand() != null){
-+			if(this.getHeldItemMainhand().getDisplayName().equals("Climb Claws")) 
++			if(mc.climbTracker.isClaws(this.getHeldItemMainhand())) 
 +				return true;
 +		}
 +		
 +		if(this.getHeldItemOffhand() != null){
-+			if(this.getHeldItemOffhand().getDisplayName().equals("Climb Claws")) 
++			if(mc.climbTracker.isClaws(this.getHeldItemOffhand())) 
 +				return true;
 +		}
 +		

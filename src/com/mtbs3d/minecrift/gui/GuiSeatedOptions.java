@@ -19,8 +19,6 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
 			VRSettings.VrOptions.X_SENSITIVITY,
 			VRSettings.VrOptions.Y_SENSITIVITY,
 			VRSettings.VrOptions.KEYHOLE,
-            VRSettings.VrOptions.FOV_REDUCTION
-
 	};
 	
 	
@@ -32,7 +30,8 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
     };
     static VRSettings.VrOptions[] freeMoveSettings = new VRSettings.VrOptions[]
     {
-
+            VRSettings.VrOptions.SEATED_HMD,
+            VRSettings.VrOptions.FOV_REDUCTION,
     };
 
 	public GuiSeatedOptions(GuiScreen guiScreen, VRSettings guivrSettings) {
@@ -57,7 +56,7 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
 
 		addButtons(buttons, 0);
 		
-        if(mc.vrSettings.vrFreeMove)
+        if(mc.vrPlayer.getFreeMoveMode())
         	addButtons(freeMoveSettings,105);
         else
         	addButtons(teleportSettings,105); 
@@ -128,7 +127,8 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
 				vrSettings.ySensitivity=1;
 				vrSettings.vrFreeMove = true;
 				vrSettings.useFOVReduction = false;
-				
+				vrSettings.vrFreeMove = true;
+				mc.vrPlayer.setFreeMoveMode(true);
 				Minecraft.getMinecraft().vrSettings.saveOptions();
 				this.reinit = true;
 			}
@@ -181,6 +181,11 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
                 return new String[] {
                         "If enabled the player will falls to the ground in TP mode",
                         "when standing above empty space. Also allows jumping"
+                } ;
+            case SEATED_HMD:
+                return new String[] {
+                        "The direction the forward (W) key will go. You can ",
+                        "HMD view direction or crosshair pointing direction"
                 } ;
             case FOV_REDUCTION:
                 return new String[] {

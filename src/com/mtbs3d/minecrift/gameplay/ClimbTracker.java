@@ -1,5 +1,7 @@
 package com.mtbs3d.minecrift.gameplay;
 
+import java.util.Random;
+
 import javax.swing.LayoutStyle;
 
 import com.mtbs3d.minecrift.api.IRoomscaleAdapter;
@@ -18,6 +20,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemShears;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketCustomPayload;
 import net.minecraft.util.EnumHand;
@@ -31,6 +34,7 @@ public class ClimbTracker {
 	private boolean[] latched = new boolean[2];
 	private boolean[] wasinblock = new boolean[2];
 	private boolean[] wasbutton= new boolean[2];
+	private boolean[] waslatched = new boolean[2];
 
 	private boolean gravityOverride=false;
 	
@@ -49,6 +53,14 @@ public class ClimbTracker {
 		return latched[0] || latched[1];
 	}
 
+	public boolean isClaws(ItemStack i){
+		if(i.isEmpty())return false;
+		if(!i.hasDisplayName()) return false;
+		if(i.getItem() != Items.SHEARS) return false;
+		if(!(i.getTagCompound().getBoolean("Unbreakable"))) return false;
+		return i.getDisplayName().equals("Climb Claws");
+	}
+	
 	public boolean isActive(EntityPlayerSP p){
 		if(mc.vrSettings.seated)
 			return false;
@@ -74,6 +86,9 @@ public class ClimbTracker {
     	return(NetworkHelper.serverAllowsClimbey && mc.player.isClimbeyClimbEquipped());
     }
     
+    private Random rand = new Random(); 
+    boolean unsetflag;
+    
 	private boolean canstand(BlockPos bp, EntityPlayerSP p){
 		AxisAlignedBB t = p.world.getBlockState(bp).getCollisionBoundingBox(p.world, bp);
 		if(t == null || t.maxY == 0)
@@ -88,6 +103,7 @@ public class ClimbTracker {
 			return false;		
 		return true;
 	}
+
 
 	public void doProcess(EntityPlayerSP player){
 		if(!isActive(player)) {
@@ -130,7 +146,7 @@ public class ClimbTracker {
 					} else if (meta == 5){
 						inblock[c] = cpos.xCoord < .1 && (cpos.zCoord > .1 && cpos.zCoord < .9);
 					}	
-
+				//nah, hotboxes too big.	inblock[c] = box[c] != null && box[c].offset(bp).isVecInside(controllerPos);		
 					button[c]=inblock[c];
 
 				} else {
@@ -138,27 +154,33 @@ public class ClimbTracker {
 						inblock[c] = false;
 					button[c] = wasbutton[c];
 				}
+				
 			} else { //Climbey
 				//TODO whitelist by block type
 				
 				if(c == 0)
-					button[c] = mc.gameSettings.keyBindAttack.isKeyDown() || mc.gameSettings.keyBindUseItem.isKeyDown();
+					button[c] = mc.gameSettings.keyBindAttack.isKeyDown();
 				else 
 					button[c] = mc.gameSettings.keyBindForward.isKeyDown() && !mc.player.onGround;
 
 				inblock[c] = box[c] != null && box[c].offset(bp).isVecInside(controllerPos);				
 			}						
 		
-
+			waslatched[c] = latched[c];
+			
 			if(!button[c] && latched[c]){ //let go 
-				if(!inblock[c])mc.vrPlayer.triggerHapticPulse(c, 200);
 				latched[c] = false;
+				if(c == 0)
+					mc.gameSettings.keyBindAttack.unpressKey();
+				else 
+					mc.gameSettings.keyBindForward.unpressKey();
+
 				jump = true;
 			} 
 
 			if(!latched[c] && !nope){
 				if((!wasinblock[c] && inblock[c] && button[c]) ||
-						(!wasbutton[c] && button[c] && inblock[c])){
+						(!wasbutton[c] && button[c] && inblock[c])){ //Grab
 					wantjump = false;
 					latchStart[c] = mc.roomScale.getControllerPos_World(c);
 					latchStartBodyY[c] = player.posY;
@@ -170,7 +192,9 @@ public class ClimbTracker {
 					}
 					else 
 						latched[0] = false;
-					mc.vrPlayer.triggerHapticPulse(c, 1000);
+					MCOpenVR.triggerHapticPulse(c, 2000);
+					mc.vrPlayer.blockDust(latchStart[c].xCoord, latchStart[c].yCoord, latchStart[c].zCoord, 5, bs);
+
 				}
 			}		
 
@@ -188,7 +212,10 @@ public class ClimbTracker {
 					latchStartController = c;
 					latched[c] = true;
 					wantjump = false;
-					mc.vrPlayer.triggerHapticPulse(c, 1000);
+					MCOpenVR.triggerHapticPulse(c, 2000);
+					BlockPos bp = new BlockPos(latchStart[c]);
+					IBlockState bs = mc.world.getBlockState(bp);
+					mc.vrPlayer.blockDust(latchStart[c].xCoord, latchStart[c].yCoord, latchStart[c].zCoord, 5, bs);
 				}
 			}
 		}		
@@ -210,17 +237,32 @@ public class ClimbTracker {
 		}
 
 		if(!latched[0] && !latched[1] && !jump){
+			if((waslatched[0] || waslatched[1]) && button[1]){
+				unsetflag = true;
+			}
+			if(player.onGround && unsetflag){
+				unsetflag = false;
+				mc.gameSettings.keyBindForward.unpressKey();
+			}
 			latchStartController = -1;
 			return; //fly u fools
 		}
 
+		if((latched[0] || latched[1]) && rand.nextInt(20) == 10) {
+			mc.player.addExhaustion(.1f);    
+			BlockPos bp = new BlockPos(latchStart[latchStartController]);
+			IBlockState bs = mc.world.getBlockState(bp);
+			mc.vrPlayer.blockDust(latchStart[latchStartController].xCoord, latchStart[latchStartController].yCoord, latchStart[latchStartController].zCoord, 1, bs);
+		}
+
+		
 		Vec3d now = mc.roomScale.getControllerPos_World(latchStartController);
 		Vec3d start = latchStart[latchStartController];
 		
 		Vec3d delta= now.subtract(start);
 		
 		if(wantjump) //bzzzzzz
-			mc.vrPlayer.triggerHapticPulse(latchStartController, 200);
+			MCOpenVR.triggerHapticPulse(latchStartController, 200);
 		
 		if(!jump){
 			player.motionY = -delta.yCoord;
@@ -254,7 +296,10 @@ public class ClimbTracker {
 			wantjump = false;
 			Vec3d pl = player.getPositionVector().subtract(delta);
 
-			Vec3d m = MCOpenVR.controllerHistory[latchStartController].netMovement(0.3).scale(0.75f);
+			Vec3d m = MCOpenVR.controllerHistory[latchStartController].netMovement(0.3);
+			
+			float limit = 1f;
+			if(m.lengthVector() > limit) m = m.scale(limit/m.lengthVector());
 			
 			if (player.isPotionActive(MobEffects.JUMP_BOOST))
 				m=m.scale((player.getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier() + 1.5));
@@ -269,7 +314,9 @@ public class ClimbTracker {
 			player.lastTickPosZ = pl.zCoord;			
 			pl = pl.addVector(player.motionX, player.motionY, player.motionZ);					
 			player.setPosition(pl.xCoord, pl.yCoord, pl.zCoord);
-			mc.vrPlayer.snapRoomOriginToPlayerEntity(player, false, false, 0);			
+			mc.vrPlayer.snapRoomOriginToPlayerEntity(player, false, false, 0);	
+			mc.player.addExhaustion(.3f);    
+
 		}
 	}
 }

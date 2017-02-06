@@ -34,7 +34,7 @@
  import net.minecraft.util.SoundCategory;
  import net.minecraft.util.SoundEvent;
  import net.minecraft.util.StringUtils;
-@@ -495,7 +501,32 @@
+@@ -495,7 +501,34 @@
              BlockFire.init();
              Potion.registerPotions();
              Enchantment.registerEnchantments();
@@ -52,11 +52,13 @@
 +            ItemStack is = new ItemStack(Items.LEATHER_BOOTS);
 +            is.setStackDisplayName("Jump Boots");
 +            is.getTagCompound().setBoolean("Unbreakable", true);
-+            
++            is.getTagCompound().setInteger("HideFlags",4);
++
 +            ItemStack is2 = new ItemStack(Items.SHEARS);
 +            is2.setStackDisplayName("Climb Claws");
 +            is2.getTagCompound().setBoolean("Unbreakable", true);
-+            
++            is2.getTagCompound().setInteger("HideFlags",4);
++
 +            CraftingManager.getInstance().addRecipe(is, new Object[] {"B", "S", 'S',Blocks.SLIME_BLOCK, 'B', Items.LEATHER_BOOTS});
 +            CraftingManager.getInstance().addRecipe(is2, new Object[] {"S S", "C C", 'S',Items.SPIDER_EYE, 'C', Items.SHEARS});
 +            CraftingManager.getInstance().addShapelessRecipe(new ItemStack(Items.EATME_CAKE),  new Object[] { Items.CAKE, Items.GLOWSTONE_DUST });

@@ -119,6 +119,7 @@ public class VRSettings
     public boolean vrAllowLocoModeSwotch = true;
     public boolean vrLimitedSurvivalTeleport = true;
     public boolean seated = false;
+    public boolean seatedUseHMD = false;
     public float jumpThreshold=0.05f;
     public float sneakThreshold=0.4f;
     public boolean realisticJumpEnabled=true;
@@ -548,7 +549,9 @@ public class VRSettings
                     if(optionTokens[0].equals("realisticSneakEnabled")){
                         this.realisticSneakEnabled=optionTokens[1].equals("true");
                     }
-
+                    if(optionTokens[0].equals("seatedhmd")){
+                        this.seatedUseHMD=optionTokens[1].equals("true");
+                    }
                     if(optionTokens[0].equals("realisticJumpEnabled")){
                         this.realisticJumpEnabled=optionTokens[1].equals("true");
                     }
@@ -865,6 +868,8 @@ public class VRSettings
                 //END JRBUDDA
             case REALISTIC_JUMP:
                 return this.realisticJumpEnabled ? var4 + "ON" : var4 + "OFF";
+            case SEATED_HMD:
+                return this.seatedUseHMD ? var4 + "HMD" : var4 + "CROSSHAIR";
             case REALISTIC_SNEAK:
                 return this.realisticSneakEnabled ? var4 + "ON" : var4 + "OFF";
             case REALISTIC_CLIMB:
@@ -1120,6 +1125,9 @@ public class VRSettings
             case REALISTIC_JUMP:
                 realisticJumpEnabled = !realisticJumpEnabled;
                 break;
+            case SEATED_HMD:
+                seatedUseHMD = !seatedUseHMD;
+                break;
             case REALISTIC_SWIM:
                 realisticSwimEnabled = !realisticSwimEnabled;
                 break;
@@ -1336,6 +1344,7 @@ public class VRSettings
             var5.println("mrMovingCamOffsetYaw:" + this.mrMovingCamOffsetYaw);
             var5.println("mrMovingCamOffsetRoll:" + this.mrMovingCamOffsetRoll);
             var5.println("vrTouchHotbar:" + this.vrTouchHotbar);
+            var5.println("seatedhmd:" + this.seatedUseHMD);
             var5.println("seated:" + this.seated);
             var5.println("jumpThreshold:" + this.jumpThreshold);
             var5.println("sneakThreshold:" + this.sneakThreshold);
@@ -1529,7 +1538,8 @@ public class VRSettings
         // OTher buttons
         OTHER_HUD_SETTINGS("Overlay/Crosshair/Chat...", false, true),
         OTHER_RENDER_SETTINGS("IPD / FOV...", false, true),
-        LOCOMOTION_SETTINGS("Locomotion Settings...", false, true); 
+        LOCOMOTION_SETTINGS("Locomotion Settings...", false, true), 
+        SEATED_HMD("Forward Direction",false,true); 
 
 //        ANISOTROPIC_FILTERING("options.anisotropicFiltering", true, false, 1.0F, 16.0F, 0.0F)
 //                {
