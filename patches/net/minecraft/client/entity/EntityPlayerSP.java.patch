@@ -242,7 +242,7 @@
          }
      }
  
-@@ -1138,10 +1229,42 @@
+@@ -1138,10 +1229,40 @@
       */
      public void move(MoverType type, double x, double y, double z)
      {
@@ -252,9 +252,7 @@
 -        this.updateAutoJump((float)(this.posX - d0), (float)(this.posZ - d1));
 +    	if(x==0 && y==0 && z==0) return;
 +    	if(this.isRiding())return;
-+    	if(mc.jumpTracker.isjumping()) return;
-+    	
-+    	boolean freemove = OpenVRPlayer.get().getFreeMoveMode();
++    	boolean freemove = OpenVRPlayer.get().getFreeMove();
 +    	boolean doY = freemove || (Minecraft.getMinecraft().vrSettings.simulateFalling && !this.isOnLadder()) && !this.isSneaking();
 +    	if(mc.climbTracker.isActive(this)) doY = true;
 +    	Vec3d roomOrigin = OpenVRPlayer.get().getRoomOriginPos_World();
@@ -289,7 +287,7 @@
      }
  
      public boolean isAutoJumpEnabled()
-@@ -1167,12 +1290,16 @@
+@@ -1167,12 +1288,16 @@
                      float f = this.getAIMoveSpeed();
                      float f1 = (float)vec3d2.lengthSquared();
  
@@ -308,7 +306,7 @@
                          vec3d2 = new Vec3d((double)(f2 * f5 - f3 * f4), vec3d2.yCoord, (double)(f3 * f5 + f2 * f4));
                          f1 = (float)vec3d2.lengthSquared();
  
-@@ -1292,4 +1419,316 @@
+@@ -1292,4 +1417,311 @@
              }
          }
      }
@@ -393,7 +391,7 @@
 +    	this.motionZ /= zFactor;
 +    	//
 +
-+    	if(!this.onGround && !this.isElytraFlying() && !this.hasNoGravity() && mc.jumpTracker.isClimbeyJumpEquipped()) return; //no drag for jump boots.
++    	if(!mc.vrSettings.seated && !this.onGround && !this.isElytraFlying() && !this.hasNoGravity() && mc.jumpTracker.isClimbeyJumpEquipped()) return; //no drag for jump boots.
 +    	
 +    	if(mc.climbTracker.isGrabbingLadder()) return; //no drag for climb.
 +	
@@ -432,196 +430,191 @@
 +    @Override
 +    public void moveRelative(float strafe, float forward, float friction)
 +    {
-+//   	super.moveFlying(strafe, forward, friction);;
-+    	
++    	//   	super.moveFlying(strafe, forward, friction);;
++
 +    	OpenVRPlayer vr = mc.vrPlayer;		
-+    	if (!vr.getFreeMoveMode()) {return;}
-+		
-+        int inertiaFactor = Minecraft.getMinecraft().vrSettings.inertiaFactor;
-+        float speed = strafe * strafe + forward * forward;
++    	if (!vr.getFreeMove()) {return;}
 +
-+        double mX = 0d;
-+        double mZ = 0d;
-+        double mY = 0d;
-+        double addFactor = 1f;
++    	int inertiaFactor = Minecraft.getMinecraft().vrSettings.inertiaFactor;
++    	float speed = strafe * strafe + forward * forward;
 +
-+        if (speed >= 1.0E-4F)
-+        {
-+            speed = MathHelper.sqrt(speed);
++    	double mX = 0d;
++    	double mZ = 0d;
++    	double mY = 0d;
++    	double addFactor = 1f;
 +
-+            if (speed < 1.0F)
-+            {
-+                speed = 1.0F;
-+            }
++    	if (speed >= 1.0E-4F)
++    	{
++    		speed = MathHelper.sqrt(speed);
 +
-+            speed = friction / speed;
-+            strafe *= speed;
-+            forward *= speed;
++    		if (speed < 1.0F)
++    		{
++    			speed = 1.0F;
++    		}
 +
-+            
-+            Vec3d directionVec = new Vec3d(strafe, 0,forward);
-+	  						
-+         	//VIVE DO PITCH FLYING		
-+
++    		speed = friction / speed;
++    		strafe *= speed;
++    		forward *= speed;
++    		Vec3d directionVec = new Vec3d(strafe, 0,forward);
 +    		IRoomscaleAdapter con = mc.roomScale;
 +    		
-+            // Account for pitch if required
-+    		   	
 +    		if(mc.vrSettings.seated){
 +    			int c = 0;
 +    			if(mc.vrSettings.seatedUseHMD) c = 1;
-+            	directionVec=directionVec.rotateYaw(-con.getControllerYaw_World(c) * PIOVER180);	    		
++    			directionVec=directionVec.rotateYaw(-con.getControllerYaw_World(c) * PIOVER180);	    		
 +    		}else{
-+        		if(this.capabilities.isFlying || this.inWater){
-+        			switch (mc.vrSettings.vrFreeMoveMode){
-+        			case VRSettings.FREEMOVE_CONTROLLER:
-+        				directionVec= directionVec.rotatePitch(con.getControllerPitch_World(1) * PIOVER180);		   
-+        				break;
-+        			case VRSettings.FREEMOVE_HMD:
-+        				directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);				
-+        				break;
-+        			case VRSettings.FREEMOVE_RUNINPLACE:
-+        				//hmd pitch
-+        				directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);	
-+        				break;
-+        			}
-+        		}
-+        		
-+    			switch (mc.vrSettings.vrFreeMoveMode){
-+    			case VRSettings.FREEMOVE_CONTROLLER:
-+                	directionVec=directionVec.rotateYaw(-con.getControllerYaw_World(1) * PIOVER180);	
-+    				break;
-+    			case VRSettings.FREEMOVE_HMD:
-+                	directionVec=directionVec.rotateYaw(-con.getHMDYaw_World() * PIOVER180);	
-+    				break;
-+    			case VRSettings.FREEMOVE_RUNINPLACE:
-+                	directionVec=directionVec.rotateYaw((float) (-mc.runTracker.getYaw() * PIOVER180));
-+    				directionVec = directionVec.scale(mc.runTracker.getSpeed());
-+    				break;
-+    			}
-+        		    	    			
-+    		}
-+    			
-+
-+
-+            mX = directionVec.xCoord;
-+            mY = directionVec.yCoord;
-+            mZ = directionVec.zCoord;
-+
-+     	   // Modify acceleration sequence (each tick)
-+            if(!this.capabilities.isFlying && !this.inWater) addFactor = VRSettings.getInertiaAddFactor(inertiaFactor);
-+            
-+            float yAdd = 1f;
-+            if(this.capabilities.isFlying) yAdd = 3f; //HACK
-+            
-+            this.motionX = this.motionX + (mX * addFactor);
-+            this.motionZ = this.motionZ + (mZ * addFactor);
-+            this.motionY = this.motionY + (mY * yAdd);
-+      
-+            this.additionX = mX;
-+            this.additionZ = mZ;
-+        }
-+        
-+        //if (this instanceof EntityPlayerSP) {
-+        //    System.out.println(String.format("FLYING: %B, forward: %.4f, strafe: %.4f, pitch: %.4f, yaw: %.4f, mx: %.4f, mz: %.4f, my: %.4f", allowYAdjust, forward, strafe, this.headPitch, this.rotationYaw, mX, mZ, mY));
-+        //}
-+
-+        
-+     if(!this.capabilities.isFlying && !this.inWater) doDrag();       //TODO put back intertia while flying.. doesnt work for some reason. 
-+        
-+/** END MINECRIFT **/
-+   
-+    }
-+    
-+    public float eyeHeightOverride = 0;
-+    public boolean overrideEyeHeight;
-+    
-+    @Override
-+    public float getEyeHeight(){
-+    	if(overrideEyeHeight) return eyeHeightOverride;
-+    	return super.getEyeHeight();
-+    	
-+    }
-+    
-+    private boolean isThePlayer(){
-+    	return this == Minecraft.getMinecraft().player;
-+    }
-+    
-+    @Override
-+    protected void updateItemUse(ItemStack stack, int eatingParticleCount)
-+    {
-+    	if(!isThePlayer()){
-+    		super.updateItemUse(stack, eatingParticleCount);;
-+    	} else {
-+    		if (!stack.isEmpty() && this.isHandActive())
-+    		{
-+    			if (stack.getItemUseAction() == EnumAction.DRINK)
-+    			{
-+    				this.playSound(SoundEvents.ENTITY_GENERIC_DRINK, 0.5F, this.world.rand.nextFloat() * 0.1F + 0.9F);
-+    			}
-+
-+    			if (stack.getItemUseAction() == EnumAction.EAT)
-+    			{
-+    				for (int i = 0; i < eatingParticleCount; ++i)
-+    				{
-+    					Vec3d vec3d = new Vec3d(((double)this.rand.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
-+    					vec3d = vec3d.rotatePitch(-this.rotationPitch * 0.017453292F);
-+    					vec3d = vec3d.rotateYaw(-this.rotationYaw * 0.017453292F);
-+    					double d0 = (double)(-this.rand.nextFloat()) * 0.6D - 0.3D;
-+    					Vec3d vec3d1 = new Vec3d(((double)this.rand.nextFloat() - 0.5D) * 0.3D, d0, 0.6D);
-+    					vec3d1 = vec3d1.rotatePitch(-this.rotationPitch * 0.017453292F);
-+    					vec3d1 = vec3d1.rotateYaw(-this.rotationYaw * 0.017453292F);
-+
-+    					vec3d1 = vec3d1.addVector(this.posX, this.posY + (double)this.getEyeHeight(), this.posZ);
-+
-+    					//VIVE
-+    					EnumHand hand = getActiveHand();
-+    					if(hand == EnumHand.MAIN_HAND){
-+    						vec3d1 = (Minecraft.getMinecraft().roomScale.getControllerPos_World(0));                    	
-+    					} else {
-+    						vec3d1 = (Minecraft.getMinecraft().roomScale.getControllerPos_World(1));   
-+    					}
-+    					//
-+
-+    					if (stack.getHasSubtypes())
-+    					{
-+    						this.world.spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.xCoord, vec3d1.yCoord, vec3d1.zCoord, vec3d.xCoord, vec3d.yCoord + 0.05D, vec3d.zCoord, new int[] {Item.getIdFromItem(stack.getItem()), stack.getMetadata()});
-+    					}
-+    					else
-+    					{
-+    						this.world.spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.xCoord, vec3d1.yCoord, vec3d1.zCoord, vec3d.xCoord, vec3d.yCoord + 0.05D, vec3d.zCoord, new int[] {Item.getIdFromItem(stack.getItem())});
++    			if(this.capabilities.isFlying || this.inWater){
++    					switch (mc.vrSettings.vrFreeMoveMode){
++    					case VRSettings.FREEMOVE_CONTROLLER:
++    						directionVec= directionVec.rotatePitch(con.getControllerPitch_World(1) * PIOVER180);		   
++    						break;
++    					case VRSettings.FREEMOVE_HMD:
++    						directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);				
++    						break;
++    					case VRSettings.FREEMOVE_RUNINPLACE:
++    						//hmd pitch
++    						directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);	
++    						break;
 +    					}
 +    				}
 +
-+    				this.playSound(SoundEvents.ENTITY_GENERIC_EAT, 0.5F + 0.5F * (float)this.rand.nextInt(2), (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F);
++    			if(mc.jumpTracker.isjumping()){
++    				directionVec=directionVec.rotateYaw(-con.getHMDYaw_World() * PIOVER180);		
++    			}else{
++    				switch (mc.vrSettings.vrFreeMoveMode){
++    				case VRSettings.FREEMOVE_CONTROLLER:
++    					directionVec=directionVec.rotateYaw(-con.getControllerYaw_World(1) * PIOVER180);	
++    					break;
++    				case VRSettings.FREEMOVE_HMD:
++    					directionVec=directionVec.rotateYaw(-con.getHMDYaw_World() * PIOVER180);	
++    					break;
++    				case VRSettings.FREEMOVE_RUNINPLACE:
++    					directionVec=directionVec.rotateYaw((float) (-mc.runTracker.getYaw() * PIOVER180));
++    					directionVec = directionVec.scale(mc.runTracker.getSpeed());
++    					break;
++    				}
++    			}
++    		}
++
++
++    		mX = directionVec.xCoord;
++    		mY = directionVec.yCoord;
++    		mZ = directionVec.zCoord;
++
++    		// Modify acceleration sequence (each tick)
++    		if(!this.capabilities.isFlying && !this.inWater) addFactor = VRSettings.getInertiaAddFactor(inertiaFactor);
++
++    		float yAdd = 1f;
++    		if(this.capabilities.isFlying) yAdd = 3f; //HACK
++
++    		this.motionX = this.motionX + (mX * addFactor);
++    		this.motionZ = this.motionZ + (mZ * addFactor);
++    		this.motionY = this.motionY + (mY * yAdd);
++
++    		this.additionX = mX;
++    		this.additionZ = mZ;
++    	}
++
++    	//if (this instanceof EntityPlayerSP) {
++    	//    System.out.println(String.format("FLYING: %B, forward: %.4f, strafe: %.4f, pitch: %.4f, yaw: %.4f, mx: %.4f, mz: %.4f, my: %.4f", allowYAdjust, forward, strafe, this.headPitch, this.rotationYaw, mX, mZ, mY));
++    	//}
++
++
++    	if(!this.capabilities.isFlying && !this.inWater) doDrag();       //TODO put back intertia while flying.. doesnt work for some reason. 
++
++    	/** END MINECRIFT **/
++
++    }
++
++    	public float eyeHeightOverride = 0;
++    	public boolean overrideEyeHeight;
++
++    	@Override
++    	public float getEyeHeight(){
++    		if(overrideEyeHeight) return eyeHeightOverride;
++    		return super.getEyeHeight();
++
++    	}
++
++    	private boolean isThePlayer(){
++    		return this == Minecraft.getMinecraft().player;
++    	}
++
++    	@Override
++    	protected void updateItemUse(ItemStack stack, int eatingParticleCount)
++    	{
++    		if(!isThePlayer()){
++    			super.updateItemUse(stack, eatingParticleCount);;
++    		} else {
++    			if (!stack.isEmpty() && this.isHandActive())
++    			{
++    				if (stack.getItemUseAction() == EnumAction.DRINK)
++    				{
++    					this.playSound(SoundEvents.ENTITY_GENERIC_DRINK, 0.5F, this.world.rand.nextFloat() * 0.1F + 0.9F);
++    				}
++
++    				if (stack.getItemUseAction() == EnumAction.EAT)
++    				{
++    					for (int i = 0; i < eatingParticleCount; ++i)
++    					{
++    						Vec3d vec3d = new Vec3d(((double)this.rand.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
++    						vec3d = vec3d.rotatePitch(-this.rotationPitch * 0.017453292F);
++    						vec3d = vec3d.rotateYaw(-this.rotationYaw * 0.017453292F);
++    						double d0 = (double)(-this.rand.nextFloat()) * 0.6D - 0.3D;
++    						Vec3d vec3d1 = new Vec3d(((double)this.rand.nextFloat() - 0.5D) * 0.3D, d0, 0.6D);
++    						vec3d1 = vec3d1.rotatePitch(-this.rotationPitch * 0.017453292F);
++    						vec3d1 = vec3d1.rotateYaw(-this.rotationYaw * 0.017453292F);
++
++    						vec3d1 = vec3d1.addVector(this.posX, this.posY + (double)this.getEyeHeight(), this.posZ);
++
++    						//VIVE
++    						EnumHand hand = getActiveHand();
++    						if(hand == EnumHand.MAIN_HAND){
++    							vec3d1 = (Minecraft.getMinecraft().roomScale.getControllerPos_World(0));                    	
++    						} else {
++    							vec3d1 = (Minecraft.getMinecraft().roomScale.getControllerPos_World(1));   
++    						}
++    						//
++
++    						if (stack.getHasSubtypes())
++    						{
++    							this.world.spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.xCoord, vec3d1.yCoord, vec3d1.zCoord, vec3d.xCoord, vec3d.yCoord + 0.05D, vec3d.zCoord, new int[] {Item.getIdFromItem(stack.getItem()), stack.getMetadata()});
++    						}
++    						else
++    						{
++    							this.world.spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.xCoord, vec3d1.yCoord, vec3d1.zCoord, vec3d.xCoord, vec3d.yCoord + 0.05D, vec3d.zCoord, new int[] {Item.getIdFromItem(stack.getItem())});
++    						}
++    					}
++
++    					this.playSound(SoundEvents.ENTITY_GENERIC_EAT, 0.5F + 0.5F * (float)this.rand.nextInt(2), (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F);
++    				}
 +    			}
 +    		}
 +    	}
-+    }
-+    
-+	public boolean isClimbeyJumpEquipped(){
-+		
-+		if(this.getItemStackFromSlot(EntityEquipmentSlot.FEET) != null){
-+			if(mc.jumpTracker.isBoots(this.getItemStackFromSlot(EntityEquipmentSlot.FEET))) 
-+					return true;
-+		}
-+		
-+		return false;
-+		
-+	}
-+	
-+	public boolean isClimbeyClimbEquipped(){
-+		
-+		if(this.getHeldItemMainhand() != null){
-+			if(mc.climbTracker.isClaws(this.getHeldItemMainhand())) 
-+				return true;
-+		}
-+		
-+		if(this.getHeldItemOffhand() != null){
-+			if(mc.climbTracker.isClaws(this.getHeldItemOffhand())) 
-+				return true;
-+		}
-+		
-+		return false;
-+	}
++
++    	public boolean isClimbeyJumpEquipped(){
++
++    		if(this.getItemStackFromSlot(EntityEquipmentSlot.FEET) != null){
++    			if(mc.jumpTracker.isBoots(this.getItemStackFromSlot(EntityEquipmentSlot.FEET))) 
++    				return true;
++    		}
++
++    		return false;
++
++    	}
++
++    	public boolean isClimbeyClimbEquipped(){
++
++    		if(this.getHeldItemMainhand() != null){
++    			if(mc.climbTracker.isClaws(this.getHeldItemMainhand())) 
++    				return true;
++    		}
++
++    		if(this.getHeldItemOffhand() != null){
++    			if(mc.climbTracker.isClaws(this.getHeldItemOffhand())) 
++    				return true;
++    		}
++
++    		return false;
++    	}
  }

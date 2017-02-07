@@ -54,10 +54,11 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
         this.buttonList.add(new GuiButtonEx(ID_GENERIC_DONE, this.width / 2 - 155  + 160, this.height -25,150,20, "Done"));
         VRSettings.VrOptions[] buttons = locomotionSettings;
         addButtons(buttons,0);
+        mc.vrSettings.vrFreeMove = mc.vrPlayer.getFreeMove();
         GuiSmallButtonEx mode = new GuiSmallButtonEx(VRSettings.VrOptions.MOVE_MODE.returnEnumOrdinal(), this.width / 2 - 68, this.height / 6 + 102,VRSettings.VrOptions.MOVE_MODE, this.guivrSettings.getKeyBinding(VRSettings.VrOptions.MOVE_MODE));
         mode.setEventHandler(this);
         this.buttonList.add(mode);
-        if(mc.vrPlayer.getFreeMoveMode())
+        if(mc.vrPlayer.getFreeMove())
         	addButtons(freeMoveSettings,134);
         else
         	addButtons(teleportSettings,134);        
@@ -306,14 +307,15 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
                     } ;
                 case BCB_ON:
                     return new String[] {
-                            "Shows your body position as a blue dot on the gound.",
-                            "This is your Blue Circle Buddy (tm).",
-                            "Do not lose your Blue Circle Buddy."
+                            "Shows your body position as a square shadow on the ground.",
+                            "This is your Square Shadow Buddy (tm).",
+                            "Do not lose your Square Shadow Buddy."
                     };
                 case REALISTIC_JUMP:
                     return new String[]{
                             "If turned on, once you jump in real life",
-                            "Your player will also jump"
+                            "Your player will also jump. Also enables",
+                            "Jump Boots."
                     };
                 case REALISTIC_SNEAK:
                     return new String[]{
@@ -323,7 +325,7 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
                 case REALISTIC_CLIMB:
                     return new String[]{
                             "If turned on, allow climbing ladders and vines",
-                            "by touching them."
+                            "by touching them. Also enables Climb Claws."
                     };
                 case REALISTIC_SWIM:
                     return new String[]{

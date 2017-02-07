@@ -90,11 +90,12 @@
  import net.minecraft.util.EnumParticleTypes;
  import net.minecraft.util.MouseFilter;
  import net.minecraft.util.ReportedException;
-@@ -79,23 +108,62 @@
+@@ -79,23 +108,63 @@
  import net.minecraft.util.math.BlockPos;
  import net.minecraft.util.math.MathHelper;
  import net.minecraft.util.math.RayTraceResult;
 +import net.minecraft.util.math.RayTraceResult.Type;
++import net.minecraft.util.math.Vec2f;
  import net.minecraft.util.math.Vec3d;
 +import net.minecraft.util.math.Vec3i;
  import net.minecraft.util.text.TextComponentString;
@@ -153,7 +154,7 @@
  public class EntityRenderer implements IResourceManagerReloadListener
  {
      private static final Logger LOGGER = LogManager.getLogger();
-@@ -106,6 +174,45 @@
+@@ -106,6 +175,45 @@
      /** Anaglyph field (0=R, 1=GB) */
      public static int anaglyphField;
  
@@ -199,7 +200,7 @@
      /** A reference to the Minecraft object. */
      private final Minecraft mc;
      private final IResourceManager resourceManager;
-@@ -202,11 +309,11 @@
+@@ -202,11 +310,11 @@
      private double cameraZoom = 1.0D;
      private double cameraYaw;
      private double cameraPitch;
@@ -216,7 +217,7 @@
      private static final ResourceLocation[] SHADERS_TEXTURES = new ResourceLocation[] {new ResourceLocation("shaders/post/notch.json"), new ResourceLocation("shaders/post/fxaa.json"), new ResourceLocation("shaders/post/art.json"), new ResourceLocation("shaders/post/bumpy.json"), new ResourceLocation("shaders/post/blobs2.json"), new ResourceLocation("shaders/post/pencil.json"), new ResourceLocation("shaders/post/color_convolve.json"), new ResourceLocation("shaders/post/deconverge.json"), new ResourceLocation("shaders/post/flip.json"), new ResourceLocation("shaders/post/invert.json"), new ResourceLocation("shaders/post/ntsc.json"), new ResourceLocation("shaders/post/outline.json"), new ResourceLocation("shaders/post/phosphor.json"), new ResourceLocation("shaders/post/scan_pincushion.json"), new ResourceLocation("shaders/post/sobel.json"), new ResourceLocation("shaders/post/bits.json"), new ResourceLocation("shaders/post/desaturate.json"), new ResourceLocation("shaders/post/green.json"), new ResourceLocation("shaders/post/blur.json"), new ResourceLocation("shaders/post/wobble.json"), new ResourceLocation("shaders/post/blobs.json"), new ResourceLocation("shaders/post/antialias.json"), new ResourceLocation("shaders/post/creeper.json"), new ResourceLocation("shaders/post/spider.json")};
      public static final int SHADER_COUNT = SHADERS_TEXTURES.length;
      private int shaderIndex;
-@@ -215,7 +322,6 @@
+@@ -215,7 +323,6 @@
      private boolean initialized = false;
      private World updatedWorld = null;
      public boolean fogStandard = false;
@@ -224,7 +225,7 @@
      private long lastServerTime = 0L;
      private int lastServerTicks = 0;
      private int serverWaitTime = 0;
-@@ -225,6 +331,13 @@
+@@ -225,6 +332,13 @@
      private long lastErrorCheckTimeMs = 0L;
      private ShaderGroup[] fxaaShaders = new ShaderGroup[10];
  
@@ -238,7 +239,7 @@
      public EntityRenderer(Minecraft mcIn, IResourceManager resourceManagerIn)
      {
          this.shaderIndex = SHADER_COUNT;
-@@ -236,6 +349,7 @@
+@@ -236,6 +350,7 @@
          this.locationLightMap = mcIn.getTextureManager().getDynamicTextureLocation("lightMap", this.lightmapTexture);
          this.lightmapColors = this.lightmapTexture.getTextureData();
          this.theShaderGroup = null;
@@ -246,7 +247,7 @@
  
          for (int i = 0; i < 32; ++i)
          {
-@@ -388,7 +502,7 @@
+@@ -388,7 +503,7 @@
  
          Entity entity = this.mc.getRenderViewEntity();
          double d2 = entity.posX;
@@ -255,7 +256,7 @@
          double d1 = entity.posZ;
          float f2 = this.mc.world.getLightBrightness(new BlockPos(d2, d0, d1));
          float f3 = (float)this.mc.gameSettings.renderDistanceChunks / 16.0F;
-@@ -448,112 +562,112 @@
+@@ -448,112 +563,112 @@
       */
      public void getMouseOver(float partialTicks)
      {
@@ -474,7 +475,7 @@
      }
  
      /**
-@@ -643,14 +757,14 @@
+@@ -643,14 +758,14 @@
                  f /= (1.0F - 500.0F / (f1 + 500.0F)) * 2.0F + 1.0F;
              }
  
@@ -492,7 +493,7 @@
          }
      }
  
-@@ -708,35 +822,35 @@
+@@ -708,35 +823,35 @@
          Entity entity = this.mc.getRenderViewEntity();
          float f = entity.getEyeHeight();
          double d0 = entity.prevPosX + (entity.posX - entity.prevPosX) * (double)partialTicks;
@@ -555,7 +556,7 @@
          {
              double d3 = (double)(this.thirdPersonDistancePrev + (4.0F - this.thirdPersonDistancePrev) * partialTicks);
  
-@@ -746,8 +860,8 @@
+@@ -746,8 +861,8 @@
              }
              else
              {
@@ -566,7 +567,7 @@
  
                  if (this.mc.gameSettings.thirdPersonView == 2)
                  {
-@@ -766,7 +880,12 @@
+@@ -766,7 +881,12 @@
                      f3 = f3 * 0.1F;
                      f4 = f4 * 0.1F;
                      f5 = f5 * 0.1F;
@@ -580,7 +581,7 @@
  
                      if (raytraceresult != null)
                      {
-@@ -784,249 +903,255 @@
+@@ -784,249 +904,255 @@
                      GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
                  }
  
@@ -1059,7 +1060,7 @@
      public void disableLightmap()
      {
          GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-@@ -1042,12 +1167,12 @@
+@@ -1042,12 +1168,12 @@
      public void enableLightmap()
      {
          GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
@@ -1074,7 +1075,7 @@
          this.mc.getTextureManager().bindTexture(this.locationLightMap);
          GlStateManager.glTexParameteri(3553, 10241, 9729);
          GlStateManager.glTexParameteri(3553, 10240, 9729);
-@@ -1212,215 +1337,140 @@
+@@ -1212,215 +1338,140 @@
                      int j = 255;
                      int k = (int)(f8 * 255.0F);
                      int l = (int)(f9 * 255.0F);
@@ -1419,7 +1420,7 @@
      }
  
      private void createWorldIcon()
-@@ -1465,12 +1515,15 @@
+@@ -1465,12 +1516,15 @@
  
      private boolean isDrawBlockOutline()
      {
@@ -1436,7 +1437,7 @@
              Entity entity = this.mc.getRenderViewEntity();
              boolean flag = entity instanceof EntityPlayer && !this.mc.gameSettings.hideGUI;
  
-@@ -1501,427 +1554,557 @@
+@@ -1501,427 +1555,564 @@
  
      public void renderWorld(float partialTicks, long finishTimeNano)
      {
@@ -1469,7 +1470,7 @@
 +	        
 +		if(mc.currentScreen == null && mc.currentPass == renderPass.Left){
 +			// VIVE START - teleport movement
-+			if (!mc.vrPlayer.getFreeMoveMode() && 
++			if (!mc.vrPlayer.getFreeMove() && 
 +					mc.gameSettings.keyBindForward.isKeyDown()) { 
 +				mc.vrPlayer.updateTeleportDestinations(this, mc, mc.getRenderViewEntity());
 +			}
@@ -1950,6 +1951,13 @@
 +	                Reflector.callVoid(Reflector.ForgeHooksClient_setRenderPass, new Object[] {Integer.valueOf(-1)});
 +	            }
 +	
++	    this.mc.mcProfiler.endStartSection("VR");
++
++				if (mc.currentPass != renderPass.Third) 
++				{
++					this.renderVRThings(partialTicks);
++				}
++	            
 +        this.mc.mcProfiler.endStartSection("hands");
 +	            
 +		    	this.enableLightmap();    
@@ -2285,12 +2293,11 @@
 +//		GL11.glPopMatrix();
 +//		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 +//		GL11.glPopMatrix();
-+
++	
 +		if (mc.currentPass != renderPass.Third) //no fp overlay for 3rd cam.
-+			{
-+			this.renderVRThings(partialTicks);
++		{
 +			this.renderFaceOverlay(partialTicks);
-+			}
++		}
 +		
 +		this.mc.mcProfiler.endStartSection("ShadersEnd");
 +	        if ( shadersMod && !forgeHands && this.renderHand && !Shaders.isShadowPass)
@@ -2307,10 +2314,11 @@
 +			if(!mc.bowTracker.isDrawing)				
 +				renderGuiLayer(partialTicks);  
 +            
++						
 +		this.mc.mcProfiler.endSection();
 +
 +		restoreRVEPos((EntityLivingBase) mc.getRenderViewEntity()); //unhack the RVE position.
-+		
++				
 +		if(player instanceof EntityPlayerSP)
 +			((EntityPlayerSP)player).overrideEyeHeight = false;
 +			
@@ -2365,7 +2373,7 @@
      private void addRainParticles()
      {
          float f = this.mc.world.getRainStrength(1.0F);
-@@ -2216,7 +2399,7 @@
+@@ -2216,7 +2407,7 @@
              double d0 = MathHelper.sin(world.getCelestialAngleRadians(partialTicks)) > 0.0F ? -1.0D : 1.0D;
              Vec3d vec3d2 = new Vec3d(d0, 0.0D, 0.0D);
              float f5 = (float)entity.getLook(partialTicks).dotProduct(vec3d2);
@@ -2374,7 +2382,7 @@
              if (f5 < 0.0F)
              {
                  f5 = 0.0F;
-@@ -2260,8 +2443,9 @@
+@@ -2260,8 +2451,9 @@
              this.fogColorBlue *= f11;
          }
  
@@ -2386,7 +2394,7 @@
          if (this.cloudFog)
          {
              Vec3d vec3d3 = world.getCloudColour(partialTicks);
-@@ -2269,7 +2453,7 @@
+@@ -2269,7 +2461,7 @@
              this.fogColorGreen = (float)vec3d3.yCoord;
              this.fogColorBlue = (float)vec3d3.zCoord;
          }
@@ -2395,7 +2403,7 @@
          {
              float f12 = 0.0F;
  
-@@ -2295,7 +2479,7 @@
+@@ -2295,7 +2487,7 @@
                  this.fogColorBlue = (float)vec3d4.zCoord;
              }
          }
@@ -2404,7 +2412,7 @@
          {
              this.fogColorRed = 0.6F;
              this.fogColorGreen = 0.1F;
-@@ -2373,16 +2557,7 @@
+@@ -2373,16 +2565,7 @@
              this.fogColorBlue = f7;
          }
  
@@ -2422,7 +2430,7 @@
      }
  
      /**
-@@ -2396,7 +2571,13 @@
+@@ -2396,7 +2579,13 @@
          this.func_191514_d(false);
          GlStateManager.glNormal3f(0.0F, -1.0F, 0.0F);
          GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -2437,7 +2445,7 @@
          float f = -1.0F;
  
          if (Reflector.ForgeHooksClient_getFogDensity.exists())
-@@ -2456,7 +2637,7 @@
+@@ -2456,7 +2645,7 @@
  
              GlStateManager.setFogDensity(0.1F);
          }
@@ -2446,7 +2454,7 @@
          {
              if (Config.isShaders())
              {
-@@ -2488,7 +2669,7 @@
+@@ -2488,7 +2677,7 @@
                  GlStateManager.setFogDensity(0.02F);
              }
          }
@@ -2455,7 +2463,7 @@
          {
              if (Config.isShaders())
              {
-@@ -2734,10 +2915,12 @@
+@@ -2734,10 +2923,12 @@
              this.updatedWorld = world;
          }
  
@@ -2472,7 +2480,7 @@
      }
  
      private void frameFinish()
-@@ -2761,39 +2944,6 @@
+@@ -2761,39 +2952,6 @@
          }
      }
  
@@ -2512,7 +2520,7 @@
      public boolean setFxaaShader(int p_setFxaaShader_1_)
      {
          if (!OpenGlHelper.isFramebufferEnabled())
-@@ -2885,8 +3035,9 @@
+@@ -2885,8 +3043,9 @@
          this.itemActivationOffY = this.random.nextFloat() * 2.0F - 1.0F;
      }
  
@@ -2524,7 +2532,7 @@
          if (this.itemActivationItem != null && this.itemActivationTicks > 0)
          {
              int i = 40 - this.itemActivationTicks;
-@@ -2895,26 +3046,2297 @@
+@@ -2895,26 +3054,2314 @@
              float f2 = f * f1;
              float f3 = 10.25F * f2 * f1 + -24.95F * f1 * f1 + 25.5F * f2 + -13.8F * f1 + 4.0F * f;
              float f4 = f3 * (float)Math.PI;
@@ -3455,22 +3463,22 @@
 +				if (side ==2)   z -= o;
 +				if (side ==3)   z += o;
 +				if (side ==4)   x -= o;
-+				if (side ==5)   x += o;						
-+				renderCircle(circlePos.addVector(x, y, z), 0.2f, 32, (int)(validLineR*1.03), (int)(validLineG*1.03), (int)(validLineB*1.03), isShader ? 255 : 64,side);
++				if (side ==5)   x += o;		
++				renderFlatQuad(circlePos.addVector(x, y, z), .6f,.6f, 0,(int)(validLineR*1.03), (int)(validLineG*1.03), (int)(validLineB*1.03), isShader ? 255 : 64);
 +				if (side ==0)   y -= o;
 +				if (side ==1)   y += o;
 +				if (side ==2)   z -= o;
 +				if (side ==3)   z += o;
 +				if (side ==4)   x -= o;
 +				if (side ==5)   x += o;
-+				renderCircle(circlePos.addVector(x, y, z), 0.15f, 32, (int)(validLineR*1.04), (int)(validLineG*1.04), (int)(validLineB*1.04), isShader ? 255 : 64,side);
++				renderFlatQuad(circlePos.addVector(x, y, z), .4f,.4f, 0,(int)(validLineR*1.04), (int)(validLineG*1.04), (int)(validLineB*1.04), isShader ? 255 : 64);
 +				if (side ==0)   y -= o;
 +				if (side ==1)   y += o;
 +				if (side ==2)   z -= o;
 +				if (side ==3)   z += o;
 +				if (side ==4)   x -= o;
 +				if (side ==5)   x += o;
-+				renderCircle(circlePos.addVector(x, y, z), 0.1f, 32, (int)(validLineR*1.05), (int)(validLineG*1.05), (int)(validLineB*1.05), isShader ? 255 : 64,side);
++				renderFlatQuad(circlePos.addVector(x, y, z), .2f,.2f, 0,(int)(validLineR*1.05), (int)(validLineG*1.05), (int)(validLineB*1.05), isShader ? 255 : 64);
 +			}
 +
 +			mc.mcProfiler.endSection(); // teleport arc
@@ -3560,28 +3568,28 @@
 +			setupPolyRendering(true);
 +			
 +					//	TP energy
-+				if (mc.vrSettings.vrLimitedSurvivalTeleport && !mc.vrPlayer.getFreeMoveMode() && mc.playerController.isNotCreative() && mc.vrPlayer.vrMovementStyle.arcAiming && !mc.bowTracker.isActive(mc.player)){
++				if (mc.vrSettings.vrLimitedSurvivalTeleport && !mc.vrPlayer.getFreeMove() && mc.playerController.isNotCreative() && mc.vrPlayer.vrMovementStyle.arcAiming && !mc.bowTracker.isActive(mc.player)){
 +					GL11.glPushMatrix();
 +						SetupRenderingAtController(1);	//does not push
 +			
 +						Vec3d start = new Vec3d(0,0.005,.03);
 +			
 +						float r;
-+						float max = .015f;
++						float max = .03f;
 +						if (mc.vrPlayer.movementTeleportProgress > 0 ) {      	
-+							r = (float) ( mc.vrPlayer.getTeleportEnergy() - 4 * mc.vrPlayer.movementTeleportDistance  ) / 100 * max;
++							r = 2*(float) ( mc.vrPlayer.getTeleportEnergy() - 4 * mc.vrPlayer.movementTeleportDistance  ) / 100 * max;
 +						} else {     	
-+							r = mc.vrPlayer.getTeleportEnergy() / 100 * max;
++							r = 2*mc.vrPlayer.getTeleportEnergy() / 100 * max;
 +						}
 +			
 +						if(r<0){r=0;}
-+						renderCircle(start.addVector(0, .05001, 0), r, 32, 255, 163, 255, 128, 1);
-+						renderCircle(start.addVector(0, .05, 0), max, 32, 255, 163, 255, 50, 1);    
++						renderFlatQuad(start.addVector(0, .05001, 0), r,r,0, 255, 163, 255, 128);
++						renderFlatQuad(start.addVector(0, .05, 0), max,max,0, 255, 163, 255, 50);    
 +			
 +					GL11.glPopMatrix();
 +				}
 +				
-+				if(!mc.vrPlayer.getFreeMoveMode()){ //actually rendered from the head, not hand.
++				if(!mc.vrPlayer.getFreeMove()){ //actually rendered from the head, not hand.
 +					GL11.glPushMatrix();
 +					GlStateManager.enableDepth();
 +						if(mc.vrPlayer.vrMovementStyle.arcAiming) {						
@@ -3684,10 +3692,28 @@
 +	GL11.glPopMatrix();
 +	}
 +
++	public void renderFlatQuad(Vec3d pos, float width, float height,float yaw, int r, int g, int b, int a)
++	{
++		Tessellator tes = Tessellator.getInstance();
++		
++		tes.getBuffer().begin(GL11.GL_QUADS,DefaultVertexFormats.POSITION_COLOR);
++
++		Vec3d lr = new Vec3d(-width/2,0, height/2).rotateYaw((float) Math.toRadians(-yaw));
++		Vec3d ls = new Vec3d(-width/2,0, -height/2).rotateYaw((float) Math.toRadians(-yaw));
++		Vec3d lt = new Vec3d(width/2,0, -height/2).rotateYaw((float) Math.toRadians(-yaw));
++		Vec3d lu = new Vec3d(width/2,0, height/2).rotateYaw((float) Math.toRadians(-yaw));
++
++		tes.getBuffer().pos(pos.xCoord + lr.xCoord, pos.yCoord, pos.zCoord + lr.zCoord).color(r, g, b, a).endVertex();
++		tes.getBuffer().pos(pos.xCoord + ls.xCoord, pos.yCoord, pos.zCoord + ls.zCoord).color(r, g, b, a).endVertex();
++		tes.getBuffer().pos(pos.xCoord + lt.xCoord, pos.yCoord, pos.zCoord + lt.zCoord).color(r, g, b, a).endVertex();
++		tes.getBuffer().pos(pos.xCoord + lu.xCoord, pos.yCoord, pos.zCoord + lu.zCoord).color(r, g, b, a).endVertex();
++		
++		tes.draw();  
++	}
++	
 +	public void renderCircle(Vec3d pos, float radius, int edges, int r, int g, int b, int a, int side)
 +	{
 +		Tessellator tes = Tessellator.getInstance();
-+
 +		
 +		tes.getBuffer().begin(GL11.GL_TRIANGLE_FAN,DefaultVertexFormats.POSITION_COLOR);
 +
@@ -3910,7 +3936,7 @@
 +		Shaders.shaderPackLoaded = false;
 +
 +		int tzOffset = Calendar.getInstance().get(Calendar.ZONE_OFFSET);
-+		menuWorldRenderer.time = menuWorldFastTime ? (long)((menuWorldRenderer.cloudRenderer.cloudTickCounter * 10) + 10 * mc.timer.renderPartialTicks) : (long)((System.currentTimeMillis() + tzOffset - 21600000) / 86400000D * 24000D);
++		menuWorldRenderer.time = menuWorldFastTime ? (long)((this.mc.tickCounter * 10) + 10 * mc.timer.renderPartialTicks) : (long)((System.currentTimeMillis() + tzOffset - 21600000) / 86400000D * 24000D);
 +		
 +		float posX = (float)mc.roomScale.getHMDPos_Room().xCoord;
 +		float posY = (float)mc.roomScale.getHMDPos_Room().yCoord + menuWorldRenderer.getWorld().getGround();
@@ -4755,38 +4781,37 @@
 +
 +			renderItemActivation(0, 0, par1); //totem of undying
 +			
-+			if(this.mc.vrSettings.vrShowBlueCircleBuddy){ 	//blue circle buddy	  - have to draw here so it sits on top of overlays (face in block)
++			AxisAlignedBB bb = mc.player.getEntityBoundingBox();
++			if(this.mc.vrSettings.vrShowBlueCircleBuddy && bb != null){ 	//blue circle buddy	  - have to draw here so it sits on top of overlays (face in block)
 +				GL11.glMatrixMode(GL11.GL_PROJECTION);
 +				GL11.glPushMatrix();
 +				GL11.glMatrixMode(GL11.GL_MODELVIEW);
 +				GL11.glPushMatrix();
 +				GlStateManager.loadIdentity();
++				
 +					setupCameraTransform(par1, 0);
 +					applyCameraDepth(false);
-+					
++	
 +					Vec3d o = getEyeRenderPos(renderPass.Center );
-+					if (mc.currentPass == renderPass.Third) o =getEyeRenderPos(renderPass.Third);
-+					
++					if (mc.currentPass == renderPass.Third) o=getEyeRenderPos(renderPass.Third);
++	
 +					Vec3d pos = interpolatedPlayerPos.subtract(o).addVector(0, 0.005, 0);
-+					//Vec3d pos = o.subtract(interpolatedPlayerPos).addVector(0, 0.02, 0);
-+					Vec3d pos2 = o.subtract(mc.roomScale.getHMDPos_World());
++	
 +					setupPolyRendering(true);
-+					//renderCircle(pos2, 0.1f * mc.vrSettings.vrWorldScale, 32, 255, 255, 0, 255, 1);
-+						if(eyeCollision ){
-+							int was = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
-+							GL11.glDepthFunc(GL11.GL_ALWAYS);
-+							renderCircle(pos, 0.05f * mc.vrPlayer.interpolatedWorldScale, 32, 0, 255, 255, 48, 1);
-+							GL11.glDepthFunc(was);
-+						}  else {
-+							renderCircle(pos, .05f * mc.vrPlayer.interpolatedWorldScale, 32, 0, 255, 255, 48, 1);            		
-+						}
-+						
++					GlStateManager.blendFunc(SourceFactor.ZERO, DestFactor.ONE_MINUS_SRC_ALPHA);
++					GlStateManager.disableDepth();
++					renderFlatQuad(pos,
++							(float)(bb.maxX - bb.minX),
++							(float) (bb.maxZ - bb.minZ),
++							0, 0, 255, 255, 64);
++					GlStateManager.enableDepth();
 +					setupPolyRendering(false);
++
 +						
-+					GL11.glMatrixMode(GL11.GL_PROJECTION);
-+					GL11.glPopMatrix();
-+					GL11.glMatrixMode(GL11.GL_MODELVIEW);
-+					GL11.glPopMatrix();
++				GL11.glMatrixMode(GL11.GL_PROJECTION);
++				GL11.glPopMatrix();
++				GL11.glMatrixMode(GL11.GL_MODELVIEW);
++				GL11.glPopMatrix();
 +			}
 +		}
 +		

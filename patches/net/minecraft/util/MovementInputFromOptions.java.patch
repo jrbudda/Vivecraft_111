@@ -27,19 +27,20 @@
          {
              ++this.moveForward;
              this.forwardKeyDown = true;
-@@ -56,13 +66,27 @@
+@@ -56,13 +66,28 @@
              this.rightKeyDown = false;
          }
  
 -        this.jump = this.gameSettings.keyBindJump.isKeyDown();
 -        this.sneak = this.gameSettings.keyBindSneak.isKeyDown();
 +
-+        boolean ok = mc.currentScreen==null && (mc.vrPlayer.getFreeMoveMode() || mc.vrSettings.simulateFalling); 
++        boolean ok = mc.currentScreen==null && (mc.vrPlayer.getFreeMove() || mc.vrSettings.simulateFalling); 
 +        
 +        //VIVECRAFT DO ok.
-+        if(!mc.jumpTracker.isClimbeyJump())
-+        	this.jump = this.gameSettings.keyBindJump.isKeyDown() && ok;
-+        
++       	this.jump = this.gameSettings.keyBindJump.isKeyDown() && ok;
++
++        if(mc.jumpTracker.isClimbeyJump()) this.jump = false;
++   	
 +        if(this.gameSettings.keyBindJump.isKeyDown() == false) this.jump = false; 
 +        
 +        this.sneak = (Minecraft.getMinecraft().sneakTracker.sneakOverride || this.gameSettings.keyBindSneak.isKeyDown()) && mc.currentScreen==null ;

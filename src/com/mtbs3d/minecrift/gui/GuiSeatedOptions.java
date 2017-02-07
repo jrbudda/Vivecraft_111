@@ -47,7 +47,8 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
 		this.buttonList.clear();
 		this.buttonList.add(new GuiButtonEx(ID_GENERIC_DEFAULTS, this.width / 2 - 155 ,  this.height -25 ,150,20, "Reset To Defaults"));
 		this.buttonList.add(new GuiButtonEx(ID_GENERIC_DONE, this.width / 2 - 155  + 160, this.height -25,150,20, "Done"));
-      
+        mc.vrSettings.vrFreeMove = mc.vrPlayer.getFreeMove();
+
 		GuiSmallButtonEx mode = new GuiSmallButtonEx(VRSettings.VrOptions.MOVE_MODE.returnEnumOrdinal(), this.width / 2 - 68, this.height / 6 + 80,VRSettings.VrOptions.MOVE_MODE, this.guivrSettings.getKeyBinding(VRSettings.VrOptions.MOVE_MODE));
         mode.setEventHandler(this);
         this.buttonList.add(mode);
@@ -56,7 +57,7 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
 
 		addButtons(buttons, 0);
 		
-        if(mc.vrPlayer.getFreeMoveMode())
+        if(mc.vrPlayer.getFreeMove())
         	addButtons(freeMoveSettings,105);
         else
         	addButtons(teleportSettings,105); 
@@ -128,7 +129,7 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
 				vrSettings.vrFreeMove = true;
 				vrSettings.useFOVReduction = false;
 				vrSettings.vrFreeMove = true;
-				mc.vrPlayer.setFreeMoveMode(true);
+				mc.vrPlayer.setFreeMove(true);
 				Minecraft.getMinecraft().vrSettings.saveOptions();
 				this.reinit = true;
 			}

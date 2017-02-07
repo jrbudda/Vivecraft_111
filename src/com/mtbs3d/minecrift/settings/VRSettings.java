@@ -1098,7 +1098,7 @@ public class VRSettings
                 break;
             case MOVE_MODE:
                 this.vrFreeMove = !this.vrFreeMove;
-                Minecraft.getMinecraft().vrPlayer.setFreeMoveMode(vrFreeMove);
+                Minecraft.getMinecraft().vrPlayer.setFreeMove(vrFreeMove);
                 break;
             case ALLOW_CRAWLING:
                 this.vrAllowCrawling = !this.vrAllowCrawling;

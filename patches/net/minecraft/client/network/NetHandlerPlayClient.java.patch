@@ -40,7 +40,7 @@
          this.netManager.sendPacket(new CPacketCustomPayload("MC|Brand", (new PacketBuffer(Unpooled.buffer())).writeString(ClientBrandRetriever.getClientModName())));
 +        
 +        // VIVE START - ask server if it's running this mod
-+        this.gameController.vrPlayer.setFreeMoveMode(true);
++        this.gameController.vrPlayer.setFreeMove(true);
 +        byte[] version = Minecraft.getMinecraft().minecriftVerString.getBytes(Charsets.UTF_8);
 +        String s = "Vivecraft";
 +        PacketBuffer pb = new PacketBuffer(Unpooled.buffer());
@@ -58,7 +58,7 @@
          this.netManager.closeChannel(packetIn.getReason());
 +        // VIVE START - no longer on a vanilla server, reset restricted state
 +    	this.gameController.vrPlayer.noTeleportClient = true;
-+        OpenVRPlayer.get().setFreeMoveMode(true);
++        OpenVRPlayer.get().setFreeMove(true);
 +        // VIVE END - no longer on a vanilla server, reset restricted state
      }
  
@@ -98,7 +98,7 @@
 +        else if ("MC|ViveOK".equals(packetIn.getChannelName()))
 +        { //allowed, set to user preference.
 +        	this.gameController.vrPlayer.noTeleportClient = false;
-+            this.gameController.vrPlayer.setFreeMoveMode(Minecraft.getMinecraft().vrSettings.vrFreeMove);
++            this.gameController.vrPlayer.setFreeMove(Minecraft.getMinecraft().vrPlayer.getFreeMove());
 +        } 
 +        else if ("Vivecraft".equals(packetIn.getChannelName()))
 +        { 
@@ -109,7 +109,7 @@
 +        	case VERSION:
 +        		String v = packetbuffer.readString(1024);
 +        		this.gameController.vrPlayer.noTeleportClient = false;
-+        		this.gameController.vrPlayer.setFreeMoveMode(Minecraft.getMinecraft().vrSettings.vrFreeMove);
++        		this.gameController.vrPlayer.setFreeMove(Minecraft.getMinecraft().vrSettings.vrFreeMove);
 +        		this.gameController.printChatMessage("Vivecraft server mod detected: " + v);
 +        		break;
 +        	case REQUESTDATA:

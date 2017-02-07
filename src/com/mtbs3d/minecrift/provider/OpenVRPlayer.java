@@ -82,7 +82,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     public VRMovementStyle vrMovementStyle = new VRMovementStyle();
     public Vec3d[] movementTeleportArc = new Vec3d[50];
     public int movementTeleportArcSteps = 0;
-    private boolean freeMoveMode = true;        // true when connected to another server that doesn't have this mod
+    private boolean isFreeMoveCurrent = true;        // true when connected to another server that doesn't have this mod
     public double lastTeleportArcDisplayOffset = 0;
     public boolean noTeleportClient = true;
     
@@ -258,7 +258,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 
        
         // don't do teleport movement if on a server that doesn't have this mod installed
-        if (getFreeMoveMode()) {
+        if (getFreeMove()) {
         	
         		if(player.movementInput.moveForward ==0) doPlayerMoveInRoom(player);
 	
@@ -487,7 +487,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         if(mc.vrSettings.vrLimitedSurvivalTeleport){
           mc.player.addExhaustion((float) (movementTeleportDistance / 16 * 1.2f));    
           
-          if (!mc.vrPlayer.getFreeMoveMode() && mc.playerController.isNotCreative() && mc.vrPlayer.vrMovementStyle.arcAiming){
+          if (!mc.vrPlayer.getFreeMove() && mc.playerController.isNotCreative() && mc.vrPlayer.vrMovementStyle.arcAiming){
           	teleportEnergy -= movementTeleportDistance * 4;	
           }       
         }
@@ -544,18 +544,18 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     	if (emptySpot)
     	{
     		// don't call setPosition style functions to avoid shifting room origin
-    		player.lastTickPosX = player.prevPosX = player.posX = x;
+    		player.posX = x;
     		if (!mc.vrSettings.simulateFalling)	{
-    			player.lastTickPosY = player.prevPosY = player.posY = y;                	
+    			 player.posY = y;                	
     		}
-    		player.lastTickPosZ = player.prevPosZ = player.posZ = z;
+    		player.posZ = z;
     
     		 if(player.getRidingEntity()!=null){ //you're coming with me, horse! //TODO: use mount's bounding box.
-    				player.getRidingEntity().lastTickPosX = player.getRidingEntity().prevPosX =  player.getRidingEntity().posX = x;
+    				player.getRidingEntity().posX = x;
     				if (!mc.vrSettings.simulateFalling)	{
-    					player.getRidingEntity().lastTickPosY = player.getRidingEntity().prevPosY =  	 player.getRidingEntity().posY = y;                	
+    					player.getRidingEntity().posY = y;                	
     	    		}
-    				player.getRidingEntity().lastTickPosZ = player.getRidingEntity().prevPosZ =  	 player.getRidingEntity().posZ = z;
+    			  	 player.getRidingEntity().posZ = z;
     		 }
     		 
     		player.setEntityBoundingBox(new AxisAlignedBB(bb.minX, bb.minY, bb.minZ, bb.maxX, bb.minY + player.height, bb.maxZ));
@@ -608,9 +608,9 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     	    			z += zOffset;
     					y += 0.1f*i;
     					
-    					player.lastTickPosX = player.prevPosX = player.posX = x;
-    					player.lastTickPosY = player.prevPosY = player.posY = y;
-    					player.lastTickPosZ = player.prevPosZ = player.posZ = z;
+    					player.posX = x;
+    					player.posY = y;
+    					player.posZ = z;
     					
     					player.setEntityBoundingBox(new AxisAlignedBB(bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ));
 
@@ -952,7 +952,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         mc.mcProfiler.startSection("updateTeleportDestinations");
 
         // no teleporting if on a server that disallows teleporting
-        if (getFreeMoveMode())
+        if (getFreeMove())
         {
             movementTeleportDestination=new Vec3d(0,0,0);
             movementTeleportArcSteps = 0;
@@ -1381,14 +1381,14 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 		MCReflection.setField(MCReflection.blockHitDelay, Minecraft.getMinecraft().playerController, 0);
 	}
         
-	public boolean getFreeMoveMode() { return freeMoveMode; }
+	public boolean getFreeMove() { return isFreeMoveCurrent; }
 	
-	public void setFreeMoveMode(boolean free) { 
-		boolean was = freeMoveMode;
-		freeMoveMode = free;
+	public void setFreeMove(boolean free) { 
+		boolean was = isFreeMoveCurrent;
+		isFreeMoveCurrent = free;
 
 		if(free != was){
-			CPacketCustomPayload pack =	NetworkHelper.getVivecraftClientPacket(PacketDiscriminators.MOVEMODE, freeMoveMode ?  new byte[]{1} : new byte[]{0});
+			CPacketCustomPayload pack =	NetworkHelper.getVivecraftClientPacket(PacketDiscriminators.MOVEMODE, isFreeMoveCurrent ?  new byte[]{1} : new byte[]{0});
 			
 			if(Minecraft.getMinecraft().getConnection() !=null)
 				Minecraft.getMinecraft().getConnection().sendPacket(pack);

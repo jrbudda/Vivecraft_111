@@ -1035,40 +1035,6 @@ public class MCOpenVR
 //	}
 
 
-	/* Gets the current user profile data */
-	
-	public UserProfileData getProfileData()
-	{
-		UserProfileData userProfile = new UserProfileData();
-		if ( initialized )
-		{
-			userProfile._gender = UserProfileData.GenderType.Gender_Unspecified;    // n/a
-			userProfile._playerHeight = 0;                                          // n/a
-			userProfile._eyeHeight = 0;                                             // n/a
-			userProfile._ipd = vrsystem.GetFloatTrackedDeviceProperty.apply(JOpenVRLibrary.k_unTrackedDeviceIndex_Hmd, JOpenVRLibrary.ETrackedDeviceProperty.ETrackedDeviceProperty_Prop_UserIpdMeters_Float, hmdErrorStore);
-			userProfile._name = "Someone";                                          // n/a
-			userProfile._isDefault = true;                                          // n/a
-		}
-		return userProfile;
-	}
-
-
-	/**
-	 * Updates the model with the current head orientation
-	 * @param ipd hmd ipd
-	 * @param yawHeadDegrees Yaw of head only
-	 * @param pitchHeadDegrees Pitch of head only
-	 * @param rollHeadDegrees Roll of head only
-	 * @param worldYawOffsetDegrees Additional yaw input (e.g. mouse)
-	 * @param worldPitchOffsetDegrees Additional pitch input (e.g. mouse)
-	 * @param worldRollOffsetDegrees Additional roll input
-	 */
-	
-	public void update(float ipd, float yawHeadDegrees, float pitchHeadDegrees, float rollHeadDegrees,
-			float worldYawOffsetDegrees, float worldPitchOffsetDegrees, float worldRollOffsetDegrees)
-	{
-
-	}
 
 	private static void findControllerDevices()
 	{
@@ -1737,7 +1703,7 @@ public class MCOpenVR
 				moveModeSwitchcount++;
 				if (moveModeSwitchcount >= 20 * 4) {
 					moveModeSwitchcount = 0;					
-					mc.vrPlayer.setFreeMoveMode(!mc.vrPlayer.getFreeMoveMode());
+					mc.vrPlayer.setFreeMove(!mc.vrPlayer.getFreeMove());
 				}				
 			}
 		} else {
@@ -2628,12 +2594,5 @@ public class MCOpenVR
 		offset=new Vector3f(0,0,0);
 	}
 
-//	public static void renderFade(float dur, Color color){
-//		vrCompositor.FadeToColor.apply(dur, color.red,color.green,color.blue,color.alpha, (byte)0);
-//	}
-//	
-//	public static void renderGrid(Color color){
-//		vrCompositor.FadeGrid.apply(0.5f, (byte)0);
-//	}
 	
 }

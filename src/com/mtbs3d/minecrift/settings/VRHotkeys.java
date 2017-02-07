@@ -120,11 +120,11 @@ public class VRHotkeys {
 		{
 			// for testing restricted client mode
 			
-			if (mc.vrPlayer.getFreeMoveMode()) {
-				mc.vrPlayer.setFreeMoveMode(false);
+			if (mc.vrPlayer.getFreeMove()) {
+				mc.vrPlayer.setFreeMove(false);
 							mc.printChatMessage("Restricted movement disabled (teleporting allowed)");
 				} else {
-				mc.vrPlayer.setFreeMoveMode(true);
+				mc.vrPlayer.setFreeMove(true);
 				mc.printChatMessage("Restricted movement enabled (no teleporting)");
 			}
 			

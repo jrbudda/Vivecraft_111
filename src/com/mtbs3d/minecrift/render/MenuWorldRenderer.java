@@ -516,7 +516,7 @@ public class MenuWorldRenderer {
 	        net.minecraft.client.renderer.VertexBuffer vertexbuffer = tessellator.getBuffer();
 	        float f = 12.0F;
 	        float f1 = 4.0F;
-	        double d0 = this.cloudRenderer.cloudTickCounter + mc.timer.renderPartialTicks;
+	        double d0 = this.mc.tickCounter + mc.timer.renderPartialTicks;
 	        double d1 = (x + d0 * 0.029999999329447746D) / 12.0D;
 	        double d2 = z / 12.0D + 0.33000001311302185D;
 	        float f2 = this.worldProvider.getCloudHeight() - (float)y + 0.33F;
@@ -1008,7 +1008,6 @@ public class MenuWorldRenderer {
     {
         private Minecraft mc;
         private boolean updated = false;
-        public int cloudTickCounter;
         float partialTicks;
         private int glListClouds = -1;
         private int cloudTickCounterUpdate = 0;
@@ -1037,11 +1036,11 @@ public class MenuWorldRenderer {
             {
                 return true;
             }
-            else if (this.cloudTickCounter >= this.cloudTickCounterUpdate + 100)
+            else if (this.mc.tickCounter >= this.cloudTickCounterUpdate + 100)
             {
                 return true;
             }
-            else if (!this.color.equals(this.lastColor) && this.cloudTickCounter >= this.cloudTickCounterUpdate + 1)
+            else if (!this.color.equals(this.lastColor) && this.mc.tickCounter >= this.cloudTickCounterUpdate + 1)
             {
                 return true;
             }
@@ -1061,7 +1060,7 @@ public class MenuWorldRenderer {
         public void endUpdateGlList(float x, float y, float z)
         {
             GL11.glEndList();
-            this.cloudTickCounterUpdate = this.cloudTickCounter;
+            this.cloudTickCounterUpdate = this.mc.tickCounter;
             this.cloudPlayerX = x;
             this.cloudPlayerY = y;
             this.cloudPlayerZ = z;
@@ -1071,7 +1070,7 @@ public class MenuWorldRenderer {
 
         public void renderGlList(float x, float y, float z)
         {
-            double d3 = (this.cloudTickCounter - this.cloudTickCounterUpdate) + this.partialTicks;
+            double d3 = (this.mc.tickCounter - this.cloudTickCounterUpdate) + this.partialTicks;
             float f = (float)(x - this.cloudPlayerX + d3 * 0.03D);
             float f1 = (float)(y - this.cloudPlayerY);
             float f2 = (float)(z - this.cloudPlayerZ);

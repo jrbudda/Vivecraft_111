@@ -17,7 +17,7 @@ public class RunTracker {
 
 
 	public boolean isActive(EntityPlayerSP p){
-		if(!Minecraft.getMinecraft().vrSettings.vrFreeMove || Minecraft.getMinecraft().vrSettings.seated)
+		if(!Minecraft.getMinecraft().vrPlayer.getFreeMove() || Minecraft.getMinecraft().vrSettings.seated)
 			return false;
 		if(Minecraft.getMinecraft().vrSettings.vrFreeMoveMode != VRSettings.FREEMOVE_RUNINPLACE)
 			return false;

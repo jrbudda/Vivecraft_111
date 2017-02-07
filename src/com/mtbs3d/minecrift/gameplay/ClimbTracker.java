@@ -64,7 +64,7 @@ public class ClimbTracker {
 	public boolean isActive(EntityPlayerSP p){
 		if(mc.vrSettings.seated)
 			return false;
-		if(!mc.vrSettings.vrFreeMove && !Minecraft.getMinecraft().vrSettings.simulateFalling)
+		if(!mc.vrPlayer.getFreeMove() && !Minecraft.getMinecraft().vrSettings.simulateFalling)
 			return false;
 		if(!mc.vrSettings.realisticClimbEnabled)
 			return false;
@@ -227,6 +227,7 @@ public class ClimbTracker {
 		jump &= wantjump;
 			
 		if(latched[0] || latched[1] && !gravityOverride) {
+			unsetflag = true;
 			player.setNoGravity(true);
 			gravityOverride=true;
 		}
@@ -237,9 +238,6 @@ public class ClimbTracker {
 		}
 
 		if(!latched[0] && !latched[1] && !jump){
-			if((waslatched[0] || waslatched[1]) && button[1]){
-				unsetflag = true;
-			}
 			if(player.onGround && unsetflag){
 				unsetflag = false;
 				mc.gameSettings.keyBindForward.unpressKey();
@@ -304,7 +302,8 @@ public class ClimbTracker {
 			if (player.isPotionActive(MobEffects.JUMP_BOOST))
 				m=m.scale((player.getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier() + 1.5));
 			
-						
+			m=m.rotateYaw(mc.vrPlayer.worldRotationRadians);
+
 			player.motionX=-m.xCoord;
 			player.motionY=-m.yCoord;
 			player.motionZ=-m.zCoord;
