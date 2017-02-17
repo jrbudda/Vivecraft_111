@@ -183,7 +183,6 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
                 vr.vehicleRotation = false;
                 vr.useFOVReduction = false;
                 vr.walkUpBlocks = true;
-                vr.seatedUseHMD = false;
                 //end jrbudda
                 
                 Minecraft.getMinecraft().gameSettings.viewBobbing = true;
@@ -287,7 +286,7 @@ public class GuiLocomotionSettings extends BaseGuiSettings implements GuiEventEx
                     //JRBUDDA
                 case ALLOW_MODE_SWITCH:
                     return new String[] {
-                            "Allows the use of the Right Grip button to switch between",
+                            "Allows the use of the Pick Block button to switch between",
                             "Teleport and Free Move mode."
                     } ;
                 case ALLOW_CRAWLING:

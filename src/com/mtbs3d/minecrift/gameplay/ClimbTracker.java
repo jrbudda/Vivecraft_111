@@ -45,6 +45,7 @@ public class ClimbTracker {
 	public int latchStartController = -1;
 	boolean wantjump = false;
 	AxisAlignedBB box[] = new AxisAlignedBB[2];
+	AxisAlignedBB latchbox[] = new AxisAlignedBB[2];
 	public ClimbTracker(Minecraft minecraft) {
 		this.mc = minecraft;
 	}
@@ -152,7 +153,10 @@ public class ClimbTracker {
 				} else {
 					if(latchStart[c].subtract(controllerPos).lengthSquared() > 0.25) 
 						inblock[c] = false;
-					button[c] = wasbutton[c];
+					if(latchStart[c].subtract(controllerPos).lengthSquared() > 0.50) 
+						button[c] = false;
+					else
+						button[c] = wasbutton[c];
 				}
 				
 			} else { //Climbey
@@ -178,13 +182,14 @@ public class ClimbTracker {
 				jump = true;
 			} 
 
-			if(!latched[c] && !nope){
+			if(!latched[c] && !nope){ //grab
 				if((!wasinblock[c] && inblock[c] && button[c]) ||
 						(!wasbutton[c] && button[c] && inblock[c])){ //Grab
 					wantjump = false;
 					latchStart[c] = mc.roomScale.getControllerPos_World(c);
 					latchStartBodyY[c] = player.posY;
 					latchStartController = c;
+					latchbox[c] = box[c];
 					latched[c] = true;
 					if(c==0){
 						latched[1] = false;
@@ -211,6 +216,7 @@ public class ClimbTracker {
 					latchStartBodyY[c] = player.posY;
 					latchStartController = c;
 					latched[c] = true;
+					latchbox[c] = box[c];
 					wantjump = false;
 					MCOpenVR.triggerHapticPulse(c, 2000);
 					BlockPos bp = new BlockPos(latchStart[c]);
@@ -270,26 +276,29 @@ public class ClimbTracker {
 			}
 			BlockPos b = new BlockPos(latchStart[latchStartController]);
 			double yheight = latchStart[latchStartController].subtract(b.getX(), b.getY(), b.getZ()).yCoord;
-			if(!wantjump && box[latchStartController] != null && yheight > box[latchStartController].maxY*.8 && canstand(b, player)){		
+			if(!wantjump && latchbox[latchStartController] != null && yheight > latchbox[latchStartController].maxY*.8 && canstand(b, player)){		
 				double hmd = mc.roomScale.getHMDPos_Room().yCoord;
 				double con = mc.roomScale.getControllerPos_Room(latchStartController).yCoord;
 				if(con <= hmd/2){
-					double mot = con + (1 - (latchStart[latchStartController].yCoord - b.getY()));
-					if(mot > 0) player.setPosition(player.posX, player.posY+mot, player.posZ);
+					boolean ok=	mc.world.getCollisionBoxes(player, player.getEntityBoundingBox().offset(0,(latchbox[latchStartController].maxY + b.getY()) - player.posY ,0)).isEmpty();
+					if(ok){
+						player.setPosition(player.posX, latchbox[latchStartController].maxY + b.getY(), player.posZ);
+						mc.vrPlayer.snapRoomOriginToPlayerEntity(player, false, false, 0);
+					}
 				}
 			}
-			
+
 			player.fallDistance = 0;
 			if(mc.isIntegratedServerRunning()) //handle server falling.
 				for (EntityPlayerMP p : mc.getIntegratedServer().getPlayerList().getPlayers()) {
 					if(p.getEntityId() == mc.player.getEntityId())
 						p.fallDistance = 0;
-			} else {
-				CPacketCustomPayload pack =	NetworkHelper.getVivecraftClientPacket(PacketDiscriminators.CLIMBING, new byte[]{});
-				if(mc.getConnection() !=null)
-					mc.getConnection().sendPacket(pack);
-			}
-			
+				} else {
+					CPacketCustomPayload pack =	NetworkHelper.getVivecraftClientPacket(PacketDiscriminators.CLIMBING, new byte[]{});
+					if(mc.getConnection() !=null)
+						mc.getConnection().sendPacket(pack);
+				}
+
 		} else { //jump!
 			wantjump = false;
 			Vec3d pl = player.getPositionVector().subtract(delta);

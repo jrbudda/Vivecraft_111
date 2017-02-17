@@ -4,7 +4,7 @@
              {
                  this.buttonList.add(new GuiOptionSliderOF(gamesettings$options.returnEnumOrdinal(), j, k, gamesettings$options));
              }
-+            if (gamesettings$options == GameSettings.Options.SMOOTH_FPS) {
++            if (gamesettings$options == GameSettings.Options.SMOOTH_FPS || gamesettings$options == GameSettings.Options.SMOOTH_WORLD) {
 +            	this.buttonList.get(i).enabled = false;
 +            }
          }

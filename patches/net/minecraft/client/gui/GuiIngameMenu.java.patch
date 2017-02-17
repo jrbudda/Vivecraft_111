@@ -81,7 +81,7 @@
              case 4:
                  this.mc.displayGuiScreen((GuiScreen)null);
                  this.mc.setIngameFocus();
-@@ -89,9 +107,45 @@
+@@ -89,9 +107,44 @@
  
              case 7:
                  this.mc.displayGuiScreen(new GuiShareToLan(this));
@@ -115,7 +115,6 @@
 +		        this.mc.setIngameFocus();
 +		        break;
 +	        case 999:
-+            	MCOpenVR.DEMO = true;
 +            	this.mc.displayGuiScreen((GuiScreen)null);
 +            	break;
 +            default:

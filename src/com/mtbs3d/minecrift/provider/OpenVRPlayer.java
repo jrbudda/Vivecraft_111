@@ -724,8 +724,14 @@ public class OpenVRPlayer implements IRoomscaleAdapter
             pos.yCoord + velocity.yCoord,
             pos.zCoord + velocity.zCoord);
 
-        	boolean water = mc.entityRenderer.itemRenderer.isInsideOfMaterial(start, Material.WATER);
-        	
+      	
+            boolean	water =false;
+            if(mc.vrSettings.seated )
+            	water = mc.entityRenderer.itemRenderer.inwater;
+            else{
+                water = mc.entityRenderer.itemRenderer.isInsideOfMaterial(start, Material.WATER);
+            }
+            
             RayTraceResult collision = tpRaytrace(player.world, pos, newPos, !water, true, false);
 			
             if (collision != null && collision.typeOfHit != Type.MISS)
@@ -1014,9 +1020,10 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     			bb = player.getEntityBoundingBox().offset(offset.xCoord, offset.yCoord, offset.zCoord);
     			emptySpotReq = mc.world.getCollisionBoxes(player,bb).isEmpty(); 	
     		}
-
+    		float ex = 0;
+    		if(mc.vrSettings.seated)ex = 0.5f;
     		if(emptySpotReq){
-    			movementTeleportDestination = new Vec3d(bb.getCenter().xCoord,bb.minY, bb.getCenter().zCoord);
+    			movementTeleportDestination = new Vec3d(bb.getCenter().xCoord,bb.minY+ex, bb.getCenter().zCoord);
 
     			movementTeleportDestinationSideHit = collision.sideHit;
     			return true;
@@ -1411,12 +1418,12 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	public float getTeleportEnergy () {return teleportEnergy;}
 
 
-	Vec3d getWalkMultOffset(){
+	public Vec3d getWalkMultOffset(){
 		EntityPlayerSP player = Minecraft.getMinecraft().player;
 		if(player==null || !player.initFromServer)
 			return Vec3d.ZERO;
 		float walkmult=Minecraft.getMinecraft().vrSettings.walkMultiplier;
-		Vec3d pos=vecMult(MCOpenVR.getCenterEyePosition(),worldScale);
+		Vec3d pos=vecMult(MCOpenVR.getCenterEyePosition(),interpolatedWorldScale);
 		return new Vec3d(pos.xCoord*walkmult,pos.yCoord,pos.zCoord*walkmult).subtract(pos);
 	}
 
@@ -1535,7 +1542,6 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	@Override
 	public Vec3d getEyePos_Room(renderPass eye) {
 		return vecMult(MCOpenVR.getEyePosition(eye),interpolatedWorldScale).add(getWalkMultOffset());
-
 	}
 
 	@Override
@@ -1543,6 +1549,10 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 		return MCOpenVR.hmdRotation.toFloatBuffer();
 	}
 
+	public FloatBuffer getHMDMatrix_Roomalt() {
+		return MCOpenVR.hmdRotation.inverted().toFloatBuffer();
+	}
+	
 	@Override
 	public float getControllerYaw_Room(int controller) {
 		if(controller == 0) return MCOpenVR.aimYaw;

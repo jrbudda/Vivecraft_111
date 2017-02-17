@@ -1,6 +1,41 @@
 --- a/net/minecraft/client/gui/inventory/GuiContainer.java
 +++ b/net/minecraft/client/gui/inventory/GuiContainer.java
-@@ -422,7 +422,7 @@
+@@ -125,7 +125,9 @@
+ 
+             if (slot.canBeHovered())
+             {
++                GlStateManager.colorMask(true, true, true, false);
+                 this.drawSlot(slot);
++                GlStateManager.colorMask(true, true, true, true);
+             }
+ 
+             if (this.isMouseOverSlot(slot, mouseX, mouseY) && slot.canBeHovered())
+@@ -142,7 +144,7 @@
+                 GlStateManager.enableDepth();
+             }
+         }
+-
++        
+         RenderHelper.disableStandardItemLighting();
+         this.drawGuiContainerForegroundLayer(mouseX, mouseY);
+         RenderHelper.enableGUIStandardItemLighting();
+@@ -170,7 +172,6 @@
+                     s = "" + TextFormatting.YELLOW + "0";
+                 }
+             }
+-
+             this.drawItemStack(itemstack, mouseX - i - 8, mouseY - j - k2, s);
+         }
+ 
+@@ -195,6 +196,7 @@
+ 
+         if (inventoryplayer.getItemStack().isEmpty() && this.theSlot != null && this.theSlot.getHasStack())
+         {
++            GlStateManager.colorMask(true, true, true, true);
+             ItemStack itemstack1 = this.theSlot.getStack();
+             this.renderToolTip(itemstack1, mouseX, mouseY);
+         }
+@@ -422,7 +424,7 @@
                          }
                          else
                          {

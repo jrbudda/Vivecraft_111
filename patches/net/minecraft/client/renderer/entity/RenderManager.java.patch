@@ -9,7 +9,15 @@
  import java.util.Collections;
  import java.util.Map;
  import javax.annotation.Nullable;
-@@ -267,19 +269,26 @@
+@@ -117,6 +119,7 @@
+ import net.minecraft.util.math.Vec3d;
+ import net.minecraft.world.World;
+ import net.optifine.entity.model.CustomEntityModels;
++import net.minecraft.client.renderer.entity.RenderPlayerVR;
+ 
+ public class RenderManager
+ {
+@@ -267,19 +270,26 @@
          return (Render<T>) render;
      }
  

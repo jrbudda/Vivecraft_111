@@ -132,32 +132,32 @@ public class VRHotkeys {
 		}
 		
 		
-		if (Keyboard.getEventKey() == Keyboard.KEY_LEFT && Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))
+		if (Keyboard.getEventKey() == Keyboard.KEY_LEFT && Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
 		{
 			mc.vrSettings.vrFixedCamposX -= 0.01;
 			gotKey = true;
 		}
-		if (Keyboard.getEventKey() == Keyboard.KEY_RIGHT&& Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))
+		if (Keyboard.getEventKey() == Keyboard.KEY_RIGHT&& Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
 		{
 			mc.vrSettings.vrFixedCamposX += 0.01;
 			gotKey = true;
 		}
-		if (Keyboard.getEventKey() == Keyboard.KEY_UP&& Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))
+		if (Keyboard.getEventKey() == Keyboard.KEY_UP&& Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
 		{
 			mc.vrSettings.vrFixedCamposZ -= 0.01;
 			gotKey = true;
 		}
-		if (Keyboard.getEventKey() == Keyboard.KEY_DOWN && Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))
+		if (Keyboard.getEventKey() == Keyboard.KEY_DOWN && Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
 		{
 			mc.vrSettings.vrFixedCamposZ += 0.01;
 			gotKey = true;
 		}
-		if (Keyboard.getEventKey() == Keyboard.KEY_PRIOR && Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))
+		if (Keyboard.getEventKey() == Keyboard.KEY_PRIOR && Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
 		{
 			mc.vrSettings.vrFixedCamposY += 0.01;
 			gotKey = true;
 		}
-		if (Keyboard.getEventKey() == Keyboard.KEY_NEXT && Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))
+		if (Keyboard.getEventKey() == Keyboard.KEY_NEXT && Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
 		{
 			mc.vrSettings.vrFixedCamposY -= 0.01;
 			gotKey = true;
@@ -225,25 +225,14 @@ public class VRHotkeys {
 	}
 
 	public static void snapMRCam(Minecraft mc, int controller) {
-		mc.vrSettings.vrFixedCamrotPitch = -Minecraft.getMinecraft().roomScale.getControllerPitch_World(controller) + mc.vrSettings.mrMovingCamOffsetPitch;
-		mc.vrSettings.vrFixedCamrotYaw = Minecraft.getMinecraft().roomScale.getControllerYaw_World(controller) + mc.vrSettings.vrWorldRotation + mc.vrSettings.mrMovingCamOffsetYaw;
-		mc.vrSettings.vrFixedCamrotRoll = Minecraft.getMinecraft().roomScale.getControllerRoll_World(controller) + mc.vrSettings.mrMovingCamOffsetRoll;
-
-		org.lwjgl.util.vector.Vector4f vec = new org.lwjgl.util.vector.Vector4f(mc.vrSettings.mrMovingCamOffsetX, mc.vrSettings.mrMovingCamOffsetY, mc.vrSettings.mrMovingCamOffsetZ, 1);
-		org.lwjgl.util.vector.Matrix4f matrix = new org.lwjgl.util.vector.Matrix4f();
-		matrix.rotate((float)Math.toRadians(mc.vrSettings.vrFixedCamrotRoll), new org.lwjgl.util.vector.Vector3f(0, 0, 1));
-		matrix.rotate((float)Math.toRadians(mc.vrSettings.vrFixedCamrotPitch), new org.lwjgl.util.vector.Vector3f(-1, 0, 0));
-		matrix.rotate((float)Math.toRadians(mc.vrSettings.vrFixedCamrotYaw), new org.lwjgl.util.vector.Vector3f(0, -1, 0));
-		org.lwjgl.util.vector.Matrix4f.transform(matrix, vec, vec);
-
-		Vec3d pos = Minecraft.getMinecraft().roomScale.getControllerPos_Room(controller);
-		mc.vrSettings.vrFixedCamposX = ((float)pos.xCoord + vec.x) / mc.vrPlayer.worldScale;
-		mc.vrSettings.vrFixedCamposY = ((float)pos.yCoord + vec.y) / mc.vrPlayer.worldScale;
-		mc.vrSettings.vrFixedCamposZ = ((float)pos.zCoord + vec.z) / mc.vrPlayer.worldScale;
 		
-		MCOpenVR.mrControllerPos = Minecraft.getMinecraft().roomScale.getControllerPos_Room(controller);
-		MCOpenVR.mrControllerPitch = -Minecraft.getMinecraft().roomScale.getControllerPitch_World(controller);
-		MCOpenVR.mrControllerYaw = Minecraft.getMinecraft().roomScale.getControllerYaw_World(controller) + mc.vrSettings.vrWorldRotation;
-		MCOpenVR.mrControllerRoll = Minecraft.getMinecraft().roomScale.getControllerRoll_World(controller);
+		mc.vrSettings.vrFixedCamposX =(float) MCOpenVR.getAimSource(controller).xCoord;
+		mc.vrSettings.vrFixedCamposY =(float) MCOpenVR.getAimSource(controller).yCoord;
+		mc.vrSettings.vrFixedCamposZ =(float) MCOpenVR.getAimSource(controller).zCoord;	
+		
+		mc.vrSettings.vrFixedCamrotPitch = mc.vrPlayer.getControllerPitch_Room(controller);
+		mc.vrSettings.vrFixedCamrotYaw = mc.vrPlayer.getControllerYaw_Room(controller);
+		mc.vrSettings.vrFixedCamrotRoll = mc.vrPlayer.getControllerRoll_World(controller);
+
 	}
 }

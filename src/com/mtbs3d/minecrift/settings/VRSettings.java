@@ -177,15 +177,18 @@ public class VRSettings
     public boolean hideGui = false;     // VIVE show gui
     public boolean hudOcclusion = false;
     public float crosshairScale = 1.0f;
+	public boolean crosshairScalesWithDistance = false;
     public int renderInGameCrosshairMode = RENDER_CROSSHAIR_MODE_ALWAYS;
     public int renderBlockOutlineMode = RENDER_BLOCK_OUTLINE_MODE_ALWAYS;
     public float hudOpacity = 0.95f;
     public boolean menuBackground = false;
     public float   menuCrosshairScale = 1f;
     public boolean useCrosshairOcclusion = false;
+	public boolean seatedHudAltMode = true;
     //
      	
     private Minecraft mc;
+
 
 	
     public VRSettings( Minecraft minecraft, File dataDir )
@@ -364,6 +367,11 @@ public class VRSettings
                     if (optionTokens[0].equals("renderInGameCrosshairMode"))
                     {
                         this.renderInGameCrosshairMode = Integer.parseInt(optionTokens[1]);
+                    }
+                    
+                    if (optionTokens[0].equals("crosshairScalesWithDistance"))
+                    {
+                    	 this.crosshairScalesWithDistance = optionTokens[1].equals("true");
                     }
 
                     if (optionTokens[0].equals("renderBlockOutlineMode"))
@@ -551,6 +559,9 @@ public class VRSettings
                     }
                     if(optionTokens[0].equals("seatedhmd")){
                         this.seatedUseHMD=optionTokens[1].equals("true");
+                    }
+                    if(optionTokens[0].equals("seatedHudAltMode")){
+                        this.seatedHudAltMode=optionTokens[1].equals("true");
                     }
                     if(optionTokens[0].equals("realisticJumpEnabled")){
                         this.realisticJumpEnabled=optionTokens[1].equals("true");
@@ -799,6 +810,8 @@ public class VRSettings
 	            return var4 + String.format("%.2f", new Object[] { Float.valueOf(this.crosshairScale) });
             case MENU_CROSSHAIR_SCALE:
                 return var4 + String.format("%.2f", new Object[] { Float.valueOf(this.menuCrosshairScale) });
+            case CROSSHAIR_SCALES_WITH_DISTANCE:
+	        	return this.crosshairScalesWithDistance ? var4 + "ON" : var4 + "OFF";
 	        case RENDER_CROSSHAIR_MODE:
                 if (this.renderInGameCrosshairMode == RENDER_CROSSHAIR_MODE_HUD)
                     return var4 + "With HUD";
@@ -870,6 +883,8 @@ public class VRSettings
                 return this.realisticJumpEnabled ? var4 + "ON" : var4 + "OFF";
             case SEATED_HMD:
                 return this.seatedUseHMD ? var4 + "HMD" : var4 + "CROSSHAIR";
+            case SEATED_HUD_XHAIR:
+                return this.seatedHudAltMode ? var4 + "CROSSHAIR" : var4 + "HMD";
             case REALISTIC_SNEAK:
                 return this.realisticSneakEnabled ? var4 + "ON" : var4 + "OFF";
             case REALISTIC_CLIMB:
@@ -1128,6 +1143,9 @@ public class VRSettings
             case SEATED_HMD:
                 seatedUseHMD = !seatedUseHMD;
                 break;
+            case SEATED_HUD_XHAIR:
+                seatedHudAltMode = !seatedHudAltMode;
+                break;
             case REALISTIC_SWIM:
                 realisticSwimEnabled = !realisticSwimEnabled;
                 break;
@@ -1164,9 +1182,12 @@ public class VRSettings
                 break;
             case FOV_REDUCTION:
             	useFOVReduction = !useFOVReduction;
+            	break;     
+            case CROSSHAIR_SCALES_WITH_DISTANCE:
+            	crosshairScalesWithDistance = !crosshairScalesWithDistance;
             	break;
             default:
-                    break;
+            	break;
     	}
 
         this.saveOptions();
@@ -1310,6 +1331,7 @@ public class VRSettings
             var5.println("useCrosshairOcclusion:" + this.useCrosshairOcclusion);
             var5.println("crosshairScale:" + this.crosshairScale);
             var5.println("menuCrosshairScale:" + this.menuCrosshairScale);
+            var5.println("crosshairScalesWithDistance:" + this.crosshairScalesWithDistance);
             var5.println("inertiaFactor:" + this.inertiaFactor);
             var5.println("smoothRunTickCount:" + this.smoothRunTickCount);
             var5.println("smoothTick:" + this.smoothTick);
@@ -1345,6 +1367,7 @@ public class VRSettings
             var5.println("mrMovingCamOffsetRoll:" + this.mrMovingCamOffsetRoll);
             var5.println("vrTouchHotbar:" + this.vrTouchHotbar);
             var5.println("seatedhmd:" + this.seatedUseHMD);
+            var5.println("seatedHudAltMode:" + this.seatedHudAltMode);
             var5.println("seated:" + this.seated);
             var5.println("jumpThreshold:" + this.jumpThreshold);
             var5.println("sneakThreshold:" + this.sneakThreshold);
@@ -1539,7 +1562,8 @@ public class VRSettings
         OTHER_HUD_SETTINGS("Overlay/Crosshair/Chat...", false, true),
         OTHER_RENDER_SETTINGS("IPD / FOV...", false, true),
         LOCOMOTION_SETTINGS("Locomotion Settings...", false, true), 
-        SEATED_HMD("Forward Direction",false,true); 
+        SEATED_HMD("Forward Direction",false,true),
+        SEATED_HUD_XHAIR("HUD Follows",false,true); 
 
 //        ANISOTROPIC_FILTERING("options.anisotropicFiltering", true, false, 1.0F, 16.0F, 0.0F)
 //                {

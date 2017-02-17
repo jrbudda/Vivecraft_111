@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import com.google.common.base.Throwables;
 
 import net.minecraft.client.audio.SoundManager;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.world.WorldProvider;
 
@@ -15,6 +16,7 @@ public class MCReflection {
 	public static Method generateLightBrightnessTable = getDeclaredMethod(WorldProvider.class, "generateLightBrightnessTable", "a", "func_76556_a");
 	public static Field blockHitDelay = getDeclaredField(PlayerControllerMP.class, "blockHitDelay", "g", "field_78781_i");
 	public static Field isHittingBlock = getDeclaredField(PlayerControllerMP.class, "isHittingBlock", "h", "field_78778_j");
+	public static Field chatInputField = getDeclaredField(GuiChat.class, "inputField", "a", "field_146415_a");
 	
 	public static Object getField(Field field, Object obj) {
 		try {

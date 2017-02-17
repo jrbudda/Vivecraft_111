@@ -19,6 +19,7 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
 			VRSettings.VrOptions.X_SENSITIVITY,
 			VRSettings.VrOptions.Y_SENSITIVITY,
 			VRSettings.VrOptions.KEYHOLE,
+            VRSettings.VrOptions.SEATED_HUD_XHAIR
 	};
 	
 	
@@ -30,8 +31,8 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
     };
     static VRSettings.VrOptions[] freeMoveSettings = new VRSettings.VrOptions[]
     {
-            VRSettings.VrOptions.SEATED_HMD,
-            VRSettings.VrOptions.FOV_REDUCTION,
+        VRSettings.VrOptions.SEATED_HMD,
+        VRSettings.VrOptions.FOV_REDUCTION,
     };
 
 	public GuiSeatedOptions(GuiScreen guiScreen, VRSettings guivrSettings) {
@@ -129,6 +130,8 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
 				vrSettings.vrFreeMove = true;
 				vrSettings.useFOVReduction = false;
 				vrSettings.vrFreeMove = true;
+				vrSettings.seatedUseHMD = false;
+				vrSettings.seatedHudAltMode = false;
 				mc.vrPlayer.setFreeMove(true);
 				Minecraft.getMinecraft().vrSettings.saveOptions();
 				this.reinit = true;
@@ -186,6 +189,11 @@ public class GuiSeatedOptions extends BaseGuiSettings implements GuiEventEx
             case SEATED_HMD:
                 return new String[] {
                         "The direction the forward (W) key will go. You can ",
+                        "HMD view direction or crosshair pointing direction"
+                } ;
+            case SEATED_HUD_XHAIR:
+                return new String[] {
+                        "The direction the HUD will be placed.",
                         "HMD view direction or crosshair pointing direction"
                 } ;
             case FOV_REDUCTION:
