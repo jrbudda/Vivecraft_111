@@ -142,9 +142,9 @@ public class JumpTracker {
 
 				if(delta.yCoord < 0 && m.yCoord < 0){
 
-					player.motionX += -m.xCoord;
+					player.motionX += -m.xCoord * 1.25;
 					player.motionY=-m.yCoord;
-					player.motionZ += -m.zCoord;
+					player.motionZ += -m.zCoord * 1.25;
 
 					player.lastTickPosX = pl.xCoord;
 					player.lastTickPosY = pl.yCoord;

@@ -39,7 +39,7 @@ public class PlayerModelController {
 		public RotInfo(){
 			
 		}
-		public boolean seated;
+		public boolean seated, reverse;
 		public Quaternion leftArmQuat, rightArmQuat, headQuat; 
 		public Vec3d leftArmRot, rightArmRot, headRot; 
 		public Vec3d leftArmPos, rightArmPos, Headpos;
@@ -49,7 +49,7 @@ public class PlayerModelController {
 	
 		Vec3d hmdpos = null, c0pos = null, c1pos = null;
 		Quaternion hmdq = null, c0q = null, c1q = null;
-		boolean seated = false;
+		boolean seated=false, reverse = false;
 		for (int i = 0; i <= 2; i++) {
 			try {
 				byte[]arr = null;
@@ -88,10 +88,16 @@ public class PlayerModelController {
 					hmdq = new Quaternion(rotw, rotx, roty, rotz);
 					break;
 				case 1: 
+					if(bool){ //reverse
+						reverse = true;
+					}
 					c0pos = new Vec3d(posx, posy, posz);
 					c0q = new Quaternion(rotw, rotx, roty, rotz);
 					break;
 				case 2: 
+					if(bool){ //reverse
+						reverse = true;
+					}
 					c1pos = new Vec3d(posx, posy, posz);
 					c1q = new Quaternion(rotw, rotx, roty, rotz);
 					break;
@@ -140,6 +146,7 @@ public class PlayerModelController {
 //		}
 		
 		RotInfo out = new RotInfo();
+		out.reverse =reverse;
 		out.seated = seated;
 		out.leftArmRot=new Vec3d(dir3.getX(), dir3.getY(), dir3.getZ());
 		out.rightArmRot=new Vec3d(dir2.getX(), dir2.getY(), dir2.getZ());
@@ -174,6 +181,7 @@ public class PlayerModelController {
 			RotInfo rotLast = vivePlayersLast.get(uuid);
 			RotInfo rotLerp = new RotInfo();
 			float pt = Minecraft.getMinecraft().timer.renderPartialTicks;
+			rotLerp.reverse = rot.reverse;
 			rotLerp.seated = rot.seated;
 			rotLerp.leftArmPos = Utils.vecLerp(rotLast.leftArmPos, rot.leftArmPos, pt);
 			rotLerp.rightArmPos = Utils.vecLerp(rotLast.rightArmPos, rot.rightArmPos, pt);

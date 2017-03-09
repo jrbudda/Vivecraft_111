@@ -695,7 +695,6 @@ public class MCOpenVR
 			
 			keyboardShowing = 0 == ret; //0 = no error, > 0 see EVROverlayError	
 	
-		
 			if (ret != 0) {
 				System.out.println("VR Overlay Error: " + vrOverlay.GetOverlayErrorNameFromEnum.apply(ret).getString(0));
 			}
@@ -1859,7 +1858,7 @@ public class MCOpenVR
 			case EVREventType.EVREventType_VREvent_KeyboardClosed:
 				//'huzzah'
 				keyboardShowing = false;
-				if (mc.currentScreen instanceof GuiChat) {
+				if (mc.currentScreen instanceof GuiChat && !mc.vrSettings.seated) {
 					GuiTextField field = (GuiTextField)MCReflection.getField(MCReflection.chatInputField, mc.currentScreen);
 					if (field != null) {
 						String s = field.getText().trim();

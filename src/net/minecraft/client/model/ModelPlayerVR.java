@@ -180,6 +180,7 @@ public class ModelPlayerVR extends ModelBiped
         		this.bipedHead.rotateAngleX = (float) -pitch1;
         		
         		Vec3d diff = rotInfo.leftArmPos.subtract(rotInfo.rightArmPos).rotateYaw((float)-Math.PI/2);
+        		if(rotInfo.reverse) diff = diff.scale(-1);
         		if(rotInfo.seated) diff = rotInfo.rightArmRot;
         		double ltor = Math.atan2(-diff.xCoord, diff.zCoord);     		
         	
@@ -280,14 +281,29 @@ public class ModelPlayerVR extends ModelBiped
                 		armor.bipedLeftArm.rotateAngleX = this.leftshoulder.rotateAngleX;
                 		armor.bipedRightArm.rotateAngleY = this.rightShoulder.rotateAngleY;  				
                 		armor.bipedRightArm.rotateAngleX = this.rightShoulder.rotateAngleX;
+            			this.bipedLeftArm.scaleY = 0.5f;
+            			this.bipedLeftArmwear.scaleY = 0.5f;
+            			this.bipedRightArm.scaleY = 0.5f;
+            			this.bipedRightArmwear.scaleY = 0.5f;	
             			
-        			}
+            			if(rotInfo.reverse){
+            		        this.rightShoulder.setRotationPoint(5.0F, 2.0F , 0.0F);
+            		        this.leftshoulder.setRotationPoint(-5.0F, 2.0F , 0.0F);
+            			} else {
+            		        this.rightShoulder.setRotationPoint(-5.0F, 2.0F , 0.0F);
+            		        this.leftshoulder.setRotationPoint(5.0F, 2.0F , 0.0F);
+            			}
+            			
+        			} 
+        		}else {
+        			this.bipedLeftArm.scaleY = 1;
+        			this.bipedLeftArmwear.scaleY = 1;
+        			this.bipedRightArm.scaleY =1;
+        			this.bipedRightArmwear.scaleY =1;
+        			this.bipedLeftArm.setRotationPoint(5.0F, 2.0F, 0.0F);
+        			this.bipedRightArm.setRotationPoint(-5.0F, 2.0F, 0.0F);
 
-        			this.bipedLeftArm.scaleY = 0.5f;
-        			this.bipedLeftArmwear.scaleY = 0.5f;
-        			this.bipedRightArm.scaleY = 0.5f;
-        			this.bipedRightArmwear.scaleY = 0.5f;
-        		}
+    			}
         	}
  
         copyModelAngles(this.bipedHead, this.bipedHeadwear);        

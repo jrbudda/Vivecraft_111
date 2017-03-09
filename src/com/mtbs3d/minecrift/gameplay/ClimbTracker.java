@@ -1,5 +1,7 @@
 package com.mtbs3d.minecrift.gameplay;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.LayoutStyle;
@@ -9,6 +11,7 @@ import com.mtbs3d.minecrift.api.NetworkHelper;
 import com.mtbs3d.minecrift.api.NetworkHelper.PacketDiscriminators;
 import com.mtbs3d.minecrift.provider.MCOpenVR;
 import com.mtbs3d.minecrift.render.PlayerModelController;
+import com.mtbs3d.minecrift.utils.BlockWithData;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -36,6 +39,10 @@ public class ClimbTracker {
 	private boolean[] wasbutton= new boolean[2];
 	private boolean[] waslatched = new boolean[2];
 
+	public List<BlockWithData> blocklist = new ArrayList<BlockWithData>();
+	
+	public byte serverblockmode = 0;
+	
 	private boolean gravityOverride=false;
 	
 	private Minecraft mc;
@@ -119,7 +126,7 @@ public class ClimbTracker {
 
 		boolean[] button = new boolean[2];
 		boolean[] inblock = new boolean[2];
-
+		boolean[] allowed = new boolean [2];
 	
 		boolean nope = false;
 		
@@ -167,7 +174,8 @@ public class ClimbTracker {
 				else 
 					button[c] = mc.gameSettings.keyBindForward.isKeyDown() && !mc.player.onGround;
 
-				inblock[c] = box[c] != null && box[c].offset(bp).isVecInside(controllerPos);				
+				inblock[c] = box[c] != null && box[c].offset(bp).isVecInside(controllerPos);	
+				allowed[c] = allowed(b, bs);
 			}						
 		
 			waslatched[c] = latched[c];
@@ -185,21 +193,23 @@ public class ClimbTracker {
 			if(!latched[c] && !nope){ //grab
 				if((!wasinblock[c] && inblock[c] && button[c]) ||
 						(!wasbutton[c] && button[c] && inblock[c])){ //Grab
-					wantjump = false;
-					latchStart[c] = mc.roomScale.getControllerPos_World(c);
-					latchStartBodyY[c] = player.posY;
-					latchStartController = c;
-					latchbox[c] = box[c];
-					latched[c] = true;
-					if(c==0){
-						latched[1] = false;
-						nope = true;
-					}
-					else 
-						latched[0] = false;
-					MCOpenVR.triggerHapticPulse(c, 2000);
-					mc.vrPlayer.blockDust(latchStart[c].xCoord, latchStart[c].yCoord, latchStart[c].zCoord, 5, bs);
+					if(allowed[c]){
+						wantjump = false;
+						latchStart[c] = mc.roomScale.getControllerPos_World(c);
+						latchStartBodyY[c] = player.posY;
+						latchStartController = c;
+						latchbox[c] = box[c];
+						latched[c] = true;
+						if(c==0){
+							latched[1] = false;
+							nope = true;
+						}
+						else 
+							latched[0] = false;
+						MCOpenVR.triggerHapticPulse(c, 2000);
+						mc.vrPlayer.blockDust(latchStart[c].xCoord, latchStart[c].yCoord, latchStart[c].zCoord, 5, bs);
 
+					}
 				}
 			}		
 
@@ -211,7 +221,7 @@ public class ClimbTracker {
 		if(!latched[0] && !latched[1]){ 
 			//check in case they let go with one hand, and other hand should take over.
 			for(int c=0;c<2;c++){
-				if(inblock[c] && button[c]){
+				if(inblock[c] && button[c] && allowed[c]){
 					latchStart[c] = mc.roomScale.getControllerPos_World(c);
 					latchStartBodyY[c] = player.posY;
 					latchStartController = c;
@@ -326,5 +336,22 @@ public class ClimbTracker {
 			mc.player.addExhaustion(.3f);    
 
 		}
+	}
+
+	private boolean allowed(Block b, IBlockState bs) {
+		if(serverblockmode == 0) return true;
+		if(serverblockmode == 1){
+			for (BlockWithData blockWithData : blocklist) {
+				if(blockWithData.matches(b,bs)) return true;
+			}
+			return false;
+		}
+		if(serverblockmode == 2){
+			for (BlockWithData blockWithData : blocklist) {
+				if(blockWithData.matches(b,bs)) return false;
+			}
+			return true;
+		}
+		return false; //how did u get here?
 	}
 }

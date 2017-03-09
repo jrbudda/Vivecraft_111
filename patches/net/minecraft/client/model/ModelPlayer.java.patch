@@ -27,7 +27,7 @@
      public ModelPlayer(float modelSize, boolean smallArmsIn)
      {
          super(modelSize, 0.0F, 64, 64);
-@@ -124,6 +135,96 @@
+@@ -124,6 +135,97 @@
      public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn)
      {
          super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
@@ -51,7 +51,8 @@
 +        		this.bipedHead.rotateAngleX = (float) -pitch1;
 +        		
 +        		Vec3d diff = rotInfo.leftArmPos.subtract(rotInfo.rightArmPos);
-+        		
++        		if(rotInfo.reverse) diff = diff.scale(-1);
++
 +        		double ltor = Math.atan2(-diff.xCoord, diff.zCoord) + Math.PI/2;       		
 +        		if(rotInfo.seated) ltor = -yaw1;
 +        		

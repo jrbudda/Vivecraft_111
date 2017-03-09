@@ -710,7 +710,7 @@
 +
 +    					{
 +
-+    						if(mc.climbTracker.isClaws(itemstack) && mc.climbTracker.isActive(mc.player)){
++    						if(mc.climbTracker.isClaws(itemstack) && mc.climbTracker.isClimbeyClimb()){
 +
 +    							GlStateManager.scale(0.3, 0.3, 0.3);
 +    							GlStateManager.translate(-.025f, .12f, .25f);
