@@ -156,7 +156,7 @@ public class ClimbTracker {
 					}	
 				//nah, hotboxes too big.	inblock[c] = box[c] != null && box[c].offset(bp).isVecInside(controllerPos);		
 					button[c]=inblock[c];
-
+					allowed[c] = inblock[c];
 				} else {
 					if(latchStart[c].subtract(controllerPos).lengthSquared() > 0.25) 
 						inblock[c] = false;

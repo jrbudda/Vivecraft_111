@@ -197,7 +197,7 @@
              }
  
              if (flag2)
-@@ -333,6 +413,11 @@
+@@ -333,9 +413,15 @@
  
              this.prevOnGround = this.onGround;
              this.autoJumpEnabled = this.mc.gameSettings.autoJump;
@@ -209,7 +209,11 @@
          }
      }
  
-@@ -1000,7 +1085,7 @@
++      
+     @Nullable
+ 
+     /**
+@@ -1000,7 +1086,7 @@
                      this.sendPlayerAbilities();
                  }
              }
@@ -218,7 +222,7 @@
              {
                  if (this.flyToggleTimer == 0)
                  {
-@@ -1088,6 +1173,10 @@
+@@ -1088,6 +1174,10 @@
  
          super.onLivingUpdate();
  
@@ -229,7 +233,7 @@
          if (this.onGround && this.capabilities.isFlying && !this.mc.playerController.isSpectatorMode())
          {
              this.capabilities.isFlying = false;
-@@ -1106,8 +1195,11 @@
+@@ -1106,8 +1196,11 @@
          if (this.getRidingEntity() instanceof EntityBoat)
          {
              EntityBoat entityboat = (EntityBoat)this.getRidingEntity();
@@ -243,7 +247,7 @@
          }
      }
  
-@@ -1138,10 +1230,40 @@
+@@ -1138,10 +1231,40 @@
       */
      public void move(MoverType type, double x, double y, double z)
      {
@@ -255,7 +259,7 @@
 +    	if(this.isRiding())return;
 +    	boolean freemove = OpenVRPlayer.get().getFreeMove();
 +    	boolean doY = freemove || (Minecraft.getMinecraft().vrSettings.simulateFalling && !this.isOnLadder()) && !this.isSneaking();
-+    	if(mc.climbTracker.isActive(this)) doY = true;
++    	if(mc.climbTracker.isActive(this) && (freemove || mc.climbTracker.isGrabbingLadder())) doY = true;
 +    	Vec3d roomOrigin = OpenVRPlayer.get().getRoomOriginPos_World();
 +    	//   	Vec3 camloc = Minecraft.getMinecraft().roomScale.getHMDPos_World();
 +
@@ -288,7 +292,7 @@
      }
  
      public boolean isAutoJumpEnabled()
-@@ -1167,12 +1289,16 @@
+@@ -1167,12 +1290,16 @@
                      float f = this.getAIMoveSpeed();
                      float f1 = (float)vec3d2.lengthSquared();
  
@@ -307,7 +311,7 @@
                          vec3d2 = new Vec3d((double)(f2 * f5 - f3 * f4), vec3d2.yCoord, (double)(f3 * f5 + f2 * f4));
                          f1 = (float)vec3d2.lengthSquared();
  
-@@ -1292,4 +1418,323 @@
+@@ -1292,4 +1419,323 @@
              }
          }
      }

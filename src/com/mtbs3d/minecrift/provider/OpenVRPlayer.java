@@ -166,7 +166,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     
 	public void checkandUpdateRotateScale(boolean onFrame, float nano){
 		Minecraft mc = Minecraft.getMinecraft();
-		if(mc.currentScreen!=null) return;
+		if(!onFrame && mc.currentScreen!=null) return;
 		
 		if(!onFrame) {
 			if(this.wfCount > 0){

@@ -6,6 +6,7 @@ import com.mtbs3d.minecrift.utils.Utils;
 import com.mtbs3d.minecrift.utils.Vector3;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -40,10 +42,13 @@ public class PlayerModelController {
 			
 		}
 		public boolean seated, reverse;
+		public int hmd = 0;
 		public Quaternion leftArmQuat, rightArmQuat, headQuat; 
 		public Vec3d leftArmRot, rightArmRot, headRot; 
 		public Vec3d leftArmPos, rightArmPos, Headpos;
 	}
+	
+	private Random rand = new Random();
 
 	public void Update(UUID uuid, byte[] hmddata, byte[] c0data, byte[] c1data){
 	
@@ -148,6 +153,7 @@ public class PlayerModelController {
 		RotInfo out = new RotInfo();
 		out.reverse =reverse;
 		out.seated = seated;
+		if(donors.containsKey(uuid))out.hmd = donors.get(uuid);
 		out.leftArmRot=new Vec3d(dir3.getX(), dir3.getY(), dir3.getZ());
 		out.rightArmRot=new Vec3d(dir2.getX(), dir2.getY(), dir2.getZ());
 		out.headRot = new Vec3d(dir.getX(), dir.getY(), dir.getZ());
@@ -157,6 +163,17 @@ public class PlayerModelController {
 		out.leftArmQuat = c1q;
 		out.rightArmQuat = c0q;
 		out.headQuat = hmdq;
+		
+		if(out.hmd >3 && rand.nextInt(10) < 4){
+			Vector3 derp = dir.multiply(0.1f);
+			Minecraft.getMinecraft().world.spawnParticle(EnumParticleTypes.FIREWORKS_SPARK,
+					hmdpos.xCoord+ ((double)this.rand.nextFloat() - 0.5D)*.02f,
+					hmdpos.yCoord - 0.8f + ((double)this.rand.nextFloat() - 0.5D)*.02f,
+					hmdpos.zCoord + ((double)this.rand.nextFloat()- 0.5D)*.02f,
+					-derp.getX() + ((double)this.rand.nextFloat()- 0.5D)*.05f,((double)this.rand.nextFloat()- .05f)*.05f, -derp.getZ() + ((double)this.rand.nextFloat()- 0.5D)*.05f,
+					new int[]{rand.nextInt(128)+128,rand.nextInt(128)+128,rand.nextInt(128)+128}
+					);     
+		}
 		
 		if (!uuid.equals(Minecraft.getMinecraft().player.getGameProfile().getId()) || debug) {
 			vivePlayersReceived.put(uuid, out);
@@ -173,7 +190,14 @@ public class PlayerModelController {
 		}
 	}
 	
+	private Map<UUID, Integer> donors = new HashMap<UUID, Integer>();
 
+	public void setHMD(UUID uuid, int i){
+		donors.put(uuid, i);
+	}
+	public boolean HMDCHecked(UUID uuid){
+		return donors.containsKey(uuid);
+	}
 	public RotInfo getRotationsForPlayer(UUID uuid){
 		if (debug) uuid = Minecraft.getMinecraft().player.getUniqueID();
 		RotInfo rot = vivePlayers.get(uuid);
@@ -183,6 +207,7 @@ public class PlayerModelController {
 			float pt = Minecraft.getMinecraft().timer.renderPartialTicks;
 			rotLerp.reverse = rot.reverse;
 			rotLerp.seated = rot.seated;
+			rotLerp.hmd = rot.hmd;
 			rotLerp.leftArmPos = Utils.vecLerp(rotLast.leftArmPos, rot.leftArmPos, pt);
 			rotLerp.rightArmPos = Utils.vecLerp(rotLast.rightArmPos, rot.rightArmPos, pt);
 			rotLerp.Headpos = Utils.vecLerp(rotLast.Headpos, rot.Headpos, pt);

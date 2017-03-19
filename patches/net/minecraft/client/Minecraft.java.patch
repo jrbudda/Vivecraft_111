@@ -303,7 +303,7 @@
 +	 * The minecriftVerString will be automatically updated by the build scripts, do not modify here.
 +	 * Modify minecriftversion.py in root minecrift dir.
 +	 */
-+    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-8pre";
++    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-8";
 +	/* end version */
 +	/** END MINECRIFT */
 +    
@@ -1443,7 +1443,7 @@
      {
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
-@@ -3419,4 +3972,1175 @@
+@@ -3419,4 +3972,1208 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }
@@ -1459,61 +1459,68 @@
 +		}
 +	}
 +    
-+	public Matrix4f getMRTransform(){
++	public Matrix4f getMRTransform(boolean interpolated){
 +		//I swear to god this should be correct for column-major and post-multiplication for view matrix
 +
-+		Vec3d roomo = entityRenderer.interPolatedRoomOrigin;
++		Vec3d roomo;
++
++		if(interpolated)
++			roomo= entityRenderer.interPolatedRoomOrigin;
++		else
++			roomo=vrPlayer.getRoomOriginPos_World();
++
 +		Vec3d mul = vrPlayer.getWalkMultOffset().scale(1/vrPlayer.interpolatedWorldScale); //this has world scale in it.
 +		Vec3d localt = new Vec3d(vrSettings.mrMovingCamOffsetX, vrSettings.mrMovingCamOffsetY, vrSettings.mrMovingCamOffsetZ);
 +		FloatBuffer conrot = null;	
-+		
-+		if(MCOpenVR.mrMovingCamActive)
-+			conrot = vrPlayer.getControllerMatrix_World(2);
-+		else {
++
++		Object temp;
++		if(MCOpenVR.mrMovingCamActive){
++			de.fruitfly.ovr.structs.Matrix4f temp2 = MCOpenVR.getAimRotation(2);
++			conrot = temp2.toFloatBuffer();
++		}else {
 +			//reconstruct from vrsettings		
 +			Matrix4f m = new Matrix4f();
++			m=m.rotate((float) Math.toRadians(180-vrSettings.vrFixedCamrotYaw), new org.lwjgl.util.vector.Vector3f(0, 1, 0));
 +			m=m.rotate((float) Math.toRadians(vrSettings.vrFixedCamrotRoll), new org.lwjgl.util.vector.Vector3f(0, 0, 1));
 +			m=m.rotate((float) Math.toRadians(-vrSettings.vrFixedCamrotPitch), new org.lwjgl.util.vector.Vector3f(1, 0, 0));
-+			m=m.rotate((float) Math.toRadians(180-vrSettings.vrFixedCamrotYaw+vrSettings.vrWorldRotation), new org.lwjgl.util.vector.Vector3f(0, 1, 0));
 +			matrixBuffer2.rewind();
 +			m.store(matrixBuffer2);
 +			matrixBuffer2.rewind();
 +			conrot = matrixBuffer2;
 +		}
++
++
 +		GlStateManager.matrixMode(GL11.GL_MODELVIEW);
 +		GlStateManager.pushMatrix();
 +			GlStateManager.loadIdentity();
-+
++	
 +			//Room pose
 +			GlStateManager.translate(-roomo.xCoord, -roomo.yCoord, -roomo.zCoord);
 +			GlStateManager.rotate(vrSettings.vrWorldRotation, 0, 1, 0);
 +			//
-+			
 +			//scale everything in the room
 +			GlStateManager.scale(vrPlayer.interpolatedWorldScale, vrPlayer.interpolatedWorldScale, vrPlayer.interpolatedWorldScale);
 +			///
-+			
 +			//Device Pose
 +			GlStateManager.translate(-vrSettings.vrFixedCamposX, -vrSettings.vrFixedCamposY, -vrSettings.vrFixedCamposZ);
 +			GlStateManager.translate(-mul.xCoord, -mul.yCoord, -mul.zCoord);
-+			//This is silly. But using the _Room matrix for conrot and not doing the
-+			//world rotations *doesnt work* for some reason.
-+			GlStateManager.rotate(-vrSettings.vrWorldRotation, 0, 1, 0); //WHYYY
-+			GlStateManager.multMatrix(conrot);
-+			GlStateManager.rotate(vrSettings.vrWorldRotation, 0, 1, 0); //ALSO WHYYY
-+			//
 +	
-+			//Camera pose
-+			GlStateManager.translate(-localt.xCoord, -localt.yCoord, -localt.zCoord);
-+//			GlStateManager.rotate(-vrSettings.mrMovingCamOffsetRoll, 0.0F, 0.0F, 1.0F);
-+//			GlStateManager.rotate(-vrSettings.mrMovingCamOffsetPitch, 1.0F, 0.0F, 0.0F);
-+//			GlStateManager.rotate(-vrSettings.mrMovingCamOffsetYaw, 0.0F, 1.0F, 0.0F);
-+			//
-+			
++			GlStateManager.rotate(-vrSettings.vrWorldRotation, 0, 1, 0); //WHYYY
++	
++			GlStateManager.multMatrix(conrot);
++	
++			GlStateManager.translate(0, -localt.yCoord, 0);
++	
++			GlStateManager.rotate(vrSettings.mrMovingCamOffsetYaw, 0.0F, 1.0F, 0.0F);
++			GlStateManager.rotate(vrSettings.mrMovingCamOffsetRoll, 0.0F, 0.0F, 1.0F);
++			GlStateManager.rotate(vrSettings.mrMovingCamOffsetPitch, 1.0F, 0.0F, 0.0F);
++	
++			GlStateManager.rotate(-vrSettings.vrWorldRotation, 0, 1, 0); //oh god what			
++	
 +			//put back scale
 +			GlStateManager.scale(1/vrPlayer.interpolatedWorldScale, 1/vrPlayer.interpolatedWorldScale, 1/vrPlayer.interpolatedWorldScale);
 +			//
-+		
++	
 +			GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, matrixBuffer);
 +		GlStateManager.popMatrix();
 +
@@ -1523,6 +1530,15 @@
 +		return thirdPassViewMatrix;
 +	}
 +	
++	
++	public void printGLMatrix(String derp){
++		GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, matrixBuffer);
++		matrixBuffer.rewind();
++		Matrix4f temp = new Matrix4f();
++		temp.load(matrixBuffer);
++		System.out.println(derp + "\r\n" + temp.toString());
++		matrixBuffer.rewind();
++	}
 +	
 +	public void clearGLError() //bad bad bad
 +	{
@@ -1559,24 +1575,38 @@
 +				// create view matrix
 +				
 +				//temp
-+				vrSettings.mrMovingCamOffsetPitch = 0;
-+				vrSettings.mrMovingCamOffsetYaw = 0;
-+				vrSettings.mrMovingCamOffsetRoll = 0f;
-+				vrSettings.mrMovingCamOffsetX = 0f;
-+				vrSettings.mrMovingCamOffsetY =0f;
-+				vrSettings.mrMovingCamOffsetZ = 0f;
++//				vrSettings.mrMovingCamOffsetPitch = 0;
++//				vrSettings.mrMovingCamOffsetYaw = 0;
++//				vrSettings.mrMovingCamOffsetRoll = 0f;
++//				
++//				vrSettings.mrMovingCamOffsetX = 0f;
++//				vrSettings.mrMovingCamOffsetY = 0f;
++//				vrSettings.mrMovingCamOffsetZ = 0f;
++//				
++//				vrSettings.vrFixedCamrotYaw = 0;
++//				vrSettings.vrFixedCamrotRoll = 0;
++//				vrSettings.vrFixedCamrotPitch= 0;
++////				
++//				vrSettings.vrFixedCamposX = 0;
++//				vrSettings.vrFixedCamposY = 0;
++//				vrSettings.vrFixedCamposZ= 0;
++//				vrSettings.saveOptions();
++//				
++//				vrSettings.vrWorldRotation +=1f;
++//				vrPlayer.checkandUpdateRotateScale(true, 0);
 +				//
 +
-+
-+				getMRTransform();
++				getMRTransform(true);
 +				
-+				Vec3d camplayer = new Vec3d(thirdPassViewMatrix.m30, thirdPassViewMatrix.m31, thirdPassViewMatrix.m32).subtract(entityRenderer.getEyeRenderPos(renderPass.Center));
++				Vec3d camplayer = new Vec3d(-thirdPassViewMatrix.m30, -thirdPassViewMatrix.m31, -thirdPassViewMatrix.m32).subtract(entityRenderer.getEyeRenderPos(renderPass.Center));
 +				camplayer = camplayer.rotateYaw((float) Math.PI);
 +			//	org.lwjgl.util.vector.Vector3f CameraLookx = new org.lwjgl.util.vector.Vector3f(0,0,-1); 
 +			//	org.lwjgl.util.vector.Vector3f CameraLooky = Utils.directionFromMatrix(thirdPassViewMatrix, 0, 0, -1);
-+				float yaw = (float) Math.toRadians(vrSettings.vrFixedCamrotYaw + vrSettings.vrWorldRotation);
++				org.lwjgl.util.vector.Vector3f CameraLook = Utils.directionFromMatrix(thirdPassViewMatrix, 0, 0, -1);
++			//	float yaw = (float) Math.toRadians(-vrSettings.vrFixedCamrotYaw - vrSettings.vrWorldRotation);
 +			//	float yawx = (float) Math.atan2((-thirdPassViewMatrix.m20),(Math.sqrt(Math.pow(thirdPassViewMatrix.m21, 2) + Math.pow(thirdPassViewMatrix.m22, 2))));
-+				org.lwjgl.util.vector.Vector3f CameraLook = new org.lwjgl.util.vector.Vector3f((float) Math.sin(yaw), 0f, (float)Math.cos(yaw));
++				
++			//	org.lwjgl.util.vector.Vector3f CameraLook = new org.lwjgl.util.vector.Vector3f((float) Math.sin(yaw), 0f, (float)Math.cos(yaw));
 +
 +				org.lwjgl.util.vector.Matrix4f viewMatrix = new org.lwjgl.util.vector.Matrix4f(thirdPassViewMatrix);
 +				viewMatrix.m33 =1;
@@ -2520,7 +2550,7 @@
 +				float r = 0, k = 0;
 +				// VIVE start - screen flash when hurt instead of view tilt
 +				float time =  (float) (System.currentTimeMillis() - usageSnooper.getMinecraftStartTimeMillis()) / 1000;
-+				if (player!=null) {
++				if (player!=null && world !=null) {
 +					
 +					if(entityRenderer.itemRenderer.inwater){
 +						watereffect = 1.3f;
@@ -2567,7 +2597,10 @@
 +						if(k<0.8)k=.8f;
 +					}
 +						
-+				} 
++				} else {
++					watereffect = 0;
++					portaleffect = 0;
++				}
 +				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_HealthAlpha, r);
 +				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_BlackAlpha, k);
 +				ARBShaderObjects.glUniform1fARB(VRShaders._Overlay_time,time);
@@ -2592,7 +2625,7 @@
 +
 +
 +		this.mcProfiler.startSection("mirror");
-+			shouldupdate =copyToMirror(this.currentPass);
++			shouldupdate = copyToMirror(this.currentPass);
 +			checkGLError("post-mirror " + eye);
 +		this.mcProfiler.endSection();
 +

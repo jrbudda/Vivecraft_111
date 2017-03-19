@@ -2563,12 +2563,13 @@ public class MCOpenVR
 		
 		boolean debugThirdController = false;
 		if(controllerTracking[2] || debugThirdController){ //third controller
+			if(debugThirdController) controllerPose[2] = controllerPose[0];
 			Vector3f thirdControllerPos = OpenVRUtil.convertMatrix4ftoTranslationVector(controllerPose[2]);
 			aimSource[2] = new Vec3d(
 					thirdControllerPos.x,
 					thirdControllerPos.y,
 					thirdControllerPos.z);
-
+		
 			// build matrix describing controller rotation
 			controllerRotation[2].M[0][0] = controllerPose[2].M[0][0];
 			controllerRotation[2].M[0][1] = controllerPose[2].M[0][1];

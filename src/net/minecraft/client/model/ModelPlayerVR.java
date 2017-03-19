@@ -6,8 +6,11 @@ import javax.swing.plaf.RootPaneUI;
 
 import com.mtbs3d.minecrift.render.PlayerModelController;
 import com.mtbs3d.minecrift.render.PlayerModelController.RotInfo;
+import com.mtbs3d.minecrift.render.StaticTexture;
+import com.mtbs3d.minecrift.render.VRShaders;
 import com.mtbs3d.minecrift.utils.Vector3;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.layers.LayerBipedArmor;
@@ -16,6 +19,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.util.EnumHandSide;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 
 public class ModelPlayerVR extends ModelBiped
@@ -30,9 +34,13 @@ public class ModelPlayerVR extends ModelBiped
     private final ModelRenderer bipedCape;
     private final ModelRenderer bipedDeadmau5Head;
     private final boolean smallArms;
+    public ModelRenderer vrHMD;
 
     //VIVE START
     public Vec3d renderPos;
+    ResourceLocation DIAMOND_HMD = new ResourceLocation("/assets/vivecraft/textures/diamond_hmd.png");
+    ResourceLocation GOLD_HMD = new ResourceLocation("/assets/vivecraft/textures/gold_hmd.png");
+    ResourceLocation BLACK_HMD = new ResourceLocation("/assets/vivecraft/textures/black_hmd.png");
     //VIVE END
     
    public  LayerBipedArmorVR armor = null;
@@ -59,7 +67,14 @@ public class ModelPlayerVR extends ModelBiped
 		this.bipedLeftLegwear = new ModelRenderer(this, 0, 48);	
 		this.bipedRightLegwear = new ModelRenderer(this, 0, 32);
 		this.bipedBodyWear = new ModelRenderer(this, 16, 32);
+        try {
+            Minecraft.getMinecraft().getTextureManager().loadTexture(this.BLACK_HMD, new StaticTexture(this.BLACK_HMD));
+            Minecraft.getMinecraft().getTextureManager().loadTexture(this.GOLD_HMD, new StaticTexture(this.GOLD_HMD));
+            Minecraft.getMinecraft().getTextureManager().loadTexture(this.DIAMOND_HMD, new StaticTexture(this.DIAMOND_HMD));
+		} catch (Exception e) {
+		}
 
+		
     		if (smallArmsIn)
     		{
     			this.bipedLeftArm = new ModelRenderer(this, 32, 48);
@@ -135,6 +150,12 @@ public class ModelPlayerVR extends ModelBiped
 
         this.leftshoulder.render(scale);
         this.rightShoulder.render(scale);
+        if(this.vrHMD == null){ //dont ask
+            this.vrHMD = new ModelRenderer(this, 0, 0);
+            this.vrHMD.setTextureSize(16, 16);
+            this.vrHMD.addBox(-3.5F, -6.0F, -7.5F, 7, 4, 5, 0);
+        }
+        this.vrHMD.render(scale);
         
         GlStateManager.popMatrix();
     }
@@ -305,8 +326,28 @@ public class ModelPlayerVR extends ModelBiped
 
     			}
         	}
- 
-        copyModelAngles(this.bipedHead, this.bipedHeadwear);        
+        	if(this.vrHMD!=null){
+        		this.vrHMD.isHidden = false;
+        		switch(rotInfo.hmd){
+        		case 0:
+        			this.vrHMD.isHidden = true;
+        			break;
+        		case 1:
+        			this.vrHMD.setTextureLocation(this.BLACK_HMD);
+        			break;
+        		case 2:
+        			this.vrHMD.setTextureLocation(this.GOLD_HMD);
+        			break;
+        		case 3:
+        			this.vrHMD.setTextureLocation(this.DIAMOND_HMD);	
+        			break;
+        		case 4:
+        			this.vrHMD.setTextureLocation(this.DIAMOND_HMD);	
+        			break;
+        		}
+        	}
+        copyModelAngles(this.bipedHead, this.bipedHeadwear);
+        if(vrHMD!=null)   copyModelAngles(this.bipedHead, this.vrHMD);        
         copyModelAngles(this.bipedLeftLeg, this.bipedLeftLegwear);
         copyModelAngles(this.bipedRightLeg, this.bipedRightLegwear);
         copyModelAngles(this.bipedLeftArm, this.bipedLeftArmwear);
@@ -324,6 +365,7 @@ public class ModelPlayerVR extends ModelBiped
         this.bipedBodyWear.showModel = invisible;
         this.bipedCape.showModel = invisible;
         this.bipedDeadmau5Head.showModel = invisible;
+       if(vrHMD!=null) this.vrHMD.showModel = invisible;
     }
 
     public void postRenderArm(float scale, EnumHandSide side)

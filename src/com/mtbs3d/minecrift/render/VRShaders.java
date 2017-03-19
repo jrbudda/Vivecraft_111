@@ -52,23 +52,23 @@ public class VRShaders {
 	private VRShaders() {
 	}
 
-	public static String load(String name){
+	public static String load(String type,String name){
 		InputStream is = VRShaders.class.getResourceAsStream("/assets/vivecraft/shaders/" + name);
 		String out = "";
 		try {
 			if(is==null){
 				//uhh debugging?
 				Path dir = Paths.get(System.getProperty("user.dir")); // ..\mcpxxx\jars\
-				Path p5 = dir.getParent().resolve("src/assets/shaders/" + name);
+				Path p5 = dir.getParent().resolve("src/assets/" + type + "/" + name);
 				if (!p5.toFile().exists()) {
-					p5 = dir.getParent().getParent().resolve("assets/vivecraft/shaders/" + name);
+					p5 = dir.getParent().getParent().resolve("assets/vivecraft/" + type + "/" + name);
 				}
 				is = new FileInputStream(p5.toFile());
 			}
 			InputStreamReader in = new InputStreamReader(is);
 			out =IOUtils.toString(in);
 			if(out == null){
-				System.out.println("Cannot load shader: " + name);
+				System.out.println("Cannot load "+type + ":"  + name);
 				out = "";
 			}
 			in.close();
@@ -77,11 +77,11 @@ public class VRShaders {
 		return out;
 	}
 
-	public static final String PASSTHRU_VERTEX_SHADER = load("passthru.vsh");
-	public static final String DEPTH_MASK_FRAGMENT_SHADER = load("mixedreality.fsh");
-	public static final String LANCZOS_SAMPLER_VERTEX_SHADER= load("lanczos.vsh");
-	public static final String LANCZOS_SAMPLER_FRAGMENT_SHADER= load("lanczos.fsh");
-	public static final String FOV_REDUCTION_FRAGMENT_SHADER= load("fovreduction.fsh");
+	public static final String PASSTHRU_VERTEX_SHADER = load("shaders","passthru.vsh");
+	public static final String DEPTH_MASK_FRAGMENT_SHADER = load("shaders","mixedreality.fsh");
+	public static final String LANCZOS_SAMPLER_VERTEX_SHADER= load("shaders","lanczos.vsh");
+	public static final String LANCZOS_SAMPLER_FRAGMENT_SHADER= load("shaders","lanczos.fsh");
+	public static final String FOV_REDUCTION_FRAGMENT_SHADER= load("shaders","fovreduction.fsh");
 	
 	public static void setupDepthMask() throws Exception{
 		_DepthMask_shaderProgramId = ShaderHelper.initShaders(VRShaders.PASSTHRU_VERTEX_SHADER, VRShaders.DEPTH_MASK_FRAGMENT_SHADER, true);
