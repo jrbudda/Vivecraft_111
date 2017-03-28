@@ -303,7 +303,7 @@
 +	 * The minecriftVerString will be automatically updated by the build scripts, do not modify here.
 +	 * Modify minecriftversion.py in root minecrift dir.
 +	 */
-+    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-8";
++    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-9alpha";
 +	/* end version */
 +	/** END MINECRIFT */
 +    
@@ -542,19 +542,6 @@
 -        {
 -            this.shutdown();
 -        }
--
--        if (this.isGamePaused && this.world != null)
--        {
--            float f = this.timer.renderPartialTicks;
--            this.timer.updateTimer();
--            this.timer.renderPartialTicks = f;
--        }
--        else
--        {
--            this.timer.updateTimer();
--        }
--
--        this.mcProfiler.startSection("scheduledExecutables");
 +	mcProfiler.endSection(); //idle
 +	try {
 +		
@@ -623,6 +610,19 @@
 +//			this.refreshResources();
 +//		}
  
+-        if (this.isGamePaused && this.world != null)
+-        {
+-            float f = this.timer.renderPartialTicks;
+-            this.timer.updateTimer();
+-            this.timer.renderPartialTicks = f;
+-        }
+-        else
+-        {
+-            this.timer.updateTimer();
+-        }
+-
+-        this.mcProfiler.startSection("scheduledExecutables");
+-
 -        synchronized (this.scheduledTasks)
 +		
 +      synchronized (this.scheduledTasks)
@@ -925,7 +925,7 @@
 -            this.debugUpdateTime += 1000L;
 -            this.fpsCounter = 0;
 -            this.usageSnooper.addMemoryStatsToSnooper();
- 
+-
 -            if (!this.usageSnooper.isSnooperRunning())
 -            {
 -                this.usageSnooper.startSnooper();
@@ -938,7 +938,7 @@
 -            Display.sync(this.getLimitFramerate());
 -            this.mcProfiler.endSection();
 -        }
--
+ 
 -        this.mcProfiler.endSection();
 +			this.debugUpdateTime += 1000L;
 +			this.fpsCounter = 0;
@@ -1016,7 +1016,7 @@
              {
                  BlockPos blockpos = this.objectMouseOver.getBlockPos();
  
-@@ -1533,25 +2008,26 @@
+@@ -1533,24 +2008,29 @@
                      this.player.swingArm(EnumHand.MAIN_HAND);
                  }
              }
@@ -1048,12 +1048,14 @@
 -                if (this.playerController.isNotCreative())
 -                {
 -                    this.leftClickCounter = 10;
--                }
-+                this.leftClickCounter = 10; // this.playerController.isNotCreative() ? 10 : 0;
++                if (!this.player.isRowingBoat()) { // fuck it
++                    this.leftClickCounter = 10; // this.playerController.isNotCreative() ? 10 : 0;
++                    this.player.resetCooldown();
++                	this.player.swingArm(EnumHand.MAIN_HAND);
+                 }
              }
              else if (!this.player.isRowingBoat())
-             {
-@@ -1567,39 +2043,45 @@
+@@ -1567,39 +2047,45 @@
                          if (this.world.getBlockState(blockpos).getMaterial() != Material.AIR)
                          {
                              this.playerController.clickBlock(blockpos, this.objectMouseOver.sideHit);
@@ -1110,7 +1112,7 @@
                  }
  
                  for (EnumHand enumhand : EnumHand.values())
-@@ -1723,27 +2205,12 @@
+@@ -1723,27 +2209,12 @@
       */
      private void resize(int width, int height)
      {
@@ -1140,7 +1142,7 @@
      }
  
      /**
-@@ -1759,6 +2226,8 @@
+@@ -1759,6 +2230,8 @@
       */
      public void runTick() throws IOException
      {
@@ -1149,7 +1151,7 @@
          if (this.rightClickDelayTimer > 0)
          {
              --this.rightClickDelayTimer;
-@@ -1862,12 +2331,23 @@
+@@ -1862,12 +2335,23 @@
  
              this.mcProfiler.endStartSection("keyboard");
              this.runTickKeyboard();
@@ -1173,7 +1175,7 @@
                  ++this.joinPlayerCounter;
  
                  if (this.joinPlayerCounter == 30)
-@@ -1908,6 +2388,9 @@
+@@ -1908,6 +2392,9 @@
              this.entityRenderer.stopUseShader();
          }
  
@@ -1183,7 +1185,7 @@
          if (!this.isGamePaused)
          {
              this.mcMusicTicker.update();
-@@ -1961,7 +2444,8 @@
+@@ -1961,7 +2448,8 @@
              this.mcProfiler.endStartSection("pendingConnection");
              this.myNetworkManager.processReceivedPackets();
          }
@@ -1193,7 +1195,7 @@
          this.mcProfiler.endSection();
          this.systemTime = getSystemTime();
      }
-@@ -1997,6 +2481,14 @@
+@@ -1997,6 +2485,14 @@
                  this.currentScreen.handleKeyboardInput();
              }
  
@@ -1208,7 +1210,7 @@
              boolean flag = Keyboard.getEventKeyState();
  
              if (flag)
-@@ -2006,6 +2498,8 @@
+@@ -2006,6 +2502,8 @@
                      this.entityRenderer.switchUseShader();
                  }
  
@@ -1217,7 +1219,7 @@
                  boolean flag1 = false;
  
                  if (this.currentScreen == null)
-@@ -2013,6 +2507,7 @@
+@@ -2013,6 +2511,7 @@
                      if (i == 1)
                      {
                          this.displayInGameMenu();
@@ -1225,7 +1227,7 @@
                      }
  
                      flag1 = Keyboard.isKeyDown(61) && this.processKeyF3(i);
-@@ -2020,7 +2515,9 @@
+@@ -2020,7 +2519,9 @@
  
                      if (i == 59)
                      {
@@ -1236,7 +1238,7 @@
                      }
                  }
  
-@@ -2172,20 +2669,35 @@
+@@ -2172,20 +2673,35 @@
      {
          for (; this.gameSettings.keyBindTogglePerspective.isPressed(); this.renderGlobal.setDisplayListEntitiesDirty())
          {
@@ -1286,7 +1288,7 @@
              }
          }
  
-@@ -2243,11 +2755,26 @@
+@@ -2243,11 +2759,26 @@
  
          if (flag)
          {
@@ -1318,7 +1320,7 @@
              if (this.currentScreen == null && this.gameSettings.keyBindCommand.isPressed())
              {
                  this.displayGuiScreen(new GuiChat("/"));
-@@ -2256,9 +2783,10 @@
+@@ -2256,9 +2787,10 @@
  
          if (this.player.isHandActive())
          {
@@ -1331,7 +1333,7 @@
              }
  
              label472:
-@@ -2284,17 +2812,30 @@
+@@ -2284,17 +2816,30 @@
                  }
              }
          }
@@ -1369,7 +1371,7 @@
  
              while (this.gameSettings.keyBindPickBlock.isPressed())
              {
-@@ -2302,12 +2843,12 @@
+@@ -2302,12 +2847,12 @@
              }
          }
  
@@ -1385,7 +1387,7 @@
      }
  
      private void runTickMouse() throws IOException
-@@ -2328,6 +2869,13 @@
+@@ -2328,6 +2873,13 @@
                      KeyBinding.onTick(i - 100);
                  }
              }
@@ -1399,7 +1401,7 @@
  
              long j = getSystemTime() - this.systemTime;
  
-@@ -2382,6 +2930,7 @@
+@@ -2382,6 +2934,7 @@
       */
      public void launchIntegratedServer(String folderName, String worldName, @Nullable WorldSettings worldSettingsIn)
      {
@@ -1407,7 +1409,7 @@
          this.loadWorld((WorldClient)null);
          System.gc();
          ISaveHandler isavehandler = this.saveLoader.getSaveLoader(folderName, false);
-@@ -2444,7 +2993,7 @@
+@@ -2444,7 +2997,7 @@
                  ;
              }
          }
@@ -1416,7 +1418,7 @@
          this.displayGuiScreen(new GuiScreenWorking());
          SocketAddress socketaddress = this.theIntegratedServer.getNetworkSystem().addLocalEndpoint();
          NetworkManager networkmanager = NetworkManager.provideLocalClient(socketaddress);
-@@ -2459,6 +3008,9 @@
+@@ -2459,6 +3012,9 @@
       */
      public void loadWorld(@Nullable WorldClient worldClientIn)
      {
@@ -1426,7 +1428,7 @@
          this.loadWorld(worldClientIn, "");
      }
  
-@@ -2608,6 +3160,7 @@
+@@ -2608,6 +3164,7 @@
          return theMinecraft == null || !theMinecraft.gameSettings.hideGUI;
      }
  
@@ -1434,7 +1436,7 @@
      public static boolean isFancyGraphicsEnabled()
      {
          return theMinecraft != null && theMinecraft.gameSettings.fancyGraphics;
-@@ -2624,7 +3177,7 @@
+@@ -2624,7 +3181,7 @@
      /**
       * Called when user clicked he's mouse middle button (pick block)
       */
@@ -1443,7 +1445,7 @@
      {
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
-@@ -3419,4 +3972,1208 @@
+@@ -3419,4 +3976,1208 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }
@@ -1602,7 +1604,7 @@
 +				camplayer = camplayer.rotateYaw((float) Math.PI);
 +			//	org.lwjgl.util.vector.Vector3f CameraLookx = new org.lwjgl.util.vector.Vector3f(0,0,-1); 
 +			//	org.lwjgl.util.vector.Vector3f CameraLooky = Utils.directionFromMatrix(thirdPassViewMatrix, 0, 0, -1);
-+				org.lwjgl.util.vector.Vector3f CameraLook = Utils.directionFromMatrix(thirdPassViewMatrix, 0, 0, -1);
++				org.lwjgl.util.vector.Vector3f CameraLook = Utils.directionFromMatrix(thirdPassViewMatrix, 0, 0, 1);
 +			//	float yaw = (float) Math.toRadians(-vrSettings.vrFixedCamrotYaw - vrSettings.vrWorldRotation);
 +			//	float yawx = (float) Math.atan2((-thirdPassViewMatrix.m20),(Math.sqrt(Math.pow(thirdPassViewMatrix.m21, 2) + Math.pow(thirdPassViewMatrix.m22, 2))));
 +				
@@ -2403,7 +2405,7 @@
 +	 * Sets the listener of sounds
 +	 */
 +	public void updateSoundListener() {
-+		SoundSystem sndSystem = (SoundSystem) MCReflection.getField(MCReflection.sndsys, this.mcSoundHandler.sndManager);
++		SoundSystem sndSystem = (SoundSystem) MCReflection.getField(MCReflection.SoundManager_sndSystem, this.mcSoundHandler.sndManager);
 +		Vec3d up = roomScale.getCustomHMDVector(new Vec3d(0, 1, 0));
 +		Vec3d hmdPos = roomScale.getHMDPos_World();
 +		Vec3d hmdDir = roomScale.getHMDDir_World();

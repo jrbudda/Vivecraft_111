@@ -2572,7 +2572,7 @@
          if (this.itemActivationItem != null && this.itemActivationTicks > 0)
          {
              int i = 40 - this.itemActivationTicks;
-@@ -2895,26 +3014,2325 @@
+@@ -2895,26 +3014,2321 @@
              float f2 = f * f1;
              float f3 = 10.25F * f2 * f1 + -24.95F * f1 * f1 + 25.5F * f2 + -13.8F * f1 + 4.0F * f;
              float f4 = f3 * (float)Math.PI;
@@ -2755,10 +2755,6 @@
 +					}
 +				}
 +			}
-+			
-+			
-+
-+			
 +		}
 +
 +		
@@ -3280,7 +3276,7 @@
 +		int mouseX = 0;
 +		int mouseY = 0;
 +		final ScaledResolution var15 = new ScaledResolution(this.mc);
-+
++		GL11.glDisable(GL11.GL_STENCIL_TEST);
 +		
 +		if (this.mc.showSplashScreen)
 +		{
@@ -3420,7 +3416,7 @@
 +		this.mc.getFramebuffer().bindFramebufferTexture();
 +		this.mc.getFramebuffer().genMipMaps();
 +		this.mc.getFramebuffer().unbindFramebufferTexture();
-+		
++		GL11.glEnable(GL11.GL_STENCIL_TEST);
 +	}
 +
 +

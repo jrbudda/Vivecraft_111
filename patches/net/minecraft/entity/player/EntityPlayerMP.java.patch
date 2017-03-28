@@ -1,19 +1,23 @@
 --- a/net/minecraft/entity/player/EntityPlayerMP.java
 +++ b/net/minecraft/entity/player/EntityPlayerMP.java
-@@ -3,9 +3,12 @@
+@@ -3,9 +3,16 @@
  import com.google.common.collect.Lists;
  import com.google.common.collect.Sets;
  import com.mojang.authlib.GameProfile;
 +import com.mtbs3d.minecrift.provider.MCOpenVR;
 +
  import io.netty.buffer.Unpooled;
++import jopenvr.VR_IVRSystem_FnTable.CaptureInputFocus_callback;
++
++import java.sql.Ref;
++import java.util.ArrayList;
  import java.util.Iterator;
  import java.util.List;
 +import java.util.Random;
  import java.util.Set;
  import javax.annotation.Nullable;
  import net.minecraft.block.Block;
-@@ -14,12 +17,14 @@
+@@ -14,12 +21,14 @@
  import net.minecraft.block.BlockWall;
  import net.minecraft.block.material.Material;
  import net.minecraft.block.state.IBlockState;
@@ -28,7 +32,7 @@
  import net.minecraft.entity.passive.AbstractHorse;
  import net.minecraft.entity.projectile.EntityArrow;
  import net.minecraft.init.Items;
-@@ -31,6 +36,7 @@
+@@ -31,6 +40,7 @@
  import net.minecraft.inventory.IContainerListener;
  import net.minecraft.inventory.IInventory;
  import net.minecraft.inventory.SlotCrafting;
@@ -36,7 +40,18 @@
  import net.minecraft.item.Item;
  import net.minecraft.item.ItemMapBase;
  import net.minecraft.item.ItemStack;
-@@ -85,6 +91,7 @@
+@@ -71,6 +81,10 @@
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.management.PlayerInteractionManager;
+ import net.minecraft.server.management.UserListOpsEntry;
++import net.minecraft.src.Reflector;
++import net.minecraft.src.ReflectorConstructor;
++import net.minecraft.src.ReflectorField;
++import net.minecraft.src.ReflectorMethod;
+ import net.minecraft.stats.Achievement;
+ import net.minecraft.stats.AchievementList;
+ import net.minecraft.stats.StatBase;
+@@ -85,6 +99,7 @@
  import net.minecraft.util.EntityDamageSource;
  import net.minecraft.util.EnumHand;
  import net.minecraft.util.EnumHandSide;
@@ -44,7 +59,7 @@
  import net.minecraft.util.JsonSerializableSet;
  import net.minecraft.util.NonNullList;
  import net.minecraft.util.ReportedException;
-@@ -95,6 +102,7 @@
+@@ -95,6 +110,7 @@
  import net.minecraft.util.datafix.IDataWalker;
  import net.minecraft.util.math.BlockPos;
  import net.minecraft.util.math.MathHelper;
@@ -52,7 +67,35 @@
  import net.minecraft.util.text.ITextComponent;
  import net.minecraft.util.text.Style;
  import net.minecraft.util.text.TextComponentTranslation;
-@@ -215,6 +223,7 @@
+@@ -186,9 +202,15 @@
+         super(worldIn, profile);
+         interactionManagerIn.player = this;
+         this.interactionManager = interactionManagerIn;
+-        BlockPos blockpos = worldIn.getSpawnPoint();
++        BlockPos blockpos = null;
++        
++        //FORGE
++        if(Reflector.forgeExists())
++        	blockpos= (BlockPos) Reflector.call(Reflector.ForgeWorldProvider_getRandomizedSpawnPoint, new Object[]{});
++        else
++        	blockpos= worldIn.getSpawnPoint();
+ 
+-        if (worldIn.provider.hasSkyLight() && worldIn.getWorldInfo().getGameType() != GameType.ADVENTURE)
++        if (!Reflector.forgeExists() && worldIn.provider.hasSkyLight() && worldIn.getWorldInfo().getGameType() != GameType.ADVENTURE)
+         {
+             int i = Math.max(0, server.getSpawnRadius(worldIn));
+             int j = MathHelper.floor(worldIn.getWorldBorder().getClosestDistance((double)blockpos.getX(), (double)blockpos.getZ()));
+@@ -205,7 +227,8 @@
+ 
+             blockpos = worldIn.getTopSolidOrLiquidBlock(blockpos.add(this.rand.nextInt(i * 2 + 1) - i, 0, this.rand.nextInt(i * 2 + 1) - i));
+         }
+-
++        ///
++        
+         this.mcServer = server;
+         this.statsFile = server.getPlayerList().getPlayerStatsFile(this);
+         this.stepHeight = 0.0F;
+@@ -215,6 +238,7 @@
          {
              this.setPosition(this.posX, this.posY + 1.0D, this.posZ);
          }
@@ -60,7 +103,7 @@
      }
  
      /**
-@@ -294,9 +303,22 @@
+@@ -294,9 +318,22 @@
          this.lastExperience = -1;
      }
  
@@ -84,7 +127,168 @@
      }
  
      /**
-@@ -1130,7 +1152,7 @@
+@@ -337,7 +374,8 @@
+ 
+         this.openContainer.detectAndSendChanges();
+ 
+-        if (!this.world.isRemote && !this.openContainer.canInteractWith(this))
++        //FORGE adds nullcheck
++        if (!this.world.isRemote && this.openContainer!=null && !this.openContainer.canInteractWith(this))
+         {
+             this.closeScreen();
+             this.openContainer = this.inventoryContainer;
+@@ -526,6 +564,12 @@
+      */
+     public void onDeath(DamageSource cause)
+     {
++    	
++    	if(Reflector.forgeExists()){
++    		if(Reflector.callBoolean(Reflector.ForgeHooks_onLivingDeath, new Object[]{this, cause}));
++    			return;
++    	}
++    	
+         boolean flag = this.world.getGameRules().getBoolean("showDeathMessages");
+         this.connection.sendPacket(new SPacketCombatEvent(this.getCombatTracker(), SPacketCombatEvent.Event.ENTITY_DIED, flag));
+ 
+@@ -552,8 +596,32 @@
+ 
+         if (!this.world.getGameRules().getBoolean("keepInventory") && !this.isSpectator())
+         {
++        	java.util.ArrayList<EntityItem> c = null;
++        
++        	//FORGE
++        	if(Reflector.forgeExists()){
++        	Reflector.setFieldValue(Reflector.ForgeEntity_captureDrops, true);
++        	c = (ArrayList<EntityItem>) Reflector.getFieldValue(Reflector.ForgeEntity_capturedDrops);
++        	c.clear();
++        	}
++        	///
++        	
+             this.destroyVanishingCursedItems();
+             this.inventory.dropAllItems();
++
++        	//FORGE
++        	if(Reflector.forgeExists()){
++        	Reflector.setFieldValue(Reflector.ForgeEntity_captureDrops, false);
++
++        	Object event = Reflector.newInstance(Reflector.PlayerDropsEvent_Constructor, new Object[]{this, cause, c, this.recentlyHit > 0});
++        	if(!Reflector.postForgeBusEvent(event)){
++        		for (net.minecraft.entity.item.EntityItem item : c)
++        		{
++        			this.world.spawnEntity(item);
++        		}
++        	}
++        	}
++        	///
+         }
+ 
+         for (ScoreObjective scoreobjective : this.world.getScoreboard().getObjectivesFromCriteria(IScoreCriteria.DEATH_COUNT))
+@@ -643,6 +711,13 @@
+     @Nullable
+     public Entity changeDimension(int dimensionIn)
+     {
++    	
++    	//FORGE
++    	if(Reflector.forgeExists() 
++    			&& !Reflector.callBoolean(Reflector.ForgeHooks_onTravelToDimension, new Object[]{this, dimensionIn}))
++    		return this;
++    	//
++    	
+         this.invulnerableDimensionChange = true;
+ 
+         if (this.dimension == 1 && dimensionIn == 1)
+@@ -812,7 +887,13 @@
+         BlockPos blockpos = new BlockPos(i, j, k);
+         IBlockState iblockstate = this.world.getBlockState(blockpos);
+ 
+-        if (iblockstate.getMaterial() == Material.AIR)
++        //FORGE
++        boolean air = iblockstate.getMaterial() == Material.AIR;
++     
++        if(Reflector.forgeExists())
++        	air = Reflector.callBoolean(Reflector.ForgeBlock_isAir, new Object[]{iblockstate, this.world, blockpos});
++        
++        if (air)
+         {
+             BlockPos blockpos1 = blockpos.down();
+             IBlockState iblockstate1 = this.world.getBlockState(blockpos1);
+@@ -850,11 +931,17 @@
+         }
+         else
+         {
+-            this.getNextWindowId();
+-            this.connection.sendPacket(new SPacketOpenWindow(this.currentWindowId, guiOwner.getGuiID(), guiOwner.getDisplayName()));
+-            this.openContainer = guiOwner.createContainer(this.inventory, this);
+-            this.openContainer.windowId = this.currentWindowId;
+-            this.openContainer.addListener(this);
++        	this.getNextWindowId();
++        	this.connection.sendPacket(new SPacketOpenWindow(this.currentWindowId, guiOwner.getGuiID(), guiOwner.getDisplayName()));
++        	this.openContainer = guiOwner.createContainer(this.inventory, this);
++        	this.openContainer.windowId = this.currentWindowId;
++        	this.openContainer.addListener(this);
++        	//FORGE
++        	if(Reflector.forgeExists()){
++        		Object event = Reflector.newInstance(Reflector.PlayerContainerEventOpen_Constructor, new Object[]{this, this.openContainer});
++        		Reflector.postForgeBusEvent(event);
++        	}
++        	//
+         }
+     }
+ 
+@@ -901,6 +988,12 @@
+ 
+             this.openContainer.windowId = this.currentWindowId;
+             this.openContainer.addListener(this);
++        	//FORGE
++        	if(Reflector.forgeExists()){
++        		Object event = Reflector.newInstance(Reflector.PlayerContainerEventOpen_Constructor, new Object[]{this, this.openContainer});
++        		Reflector.postForgeBusEvent(event);
++        	}
++        	//
+         }
+     }
+ 
+@@ -910,6 +1003,12 @@
+         this.openContainer = new ContainerMerchant(this.inventory, villager, this.world);
+         this.openContainer.windowId = this.currentWindowId;
+         this.openContainer.addListener(this);
++    	//FORGE
++    	if(Reflector.forgeExists()){
++    		Object event = Reflector.newInstance(Reflector.PlayerContainerEventOpen_Constructor, new Object[]{this, this.openContainer});
++    		Reflector.postForgeBusEvent(event);
++    	}
++    	//
+         IInventory iinventory = ((ContainerMerchant)this.openContainer).getMerchantInventory();
+         ITextComponent itextcomponent = villager.getDisplayName();
+         this.connection.sendPacket(new SPacketOpenWindow(this.currentWindowId, "minecraft:villager", itextcomponent, iinventory.getSizeInventory()));
+@@ -1029,6 +1128,12 @@
+     public void closeContainer()
+     {
+         this.openContainer.onContainerClosed(this);
++    	//FORGE
++    	if(Reflector.forgeExists()){
++    		Object event = Reflector.newInstance(Reflector.PlayerContainerEventClose_Constructor, new Object[]{this, this.openContainer});
++    		Reflector.postForgeBusEvent(event);
++    	}
++    	//
+         this.openContainer = this.inventoryContainer;
+     }
+ 
+@@ -1063,6 +1168,13 @@
+     {
+         if (stat != null)
+         {
++        	////Forge
++        	if(Reflector.forgeExists() && stat.isAchievement()){
++        		if(Reflector.postForgeBusEvent(Reflector.AchievementEvent_Constructor, new Object[]{this, (Achievement)stat}))
++        				return;
++        	}
++        	//
++        	
+             this.statsFile.increaseStat(this, stat, amount);
+ 
+             for (ScoreObjective scoreobjective : this.getWorldScoreboard().getObjectivesFromCriteria(stat.getCriteria()))
+@@ -1130,7 +1242,7 @@
              super.onItemUseFinish();
          }
      }
@@ -93,7 +297,7 @@
      /**
       * Copies the values from the given player into this player if boolean par2 is true. Always clones Ender Chest
       * Inventory.
-@@ -1446,4 +1468,160 @@
+@@ -1446,4 +1558,160 @@
          this.setFlag(7, true);
          this.setFlag(7, false);
      }

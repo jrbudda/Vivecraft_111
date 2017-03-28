@@ -83,6 +83,9 @@ public class VRShaders {
 	public static final String LANCZOS_SAMPLER_FRAGMENT_SHADER= load("shaders","lanczos.fsh");
 	public static final String FOV_REDUCTION_FRAGMENT_SHADER= load("shaders","fovreduction.fsh");
 	
+	public static final String hmd_tex = load("textures","black_hmd.bmp");
+
+	
 	public static void setupDepthMask() throws Exception{
 		_DepthMask_shaderProgramId = ShaderHelper.initShaders(VRShaders.PASSTHRU_VERTEX_SHADER, VRShaders.DEPTH_MASK_FRAGMENT_SHADER, true);
 		

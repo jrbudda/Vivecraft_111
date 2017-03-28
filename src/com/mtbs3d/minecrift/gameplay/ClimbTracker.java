@@ -9,6 +9,7 @@ import javax.swing.LayoutStyle;
 import com.mtbs3d.minecrift.api.IRoomscaleAdapter;
 import com.mtbs3d.minecrift.api.NetworkHelper;
 import com.mtbs3d.minecrift.api.NetworkHelper.PacketDiscriminators;
+import com.mtbs3d.minecrift.control.VRControllerButtonMapping;
 import com.mtbs3d.minecrift.provider.MCOpenVR;
 import com.mtbs3d.minecrift.render.PlayerModelController;
 import com.mtbs3d.minecrift.utils.BlockWithData;
@@ -156,7 +157,7 @@ public class ClimbTracker {
 					}	
 				//nah, hotboxes too big.	inblock[c] = box[c] != null && box[c].offset(bp).isVecInside(controllerPos);		
 					button[c]=inblock[c];
-					allowed[c] = inblock[c];
+
 				} else {
 					if(latchStart[c].subtract(controllerPos).lengthSquared() > 0.25) 
 						inblock[c] = false;
@@ -183,9 +184,9 @@ public class ClimbTracker {
 			if(!button[c] && latched[c]){ //let go 
 				latched[c] = false;
 				if(c == 0)
-					mc.gameSettings.keyBindAttack.unpressKey();
+					VRControllerButtonMapping.unpressKey(mc.gameSettings.keyBindAttack);
 				else 
-					mc.gameSettings.keyBindForward.unpressKey();
+					VRControllerButtonMapping.unpressKey(mc.gameSettings.keyBindForward);
 
 				jump = true;
 			} 
@@ -256,7 +257,7 @@ public class ClimbTracker {
 		if(!latched[0] && !latched[1] && !jump){
 			if(player.onGround && unsetflag){
 				unsetflag = false;
-				mc.gameSettings.keyBindForward.unpressKey();
+				VRControllerButtonMapping.unpressKey(mc.gameSettings.keyBindForward);
 			}
 			latchStartController = -1;
 			return; //fly u fools

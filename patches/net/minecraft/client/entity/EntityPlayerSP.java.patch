@@ -43,15 +43,26 @@
  import net.minecraft.network.play.client.CPacketEntityAction;
  import net.minecraft.network.play.client.CPacketInput;
  import net.minecraft.network.play.client.CPacketPlayer;
-@@ -56,6 +72,7 @@
+@@ -55,7 +71,10 @@
+ import net.minecraft.network.play.client.CPacketVehicleMove;
  import net.minecraft.potion.Potion;
  import net.minecraft.potion.PotionEffect;
++import net.minecraft.src.Reflector;
++import net.minecraft.src.ReflectorMethod;
  import net.minecraft.stats.StatBase;
 +import net.minecraft.stats.StatList;
  import net.minecraft.stats.StatisticsManager;
  import net.minecraft.tileentity.CommandBlockBaseLogic;
  import net.minecraft.tileentity.TileEntityCommandBlock;
-@@ -136,6 +153,21 @@
+@@ -66,6 +85,7 @@
+ import net.minecraft.util.EnumHand;
+ import net.minecraft.util.EnumParticleTypes;
+ import net.minecraft.util.MovementInput;
++import net.minecraft.util.SoundCategory;
+ import net.minecraft.util.SoundEvent;
+ import net.minecraft.util.math.AxisAlignedBB;
+ import net.minecraft.util.math.BlockPos;
+@@ -136,6 +156,21 @@
       */
      protected int sprintToggleTimer;
  
@@ -73,7 +84,7 @@
      /** Ticks left before sprinting is disabled. */
      public int sprintingTicksLeft;
      public float renderArmYaw;
-@@ -164,8 +196,23 @@
+@@ -164,13 +199,32 @@
          this.statWriter = statFile;
          this.mc = mcIn;
          this.dimension = 0;
@@ -97,7 +108,16 @@
      /**
       * Called when the entity is attacked.
       */
-@@ -205,11 +252,30 @@
+     public boolean attackEntityFrom(DamageSource source, float amount)
+     {
++    	//Forge
++    	if(Reflector.forgeExists())
++    		Reflector.call(Reflector.ForgeHooks_onLivingAttack,new Object[]{this, source, amount});
++    	//
+         return false;
+     }
+ 
+@@ -205,11 +259,30 @@
          }
      }
  
@@ -129,7 +149,7 @@
  
      /**
       * interpolated look vector
-@@ -283,6 +349,7 @@
+@@ -283,6 +356,7 @@
              this.serverSneakState = flag1;
          }
  
@@ -137,7 +157,7 @@
          if (this.isCurrentViewEntity())
          {
              AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
-@@ -295,26 +362,39 @@
+@@ -295,26 +369,39 @@
              boolean flag2 = d0 * d0 + d1 * d1 + d2 * d2 > 9.0E-4D || this.positionUpdateTicks >= 20;
              boolean flag3 = d3 != 0.0D || d4 != 0.0D;
  
@@ -197,7 +217,7 @@
              }
  
              if (flag2)
-@@ -333,9 +413,15 @@
+@@ -333,9 +420,15 @@
  
              this.prevOnGround = this.onGround;
              this.autoJumpEnabled = this.mc.gameSettings.autoJump;
@@ -213,7 +233,261 @@
      @Nullable
  
      /**
-@@ -1000,7 +1086,7 @@
+@@ -349,11 +442,23 @@
+         return null;
+     }
+ 
+-    protected ItemStack dropItemAndGetStack(EntityItem p_184816_1_)
++    //Forge make public
++    public ItemStack dropItemAndGetStack(EntityItem p_184816_1_)
+     {
+         return ItemStack.EMPTY;
+     }
+-
++    
++    //Forge
++    private boolean isHeadspaceFree(BlockPos pos, int height)
++    {
++    	for (int y = 0; y < height; y++)
++    	{
++    		if (!isOpenBlockSpace(pos.add(0, y, 0))) return false;
++    	}
++    	return true;
++    }
++    //
++    
+     /**
+      * Sends a chat message from the player.
+      */
+@@ -522,72 +627,129 @@
+         }
+     }
+ 
++    //Forge changes this method a bit.
+     protected boolean pushOutOfBlocks(double x, double y, double z)
+     {
+-        if (this.noClip)
+-        {
+-            return false;
+-        }
+-        else
+-        {
+-            BlockPos blockpos = new BlockPos(x, y, z);
+-            double d0 = x - (double)blockpos.getX();
+-            double d1 = z - (double)blockpos.getZ();
+-
+-            if (!this.isOpenBlockSpace(blockpos))
+-            {
+-                int i = -1;
+-                double d2 = 9999.0D;
+-
+-                if (this.isOpenBlockSpace(blockpos.west()) && d0 < d2)
+-                {
+-                    d2 = d0;
+-                    i = 0;
+-                }
+-
+-                if (this.isOpenBlockSpace(blockpos.east()) && 1.0D - d0 < d2)
+-                {
+-                    d2 = 1.0D - d0;
+-                    i = 1;
+-                }
+-
+-                if (this.isOpenBlockSpace(blockpos.north()) && d1 < d2)
+-                {
+-                    d2 = d1;
+-                    i = 4;
+-                }
+-
+-                if (this.isOpenBlockSpace(blockpos.south()) && 1.0D - d1 < d2)
+-                {
+-                    d2 = 1.0D - d1;
+-                    i = 5;
+-                }
+-
+-                float f = 0.1F;
+-
+-                if (i == 0)
+-                {
+-                    this.motionX = -0.10000000149011612D;
+-                }
+-
+-                if (i == 1)
+-                {
+-                    this.motionX = 0.10000000149011612D;
+-                }
+-
+-                if (i == 4)
+-                {
+-                    this.motionZ = -0.10000000149011612D;
+-                }
+-
+-                if (i == 5)
+-                {
+-                    this.motionZ = 0.10000000149011612D;
+-                }
+-            }
+-
+-            return false;
+-        }
++    	if (this.noClip)
++    	{
++    		return false;
++    	}
++    	else
++    	{
++    		BlockPos blockpos = new BlockPos(x, y, z);
++    		double d0 = x - (double)blockpos.getX();
++    		double d1 = z - (double)blockpos.getZ();
++
++    		if(Reflector.forgeExists()){
++    			int entHeight = Math.max((int)Math.ceil(this.height), 1);
++    			boolean inTranslucentBlock = !this.isHeadspaceFree(blockpos, entHeight);
++
++    			if (inTranslucentBlock)
++    			{
++    				int i = -1;
++    				double d2 = 9999.0D;
++
++    				if (this.isHeadspaceFree(blockpos.west(), entHeight) && d0 < d2)
++    				{
++    					d2 = d0;
++    					i = 0;
++    				}
++
++    				if (this.isHeadspaceFree(blockpos.east(), entHeight) && 1.0D - d0 < d2)
++    				{
++    					d2 = 1.0D - d0;
++    					i = 1;
++    				}
++
++    				if (this.isHeadspaceFree(blockpos.north(), entHeight) && d1 < d2)
++    				{
++    					d2 = d1;
++    					i = 4;
++    				}
++
++    				if (this.isHeadspaceFree(blockpos.south(), entHeight) && 1.0D - d1 < d2)
++    				{
++    					d2 = 1.0D - d1;
++    					i = 5;
++    				}
++
++    				float f = 0.1F;
++
++    				if (i == 0)
++    				{
++    					this.motionX = -0.10000000149011612D;
++    				}
++
++    				if (i == 1)
++    				{
++    					this.motionX = 0.10000000149011612D;
++    				}
++
++    				if (i == 4)
++    				{
++    					this.motionZ = -0.10000000149011612D;
++    				}
++
++    				if (i == 5)
++    				{
++    					this.motionZ = 0.10000000149011612D;
++    				}
++    			}
++    		} else{
++    		      if (!this.isOpenBlockSpace(blockpos))
++    	            {
++    	                int i = -1;
++    	                double d2 = 9999.0D;
++
++    	                if (this.isOpenBlockSpace(blockpos.west()) && d0 < d2)
++    	                {
++    	                    d2 = d0;
++    	                    i = 0;
++    	                }
++
++    	                if (this.isOpenBlockSpace(blockpos.east()) && 1.0D - d0 < d2)
++    	                {
++    	                    d2 = 1.0D - d0;
++    	                    i = 1;
++    	                }
++
++    	                if (this.isOpenBlockSpace(blockpos.north()) && d1 < d2)
++    	                {
++    	                    d2 = d1;
++    	                    i = 4;
++    	                }
++
++    	                if (this.isOpenBlockSpace(blockpos.south()) && 1.0D - d1 < d2)
++    	                {
++    	                    d2 = 1.0D - d1;
++    	                    i = 5;
++    	                }
++
++    	                float f = 0.1F;
++
++    	                if (i == 0)
++    	                {
++    	                    this.motionX = -0.10000000149011612D;
++    	                }
++
++    	                if (i == 1)
++    	                {
++    	                    this.motionX = 0.10000000149011612D;
++    	                }
++
++    	                if (i == 4)
++    	                {
++    	                    this.motionZ = -0.10000000149011612D;
++    	                }
++
++    	                if (i == 5)
++    	                {
++    	                    this.motionZ = 0.10000000149011612D;
++    	                }
++    	            }
++    		}
++    		return false;
++    	}
+     }
+ 
+     /**
+@@ -595,7 +757,11 @@
+      */
+     private boolean isOpenBlockSpace(BlockPos pos)
+     {
+-        return !this.world.getBlockState(pos).isNormalCube() && !this.world.getBlockState(pos.up()).isNormalCube();
++    	if(Reflector.forgeExists()){
++    		return  !world.getBlockState(pos).isNormalCube();
++    	} else {
++    		return !this.world.getBlockState(pos).isNormalCube() && !this.world.getBlockState(pos.up()).isNormalCube();
++    	}
+     }
+ 
+     /**
+@@ -656,7 +822,19 @@
+ 
+     public void playSound(SoundEvent soundIn, float volume, float pitch)
+     {
+-        this.world.playSound(this.posX, this.posY, this.posZ, soundIn, this.getSoundCategory(), volume, pitch, false);
++    	//Forge
++    	if(Reflector.forgeExists()){
++    		Object event = Reflector.call(Reflector.ForgeEventFactory_onPlaySoundAtEntity, new Object[]{this, soundIn, this.getSoundCategory(), volume, pitch});
++    		if ((Boolean)(Reflector.call(event, Reflector.PlaySoundAtEntityEvent_isCanceled, new Object[]{})) ||
++    				(Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getSound, new Object[]{}) == null)) return;
++    		soundIn = (SoundEvent) Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getSound, new Object[]{});
++    		volume = (Float) Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getVolume, new Object[]{});
++    		pitch = (Float) Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getPitch, new Object[]{});
++          
++    		this.world.playSound(this.posX, this.posY, this.posZ, soundIn, (SoundCategory)Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getCategory, new Object[]{}), volume, pitch, false);
++   		///
++    	} else
++    		this.world.playSound(this.posX, this.posY, this.posZ, soundIn, this.getSoundCategory(), volume, pitch, false);
+     }
+ 
+     /**
+@@ -1000,7 +1178,7 @@
                      this.sendPlayerAbilities();
                  }
              }
@@ -222,7 +496,7 @@
              {
                  if (this.flyToggleTimer == 0)
                  {
-@@ -1088,6 +1174,10 @@
+@@ -1088,6 +1266,10 @@
  
          super.onLivingUpdate();
  
@@ -233,7 +507,7 @@
          if (this.onGround && this.capabilities.isFlying && !this.mc.playerController.isSpectatorMode())
          {
              this.capabilities.isFlying = false;
-@@ -1106,8 +1196,11 @@
+@@ -1106,8 +1288,11 @@
          if (this.getRidingEntity() instanceof EntityBoat)
          {
              EntityBoat entityboat = (EntityBoat)this.getRidingEntity();
@@ -247,7 +521,7 @@
          }
      }
  
-@@ -1138,10 +1231,40 @@
+@@ -1138,10 +1323,40 @@
       */
      public void move(MoverType type, double x, double y, double z)
      {
@@ -259,7 +533,7 @@
 +    	if(this.isRiding())return;
 +    	boolean freemove = OpenVRPlayer.get().getFreeMove();
 +    	boolean doY = freemove || (Minecraft.getMinecraft().vrSettings.simulateFalling && !this.isOnLadder()) && !this.isSneaking();
-+    	if(mc.climbTracker.isActive(this) && (freemove || mc.climbTracker.isGrabbingLadder())) doY = true;
++    	if(mc.climbTracker.isActive(this)) doY = true;
 +    	Vec3d roomOrigin = OpenVRPlayer.get().getRoomOriginPos_World();
 +    	//   	Vec3 camloc = Minecraft.getMinecraft().roomScale.getHMDPos_World();
 +
@@ -292,7 +566,7 @@
      }
  
      public boolean isAutoJumpEnabled()
-@@ -1167,12 +1290,16 @@
+@@ -1167,12 +1382,16 @@
                      float f = this.getAIMoveSpeed();
                      float f1 = (float)vec3d2.lengthSquared();
  
@@ -311,7 +585,7 @@
                          vec3d2 = new Vec3d((double)(f2 * f5 - f3 * f4), vec3d2.yCoord, (double)(f3 * f5 + f2 * f4));
                          f1 = (float)vec3d2.lengthSquared();
  
-@@ -1292,4 +1419,323 @@
+@@ -1292,4 +1511,323 @@
              }
          }
      }

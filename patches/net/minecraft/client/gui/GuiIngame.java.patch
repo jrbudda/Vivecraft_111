@@ -23,15 +23,102 @@
  import net.minecraft.client.renderer.texture.TextureAtlasSprite;
  import net.minecraft.client.renderer.texture.TextureMap;
  import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-@@ -60,6 +66,8 @@
-     private static final ResourceLocation VIGNETTE_TEX_PATH = new ResourceLocation("textures/misc/vignette.png");
-     private static final ResourceLocation WIDGETS_TEX_PATH = new ResourceLocation("textures/gui/widgets.png");
-     private static final ResourceLocation PUMPKIN_BLUR_TEX_PATH = new ResourceLocation("textures/misc/pumpkinblur.png");
+@@ -57,65 +63,67 @@
+ 
+ public class GuiIngame extends Gui
+ {
+-    private static final ResourceLocation VIGNETTE_TEX_PATH = new ResourceLocation("textures/misc/vignette.png");
+-    private static final ResourceLocation WIDGETS_TEX_PATH = new ResourceLocation("textures/gui/widgets.png");
+-    private static final ResourceLocation PUMPKIN_BLUR_TEX_PATH = new ResourceLocation("textures/misc/pumpkinblur.png");
+-    private final Random rand = new Random();
+-    private final Minecraft mc;
+-    private final RenderItem itemRenderer;
++    protected static final ResourceLocation VIGNETTE_TEX_PATH = new ResourceLocation("textures/misc/vignette.png");
++    protected static final ResourceLocation WIDGETS_TEX_PATH = new ResourceLocation("textures/gui/widgets.png");
++    protected static final ResourceLocation PUMPKIN_BLUR_TEX_PATH = new ResourceLocation("textures/misc/pumpkinblur.png");
 +    public static final ResourceLocation INVENTORY_BACKGROUND = new ResourceLocation("textures/gui/container/inventory.png");
 +    
-     private final Random rand = new Random();
-     private final Minecraft mc;
-     private final RenderItem itemRenderer;
++    protected final Random rand = new Random();
++    protected final Minecraft mc;
++    protected final RenderItem itemRenderer;
+ 
+     /** ChatGUI instance that retains all previous chat data */
+-    private final GuiNewChat persistantChatGUI;
+-    private int updateCounter;
++    protected final GuiNewChat persistantChatGUI;
++    protected int updateCounter;
+ 
+     /** The string specifying which record music is playing */
+-    private String overlayMessage = "";
++    protected String overlayMessage = "";
+ 
+     /** How many ticks the record playing message will be displayed */
+-    private int overlayMessageTime;
+-    private boolean animateOverlayMessageColor;
++    protected int overlayMessageTime;
++    protected boolean animateOverlayMessageColor;
+ 
+     /** Previous frame vignette brightness (slowly changes by 1% each frame) */
+     public float prevVignetteBrightness = 1.0F;
+ 
+     /** Remaining ticks the item highlight should be visible */
+-    private int remainingHighlightTicks;
++    protected int remainingHighlightTicks;
+ 
+     /** The ItemStack that is currently being highlighted */
+-    private ItemStack highlightingItemStack = ItemStack.EMPTY;
+-    private final GuiOverlayDebug overlayDebug;
+-    private final GuiSubtitleOverlay overlaySubtitle;
++    protected ItemStack highlightingItemStack = ItemStack.EMPTY;
++    protected final GuiOverlayDebug overlayDebug;
++    protected final GuiSubtitleOverlay overlaySubtitle;
+ 
+     /** The spectator GUI for this in-game GUI instance */
+-    private final GuiSpectator spectatorGui;
+-    private final GuiPlayerTabOverlay overlayPlayerList;
+-    private final GuiBossOverlay overlayBoss;
++    protected final GuiSpectator spectatorGui;
++    protected final GuiPlayerTabOverlay overlayPlayerList;
++    protected final GuiBossOverlay overlayBoss;
+ 
+     /** A timer for the current title and subtitle displayed */
+-    private int titlesTimer;
++    protected int titlesTimer;
+ 
+     /** The current title displayed */
+-    private String displayedTitle = "";
++    protected String displayedTitle = "";
+ 
+     /** The current sub-title displayed */
+-    private String displayedSubTitle = "";
++    protected String displayedSubTitle = "";
+ 
+     /** The time that the title take to fade in */
+-    private int titleFadeIn;
++    protected int titleFadeIn;
+ 
+     /** The time that the title is display */
+-    private int titleDisplayTime;
++    protected int titleDisplayTime;
+ 
+     /** The time that the title take to fade out */
+-    private int titleFadeOut;
+-    private int playerHealth;
+-    private int lastPlayerHealth;
++    protected int titleFadeOut;
++    protected int playerHealth;
++    protected int lastPlayerHealth;
+ 
+     /** The last recorded system time */
+-    private long lastSystemTime;
++    protected long lastSystemTime;
+ 
+     /** Used with updateCounter to make the heart bar flash */
+-    private long healthUpdateCounter;
++    protected long healthUpdateCounter;
+ 
+     public GuiIngame(Minecraft mcIn)
+     {
 @@ -148,6 +156,7 @@
          FontRenderer fontrenderer = this.getFontRenderer();
          GlStateManager.enableBlend();
@@ -126,6 +213,15 @@
              this.renderPlayerStats(scaledresolution);
          }
  
+@@ -378,7 +414,7 @@
+         GlStateManager.enableAlpha();
+     }
+ 
+-    private void renderAttackIndicator(float p_184045_1_, ScaledResolution p_184045_2_)
++    protected void renderAttackIndicator(float p_184045_1_, ScaledResolution p_184045_2_)
+     {
+         GameSettings gamesettings = this.mc.gameSettings;
+ 
 @@ -569,6 +605,7 @@
              int j = 182;
              int k = 91;
@@ -143,7 +239,21 @@
              RenderHelper.enableGUIStandardItemLighting();
  
              for (int l = 0; l < 9; ++l)
-@@ -823,7 +860,7 @@
+@@ -761,7 +798,7 @@
+         this.mc.mcProfiler.endSection();
+     }
+ 
+-    private void renderScoreboard(ScoreObjective objective, ScaledResolution scaledRes)
++    protected void renderScoreboard(ScoreObjective objective, ScaledResolution scaledRes)
+     {
+         Scoreboard scoreboard = objective.getScoreboard();
+         Collection<Score> collection = scoreboard.getSortedScores(objective);
+@@ -819,11 +856,11 @@
+         }
+     }
+ 
+-    private void renderPlayerStats(ScaledResolution scaledRes)
++    protected void renderPlayerStats(ScaledResolution scaledRes)
      {
          if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
          {
@@ -161,9 +271,30 @@
              Entity entity = entityplayer.getRidingEntity();
  
              if (entity == null || !(entity instanceof EntityLivingBase))
-@@ -1123,6 +1160,11 @@
+@@ -1042,7 +1079,7 @@
+         }
+     }
+ 
+-    private void renderMountHealth(ScaledResolution p_184047_1_)
++    protected void renderMountHealth(ScaledResolution p_184047_1_)
+     {
+         if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
+         {
+@@ -1096,7 +1133,7 @@
+         }
+     }
+ 
+-    private void renderPumpkinOverlay(ScaledResolution scaledRes)
++    protected void renderPumpkinOverlay(ScaledResolution scaledRes)
+     {
+         GlStateManager.disableDepth();
+         GlStateManager.depthMask(false);
+@@ -1121,8 +1158,13 @@
+     /**
+      * Renders a Vignette arount the entire screen that changes with light level.
       */
-     private void renderVignette(float lightLevel, ScaledResolution scaledRes)
+-    private void renderVignette(float lightLevel, ScaledResolution scaledRes)
++    protected void renderVignette(float lightLevel, ScaledResolution scaledRes)
      {
 +        /** MINECRIFT **/
 +        if (this.mc.stereoProvider.isStereo())
@@ -173,12 +304,16 @@
          if (Config.isVignetteEnabled())
          {
              lightLevel = 1.0F - lightLevel;
-@@ -1171,39 +1213,6 @@
+@@ -1170,42 +1212,14 @@
+             GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
          }
      }
- 
+-
 -    private void renderPortal(float timeInPortal, ScaledResolution scaledRes)
--    {
++    
++    @Deprecated
++    protected void renderPortal(float timeInPortal, ScaledResolution scaledRes)
+     {
 -        if (timeInPortal < 1.0F)
 -        {
 -            timeInPortal = timeInPortal * timeInPortal;
@@ -209,11 +344,15 @@
 -        GlStateManager.enableDepth();
 -        GlStateManager.enableAlpha();
 -        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
--    }
++    	// Forge needs this for inheritance reasons
+     }
  
-     private void renderHotbarItem(int p_184044_1_, int p_184044_2_, float p_184044_3_, EntityPlayer player, ItemStack stack)
+-    private void renderHotbarItem(int p_184044_1_, int p_184044_2_, float p_184044_3_, EntityPlayer player, ItemStack stack)
++    protected void renderHotbarItem(int p_184044_1_, int p_184044_2_, float p_184044_3_, EntityPlayer player, ItemStack stack)
      {
-@@ -1380,4 +1389,42 @@
+         if (!stack.isEmpty())
+         {
+@@ -1380,4 +1394,42 @@
      {
          return this.overlayBoss;
      }

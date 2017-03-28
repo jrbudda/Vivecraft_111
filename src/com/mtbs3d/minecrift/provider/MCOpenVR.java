@@ -1833,7 +1833,7 @@ public class MCOpenVR
 		//GuiContainer.java only listens directly to the keyboard to close.
 		if(gui && !(mc.currentScreen instanceof GuiWinGame) && mc.gameSettings.keyBindInventory.isKeyDown()){ //inventory will repeat open/close while button is held down. TODO: fix.
 			if((getCurrentTimeSecs() - startedOpeningInventory) > 0.5) mc.player.closeScreen();
-			mc.gameSettings.keyBindInventory.unpressKey(); //minecraft.java will open a new window otherwise.
+			VRControllerButtonMapping.unpressKey(mc.gameSettings.keyBindInventory); //minecraft.java will open a new window otherwise.
 		}
 
 	}
@@ -1859,7 +1859,7 @@ public class MCOpenVR
 				//'huzzah'
 				keyboardShowing = false;
 				if (mc.currentScreen instanceof GuiChat && !mc.vrSettings.seated) {
-					GuiTextField field = (GuiTextField)MCReflection.getField(MCReflection.chatInputField, mc.currentScreen);
+					GuiTextField field = (GuiTextField)MCReflection.getField(MCReflection.GuiChat_inputField, mc.currentScreen);
 					if (field != null) {
 						String s = field.getText().trim();
 						if (!s.isEmpty()) {

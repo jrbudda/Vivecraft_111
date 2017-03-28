@@ -22,7 +22,16 @@
  import net.minecraft.crash.CrashReport;
  import net.minecraft.crash.CrashReportCategory;
  import net.minecraft.crash.ICrashReportDetail;
-@@ -373,8 +378,11 @@
+@@ -85,6 +90,8 @@
+ import net.minecraft.network.play.server.SPacketSetSlot;
+ import net.minecraft.network.play.server.SPacketTabComplete;
+ import net.minecraft.server.MinecraftServer;
++import net.minecraft.src.Reflector;
++import net.minecraft.src.ReflectorMethod;
+ import net.minecraft.stats.AchievementList;
+ import net.minecraft.tileentity.CommandBlockBaseLogic;
+ import net.minecraft.tileentity.TileEntity;
+@@ -373,8 +380,11 @@
  
                  if (d10 > 0.0625D)
                  {
@@ -36,7 +45,7 @@
                  }
  
                  entity.setPositionAndRotation(d3, d4, d5, f, f1);
-@@ -497,9 +505,9 @@
+@@ -497,9 +507,9 @@
  
                                  if (d11 - d10 > (double)(f2 * (float)i) && (!this.serverController.isSinglePlayer() || !this.serverController.getServerOwner().equals(this.playerEntity.getName())))
                                  {
@@ -49,7 +58,7 @@
                                  }
                              }
  
-@@ -530,8 +538,8 @@
+@@ -530,8 +540,8 @@
  
                              if (!this.playerEntity.isInvulnerableDimensionChange() && d11 > 0.0625D && !this.playerEntity.isPlayerSleeping() && !this.playerEntity.interactionManager.isCreative() && this.playerEntity.interactionManager.getGameType() != GameType.SPECTATOR)
                              {
@@ -60,7 +69,7 @@
                              }
  
                              this.playerEntity.setPositionAndRotation(d4, d5, d6, f, f1);
-@@ -543,8 +551,8 @@
+@@ -543,8 +553,8 @@
  
                                  if (flag2 && (flag || !flag1))
                                  {
@@ -71,7 +80,7 @@
                                  }
                              }
  
-@@ -650,7 +658,7 @@
+@@ -650,7 +660,7 @@
                  double d2 = this.playerEntity.posZ - ((double)blockpos.getZ() + 0.5D);
                  double d3 = d0 * d0 + d1 * d1 + d2 * d2;
  
@@ -80,7 +89,65 @@
                  {
                      return;
                  }
-@@ -1785,5 +1793,26 @@
+@@ -708,7 +718,11 @@
+ 
+         if (blockpos.getY() < this.serverController.getBuildLimit() - 1 || enumfacing != EnumFacing.UP && blockpos.getY() < this.serverController.getBuildLimit())
+         {
+-            if (this.targetPos == null && this.playerEntity.getDistanceSq((double)blockpos.getX() + 0.5D, (double)blockpos.getY() + 0.5D, (double)blockpos.getZ() + 0.5D) < 64.0D && !this.serverController.isBlockProtected(worldserver, blockpos, this.playerEntity) && worldserver.getWorldBorder().contains(blockpos))
++        	double dist = 64;
++        	if(Reflector.forgeExists())
++        		dist = Reflector.callDouble(Reflector.PlayerInteractionManager_getBlockReachDistance, new Object[]{}) + 3;
++        	 
++            if (this.targetPos == null && this.playerEntity.getDistanceSq((double)blockpos.getX() + 0.5D, (double)blockpos.getY() + 0.5D, (double)blockpos.getZ() + 0.5D) < dist && !this.serverController.isBlockProtected(worldserver, blockpos, this.playerEntity) && worldserver.getWorldBorder().contains(blockpos))
+             {
+                 this.playerEntity.interactionManager.processRightClickBlock(this.playerEntity, worldserver, itemstack, enumhand, blockpos, enumfacing, packetIn.getFacingX(), packetIn.getFacingY(), packetIn.getFacingZ());
+             }
+@@ -924,8 +938,15 @@
+             }
+             else
+             {
+-                ITextComponent itextcomponent = new TextComponentTranslation("chat.type.text", new Object[] {this.playerEntity.getDisplayName(), s});
+-                this.serverController.getPlayerList().sendMessage(itextcomponent, false);
++            	ITextComponent itextcomponent = new TextComponentTranslation("chat.type.text", new Object[] {this.playerEntity.getDisplayName(), s});
++            	//FORGE
++            	if(Reflector.forgeExists()){
++            		itextcomponent = new TextComponentTranslation("chat.type.text", this.playerEntity.getDisplayName(), (ITextComponent)Reflector.call(Reflector.ForgeHooks_newChatWithLinks, new Object[]{s}));
++            		itextcomponent = (ITextComponent) Reflector.call(Reflector.ForgeHooks_onServerChatEvent, new Object[]{this, s, itextcomponent});
++                	if(itextcomponent==null)return;
++            	}
++            	////
++            	this.serverController.getPlayerList().sendMessage(itextcomponent, false);
+             }
+ 
+             this.chatSpamThresholdCount += 20;
+@@ -1071,8 +1092,13 @@
+                 }
+                 else if (packetIn.getAction() == CPacketUseEntity.Action.INTERACT_AT)
+                 {
+-                    EnumHand enumhand1 = packetIn.getHand();
+-                    entity.applyPlayerInteraction(this.playerEntity, packetIn.getHitVec(), enumhand1);
++                	EnumHand enumhand1 = packetIn.getHand();
++                	//FORGE
++                	if(Reflector.forgeExists()){
++                		if(Reflector.callBoolean(Reflector.ForgeHooks_onInteractEntityAt, new Object[]{this.playerEntity, entity, packetIn.getHitVec(), enumhand1}))
++                			return;
++                	}
++                	entity.applyPlayerInteraction(this.playerEntity, packetIn.getHitVec(), enumhand1);
+                 }
+                 else if (packetIn.getAction() == CPacketUseEntity.Action.ATTACK)
+                 {
+@@ -1105,7 +1131,9 @@
+                 if (this.playerEntity.playerConqueredTheEnd)
+                 {
+                     this.playerEntity.playerConqueredTheEnd = false;
+-                    this.playerEntity = this.serverController.getPlayerList().recreatePlayerEntity(this.playerEntity, 0, true);
++                    //FORGE (adds dimension)
++                    this.playerEntity = this.serverController.getPlayerList().recreatePlayerEntity(this.playerEntity, this.playerEntity.dimension, true);
++                    //
+                 }
+                 else
+                 {
+@@ -1785,5 +1813,26 @@
                  LOGGER.error((String)"Couldn\'t pick item", (Throwable)exception);
              }
          }

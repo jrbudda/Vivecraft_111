@@ -27,7 +27,23 @@
  import net.minecraft.util.text.TextFormatting;
  import net.optifine.entity.model.CustomEntityModels;
  import org.apache.logging.log4j.LogManager;
-@@ -143,7 +151,29 @@
+@@ -42,6 +50,7 @@
+     public float renderScaleFactor;
+     public static final boolean animateModelLiving = Boolean.getBoolean("animate.model.living");
+ 
++    
+     public RenderLivingBase(RenderManager renderManagerIn, ModelBase modelBaseIn, float shadowSizeIn)
+     {
+         super(renderManagerIn);
+@@ -49,6 +58,7 @@
+         this.shadowSize = shadowSizeIn;
+     }
+ 
++    //Forge makes this public but its already public?
+     public <V extends EntityLivingBase, U extends LayerRenderer<V>> boolean addLayer(U layer)
+     {
+         return this.layerRenderers.add((LayerRenderer<T>) layer);
+@@ -143,7 +153,29 @@
                  float f7 = entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTicks;
                  this.renderLivingAt(entity, x, y, z);
                  float f8 = this.handleRotationFloat(entity, partialTicks);

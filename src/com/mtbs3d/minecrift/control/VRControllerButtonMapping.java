@@ -3,6 +3,7 @@ package com.mtbs3d.minecrift.control;
 import java.awt.event.KeyEvent;
 
 import com.mtbs3d.minecrift.utils.KeyboardSimulator;
+import com.mtbs3d.minecrift.utils.MCReflection;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
@@ -36,7 +37,7 @@ public class VRControllerButtonMapping {
 		this.unpress = false;
 		if(this.FunctionDesc.equals("none")) return;
 		if(key!=null){
-			key.pressKey();
+			pressKey(key);
 			return;
 		}
 		if(FunctionExt!=0){
@@ -68,7 +69,7 @@ public class VRControllerButtonMapping {
 	private void actuallyUnpress() {
 		if(this.FunctionDesc.equals("none")) return;
 		if(key!=null) {
-			key.unpressKey();
+			 unpressKey(key);
 			return ;
 		}
 		if(FunctionExt!=0){
@@ -92,4 +93,20 @@ public class VRControllerButtonMapping {
 			return;
 		}
 	}
+	
+
+    public static void setKeyBindState(KeyBinding kb, boolean pressed) {
+        if (kb != null) {
+            MCReflection.setField(MCReflection.KeyBinding_pressed, kb, pressed); //kb.pressed = pressed;
+            MCReflection.setField(MCReflection.KeyBinding_pressTime, kb, (Integer)MCReflection.getField(MCReflection.KeyBinding_pressTime, kb) + 1); //++kb.pressTime;
+        }       
+    }
+    
+    public static void pressKey(KeyBinding kb) {
+    	setKeyBindState(kb, true);
+    }
+    
+    public static void unpressKey(KeyBinding kb) {
+    	MCReflection.invokeMethod(MCReflection.KeyBinding_unpressKey, kb);
+    }
 }

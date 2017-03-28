@@ -9,7 +9,7 @@
  import java.util.Collections;
  import java.util.Map;
  import javax.annotation.Nullable;
-@@ -117,6 +119,7 @@
+@@ -117,10 +119,12 @@
  import net.minecraft.util.math.Vec3d;
  import net.minecraft.world.World;
  import net.optifine.entity.model.CustomEntityModels;
@@ -17,7 +17,26 @@
  
  public class RenderManager
  {
-@@ -267,19 +270,26 @@
+-    private final Map<Class, Render> entityRenderMap = Maps. < Class ,Render> newHashMap();
++	//Forge make public
++    public final Map<Class, Render> entityRenderMap = Maps. < Class ,Render> newHashMap();
+     private final Map<String, RenderPlayer> skinMap = Maps.<String, RenderPlayer>newHashMap();
+     private final RenderPlayer playerRenderer;
+ 
+@@ -241,10 +245,12 @@
+         this.skinMap.put("slim", new RenderPlayer(this, true));
+         PlayerItemsLayer.register(this.skinMap);
+ 
++        //Forge
+         if (Reflector.RenderingRegistry_loadEntityRenderers.exists())
+         {
+             Reflector.call(Reflector.RenderingRegistry_loadEntityRenderers, new Object[] {this, this.entityRenderMap});
+         }
++        ///
+     }
+ 
+     public void setRenderPosition(double renderPosXIn, double renderPosYIn, double renderPosZIn)
+@@ -267,19 +273,26 @@
          return (Render<T>) render;
      }
  
@@ -54,3 +73,14 @@
      }
  
      public void cacheActiveRenderInfo(World worldIn, FontRenderer textRendererIn, Entity livingPlayerIn, Entity pointedEntityIn, GameSettings optionsIn, float partialTicks)
+@@ -572,8 +585,10 @@
+         return this.entityRenderMap;
+     }
+ 
++    //Forge
+     public Map<String, RenderPlayer> getSkinMap()
+     {
+         return Collections.<String, RenderPlayer>unmodifiableMap(this.skinMap);
+     }
++    ///
+ }

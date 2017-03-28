@@ -194,7 +194,7 @@ public class MenuWorldRenderer {
 	public void setWorld(FakeBlockAccess blockAccess) {
 		this.blockAccess = blockAccess;
 		this.worldProvider = blockAccess.getDimensionType().createDimension();
-		MCReflection.invokeMethod(MCReflection.generateLightBrightnessTable, this.worldProvider);
+		MCReflection.invokeMethod(MCReflection.WorldProvider_generateLightBrightnessTable, this.worldProvider);
         this.lightmapUpdateNeeded = true;
 	}
 	

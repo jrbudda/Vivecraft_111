@@ -164,7 +164,7 @@ public class PlayerModelController {
 		out.rightArmQuat = c0q;
 		out.headQuat = hmdq;
 		
-		if(out.hmd >3 && rand.nextInt(10) < 4){
+		if(out.hmd == 3 && rand.nextInt(10) < 4){
 			Vector3 derp = dir.multiply(0.1f);
 			Minecraft.getMinecraft().world.spawnParticle(EnumParticleTypes.FIREWORKS_SPARK,
 					hmdpos.xCoord+ ((double)this.rand.nextFloat() - 0.5D)*.02f,
@@ -195,9 +195,7 @@ public class PlayerModelController {
 	public void setHMD(UUID uuid, int i){
 		donors.put(uuid, i);
 	}
-	public boolean HMDCHecked(UUID uuid){
-		return donors.containsKey(uuid);
-	}
+	
 	public RotInfo getRotationsForPlayer(UUID uuid){
 		if (debug) uuid = Minecraft.getMinecraft().player.getUniqueID();
 		RotInfo rot = vivePlayers.get(uuid);

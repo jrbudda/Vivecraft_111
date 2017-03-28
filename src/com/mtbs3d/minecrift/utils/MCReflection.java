@@ -9,14 +9,18 @@ import com.google.common.base.Throwables;
 import net.minecraft.client.audio.SoundManager;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.world.WorldProvider;
 
 public class MCReflection {
-	public static Field sndsys = getDeclaredField(SoundManager.class, "sndSystem", "f", "field_148620_e");
-	public static Method generateLightBrightnessTable = getDeclaredMethod(WorldProvider.class, "generateLightBrightnessTable", "a", "func_76556_a");
-	public static Field blockHitDelay = getDeclaredField(PlayerControllerMP.class, "blockHitDelay", "g", "field_78781_i");
-	public static Field isHittingBlock = getDeclaredField(PlayerControllerMP.class, "isHittingBlock", "h", "field_78778_j");
-	public static Field chatInputField = getDeclaredField(GuiChat.class, "inputField", "a", "field_146415_a");
+	public static Field SoundManager_sndSystem = getDeclaredField(SoundManager.class, "sndSystem", "f", "field_148620_e");
+	public static Method WorldProvider_generateLightBrightnessTable = getDeclaredMethod(WorldProvider.class, "generateLightBrightnessTable", "a", "func_76556_a");
+	public static Field PlayerControllerMP_blockHitDelay = getDeclaredField(PlayerControllerMP.class, "blockHitDelay", "g", "field_78781_i");
+	public static Field PlayerControllerMP_isHittingBlock = getDeclaredField(PlayerControllerMP.class, "isHittingBlock", "h", "field_78778_j");
+	public static Field GuiChat_inputField = getDeclaredField(GuiChat.class, "inputField", "a", "field_146415_a");
+	public static Field KeyBinding_pressed = getDeclaredField(KeyBinding.class, "pressed", "h", "field_74513_e");
+	public static Field KeyBinding_pressTime = getDeclaredField(KeyBinding.class, "pressTime", "i", "field_151474_i");
+	public static Method KeyBinding_unpressKey = getDeclaredMethod(KeyBinding.class, "unpressKey", "k", "func_74505_d");
 	
 	public static Object getField(Field field, Object obj) {
 		try {

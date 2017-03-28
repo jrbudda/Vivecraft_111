@@ -58,3 +58,12 @@
              return list;
          }
      }
+@@ -235,7 +263,7 @@
+         }
+     }
+ 
+-    private void renderLagometer()
++    public void renderLagometer()
+     {
+         GlStateManager.disableDepth();
+         FrameTimer frametimer = this.mc.getFrameTimer();

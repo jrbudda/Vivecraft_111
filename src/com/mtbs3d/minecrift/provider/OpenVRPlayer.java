@@ -1380,12 +1380,12 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 	}
     
 	private boolean getIsHittingBlock(){
-		return (Boolean)MCReflection.getField(MCReflection.isHittingBlock, Minecraft.getMinecraft().playerController);
+		return (Boolean)MCReflection.getField(MCReflection.PlayerControllerMP_isHittingBlock, Minecraft.getMinecraft().playerController);
 	}
 	
     // VIVE START - function to allow damaging blocks immediately
 	private void clearBlockHitDelay() { 
-		MCReflection.setField(MCReflection.blockHitDelay, Minecraft.getMinecraft().playerController, 0);
+		MCReflection.setField(MCReflection.PlayerControllerMP_blockHitDelay, Minecraft.getMinecraft().playerController, 0);
 	}
         
 	public boolean getFreeMove() { return isFreeMoveCurrent; }
