@@ -32,7 +32,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
     private static final long serialVersionUID = -562178983462626162L;
     private String tempDir = System.getProperty("java.io.tmpdir");
 
-    private static final boolean ALLOW_FORGE_INSTALL = true;  // VIVE: disabled, forge install isn't working currently
+    private static final boolean ALLOW_FORGE_INSTALL = true; 
     private static final boolean ALLOW_HYDRA_INSTALL = false;  // TODO: Change to true once Hydra is fixed up
 	private static final boolean ALLOW_SHADERSMOD_INSTALL = true;  
 
@@ -55,7 +55,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
     private static final String OF_JSON_NAME      = "1.11.2_HD_U_B5";
     private static final String OF_MD5            = "c2df3b1be3f038ca3cbe04f947e1d63e";
     private static final String OF_VERSION_EXT    = ".jar";
-    private static final String FORGE_VERSION     = "112.18.0.1986";
+    private static final String FORGE_VERSION     = "13.20.0.2260";
     /* END OF DO NOT RENAME */
 
     private String mc_url = "https://s3.amazonaws.com/Minecraft.Download/versions/" + MINECRAFT_VERSION + "/" + MINECRAFT_VERSION +".jar";
@@ -1425,7 +1425,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
         //Add option panels option panel
         forgePanel.setAlignmentX(LEFT_ALIGNMENT);
         
-        //optPanel.add(forgePanel);
+        optPanel.add(forgePanel);
         //optPanel.add(useShadersMod);
         optPanel.add(createProfile);
         optPanel.add(useHrtf);

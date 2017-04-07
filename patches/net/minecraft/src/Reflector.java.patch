@@ -26,7 +26,15 @@
  import net.minecraft.client.gui.GuiMainMenu;
  import net.minecraft.client.gui.GuiScreen;
  import net.minecraft.client.model.ModelBanner;
-@@ -56,6 +64,7 @@
+@@ -46,6 +54,7 @@
+ import net.minecraft.client.model.ModelWither;
+ import net.minecraft.client.model.ModelWolf;
+ import net.minecraft.client.multiplayer.ChunkProviderClient;
++import net.minecraft.client.particle.ParticleManager;
+ import net.minecraft.client.renderer.EntityRenderer;
+ import net.minecraft.client.renderer.block.model.ItemOverrideList;
+ import net.minecraft.client.renderer.block.model.ModelManager;
+@@ -56,6 +65,7 @@
  import net.minecraft.client.renderer.entity.RenderLivingBase;
  import net.minecraft.client.renderer.entity.RenderManager;
  import net.minecraft.client.renderer.entity.RenderMinecart;
@@ -34,7 +42,7 @@
  import net.minecraft.client.renderer.entity.RenderShulkerBullet;
  import net.minecraft.client.renderer.tileentity.RenderEnderCrystal;
  import net.minecraft.client.renderer.tileentity.RenderItemFrame;
-@@ -75,14 +84,19 @@
+@@ -75,14 +85,20 @@
  import net.minecraft.entity.EntityLivingBase;
  import net.minecraft.entity.EnumCreatureType;
  import net.minecraft.entity.item.EntityItemFrame;
@@ -51,10 +59,11 @@
  import net.minecraft.tileentity.TileEntity;
  import net.minecraft.util.BlockRenderLayer;
 +import net.minecraft.util.DamageSource;
++import net.minecraft.util.Session;
  import net.minecraft.util.math.BlockPos;
  import net.minecraft.util.math.ChunkPos;
  import net.minecraft.world.World;
-@@ -143,6 +157,24 @@
+@@ -143,6 +159,33 @@
      public static ReflectorMethod FMLCommonHandler_handleServerAboutToStart = new ReflectorMethod(FMLCommonHandler, "handleServerAboutToStart");
      public static ReflectorMethod FMLCommonHandler_handleServerStarting = new ReflectorMethod(FMLCommonHandler, "handleServerStarting");
      public static ReflectorMethod FMLCommonHandler_instance = new ReflectorMethod(FMLCommonHandler, "instance");
@@ -76,20 +85,30 @@
 +    public static ReflectorMethod FMLCommonHandler_onPlayerPreTick = new ReflectorMethod(FMLCommonHandler, "onPlayerPreTick");
 +    public static ReflectorMethod FMLCommonHandler_onPlayerPostTick = new ReflectorMethod(FMLCommonHandler, "onPlayerPostTick");
 +
++    public static ReflectorClass ForgeInitGuiEvent_Pre = new ReflectorClass("net.minecraftforge.client.event.GuiScreenEvent$InitGuiEvent$Pre");
++    public static ReflectorConstructor ForgeInitGuiEvent_Pre_Constructor = new ReflectorConstructor(ForgeInitGuiEvent_Pre, new Class[] {GuiScreen.class, List.class});
++    public static ReflectorClass ForgeInitGuiEvent_Post = new ReflectorClass("net.minecraftforge.client.event.GuiScreenEvent$InitGuiEvent$Post");
++    public static ReflectorConstructor ForgeInitGuiEvent_Post_Constructor = new ReflectorConstructor(ForgeInitGuiEvent_Post, new Class[] {GuiScreen.class, List.class});
++    public static ReflectorClass ForgeGuiOpenEvent = new ReflectorClass("net.minecraftforge.client.event.GuiOpenEvent");
++    public static ReflectorConstructor ForgeGuiOpenEvent_Constructor = new ReflectorConstructor(ForgeGuiOpenEvent, new Class[] {GuiScreen.class});
++    public static ReflectorField ForgeGuiOpenEvent_gui = new ReflectorField(ForgeGuiOpenEvent, "gui");
++
++    
      public static ReflectorClass ForgeBiome = new ReflectorClass(Biome.class);
      public static ReflectorMethod ForgeBiome_getWaterColorMultiplier = new ReflectorMethod(ForgeBiome, "getWaterColorMultiplier");
      public static ReflectorClass ForgeBlock = new ReflectorClass(Block.class);
-@@ -173,6 +205,9 @@
+@@ -173,6 +216,10 @@
      public static ReflectorMethod ForgeEventFactory_renderBlockOverlay = new ReflectorMethod(ForgeEventFactory, "renderBlockOverlay");
      public static ReflectorMethod ForgeEventFactory_renderFireOverlay = new ReflectorMethod(ForgeEventFactory, "renderFireOverlay");
      public static ReflectorMethod ForgeEventFactory_renderWaterOverlay = new ReflectorMethod(ForgeEventFactory, "renderWaterOverlay");
 +    public static ReflectorMethod ForgeEventFactory_onPlaySoundAtEntity = new ReflectorMethod(ForgeEventFactory, "onPlaySoundAtEntity");
++    public static ReflectorMethod ForgeEventFactory_onClientChat = new ReflectorMethod(ForgeEventFactory, "onClientChat");
 +
 +    
      public static ReflectorClass ForgeHooks = new ReflectorClass("net.minecraftforge.common.ForgeHooks");
      public static ReflectorMethod ForgeHooks_onLivingAttack = new ReflectorMethod(ForgeHooks, "onLivingAttack");
      public static ReflectorMethod ForgeHooks_onLivingDeath = new ReflectorMethod(ForgeHooks, "onLivingDeath");
-@@ -180,8 +215,17 @@
+@@ -180,8 +227,25 @@
      public static ReflectorMethod ForgeHooks_onLivingFall = new ReflectorMethod(ForgeHooks, "onLivingFall");
      public static ReflectorMethod ForgeHooks_onLivingHurt = new ReflectorMethod(ForgeHooks, "onLivingHurt");
      public static ReflectorMethod ForgeHooks_onLivingJump = new ReflectorMethod(ForgeHooks, "onLivingJump");
@@ -100,14 +119,41 @@
 +    public static ReflectorMethod ForgeHooks_newChatWithLinks = new ReflectorMethod(ForgeHooks, "newChatWithLinks");
 +    public static ReflectorMethod ForgeHooks_onInteractEntityAt = new ReflectorMethod(ForgeHooks, "onInteractEntityAt");
 +    public static ReflectorMethod ForgeHooks_onTravelToDimension = new ReflectorMethod(ForgeHooks, "onTravelToDimension");
++    public static ReflectorMethod ForgeHooks_onEmptyLeftClick = new ReflectorMethod(ForgeHooks, "onEmptyLeftClick");
++    public static ReflectorMethod ForgeHooks_onEmptyClick = new ReflectorMethod(ForgeHooks, "onEmptyClick");
++    public static ReflectorMethod ForgeHooks_onPickBlock = new ReflectorMethod(ForgeHooks, "onPickBlock");
 +
 +    public static ReflectorClass PlayerInteractionManager = new ReflectorClass(PlayerInteractionManager.class);
 +    public static ReflectorMethod PlayerInteractionManager_getBlockReachDistance = new ReflectorMethod(PlayerInteractionManager, "getBlockReachDistance");
 +
++    
++    public static ReflectorClass ForgeParticleManager = new ReflectorClass(ParticleManager.class);
++    public static ReflectorMethod ForgeParticleManager_addBlockHitEffects = new ReflectorMethod(ForgeParticleManager, "addBlockHitEffects");
++
++    
      public static ReflectorClass ForgeHooksClient = new ReflectorClass("net.minecraftforge.client.ForgeHooksClient");
      public static ReflectorMethod ForgeHooksClient_applyTransform = new ReflectorMethod(ForgeHooksClient, "applyTransform", new Class[] {Matrix4f.class, Optional.class});
      public static ReflectorMethod ForgeHooksClient_applyUVLock = new ReflectorMethod(ForgeHooksClient, "applyUVLock");
-@@ -217,6 +261,7 @@
+@@ -197,6 +261,18 @@
+     public static ReflectorMethod ForgeHooksClient_getOffsetFOV = new ReflectorMethod(ForgeHooksClient, "getOffsetFOV");
+     public static ReflectorMethod ForgeHooksClient_loadEntityShader = new ReflectorMethod(ForgeHooksClient, "loadEntityShader");
+     public static ReflectorMethod ForgeHooksClient_mainMenuMouseClick = new ReflectorMethod(ForgeHooksClient, "mainMenuMouseClick");
++    public static ReflectorMethod ForgeHooksClient_postMouseEvent = new ReflectorMethod(ForgeHooksClient, "postMouseEvent");
++
++    public static ReflectorClass FMLStartupQuery = new ReflectorClass("net.minecraftforge.fml.common.StartupQuery");
++    public static ReflectorMethod FMLStartupQuery_check = new ReflectorMethod(FMLStartupQuery, "check");
++
++    public static ReflectorClass ForgeSession = new ReflectorClass(Session.class);
++    public static ReflectorMethod ForgeSession_hasCachedProperties = new ReflectorMethod(ForgeSession, "hasCachedProperties");
++    public static ReflectorMethod ForgeSession_setProperties= new ReflectorMethod(ForgeSession, "setProperties");
++ 
++    public static ReflectorClass ForgeWorldEvent_Unload = new ReflectorClass("net.minecraftforge.event.world.WorldEvent$Unload");
++    public static ReflectorConstructor ForgeWorldEvent_Unload_Constructor = new ReflectorConstructor(ForgeWorldEvent_Unload, new Class[]{World.class});
++    
+     public static ReflectorMethod ForgeHooksClient_onDrawBlockHighlight = new ReflectorMethod(ForgeHooksClient, "onDrawBlockHighlight");
+     public static ReflectorMethod ForgeHooksClient_onFogRender = new ReflectorMethod(ForgeHooksClient, "onFogRender");
+     public static ReflectorMethod ForgeHooksClient_onScreenshot = new ReflectorMethod(ForgeHooksClient, "onScreenshot");
+@@ -217,6 +293,7 @@
      public static ReflectorMethod ForgeItem_onEntitySwing = new ReflectorMethod(ForgeItem, "onEntitySwing");
      public static ReflectorMethod ForgeItem_shouldCauseReequipAnimation = new ReflectorMethod(ForgeItem, "shouldCauseReequipAnimation");
      public static ReflectorMethod ForgeItem_showDurabilityBar = new ReflectorMethod(ForgeItem, "showDurabilityBar");
@@ -115,7 +161,27 @@
      public static ReflectorClass ForgeItemOverrideList = new ReflectorClass(ItemOverrideList.class);
      public static ReflectorMethod ForgeItemOverrideList_handleItemState = new ReflectorMethod(ForgeItemOverrideList, "handleItemState");
      public static ReflectorClass ForgeItemArmor = new ReflectorClass(ItemArmor.class);
-@@ -250,6 +295,17 @@
+@@ -227,6 +304,9 @@
+     public static ReflectorMethod ForgeKeyBinding_setKeyConflictContext = new ReflectorMethod(ForgeKeyBinding, "setKeyConflictContext");
+     public static ReflectorMethod ForgeKeyBinding_setKeyModifierAndCode = new ReflectorMethod(ForgeKeyBinding, "setKeyModifierAndCode");
+     public static ReflectorMethod ForgeKeyBinding_getKeyModifier = new ReflectorMethod(ForgeKeyBinding, "getKeyModifier");
++    public static ReflectorMethod ForgeKeyBinding_isActiveAndMatches = new ReflectorMethod(ForgeKeyBinding, "isActiveAndMatches");
++    public static ReflectorMethod ForgeKeyBinding_getDisplayName= new ReflectorMethod(ForgeKeyBinding, "getDisplayName");
++
+     public static ReflectorClass ForgeModContainer = new ReflectorClass("net.minecraftforge.common.ForgeModContainer");
+     public static ReflectorField ForgeModContainer_forgeLightPipelineEnabled = new ReflectorField(ForgeModContainer, "forgeLightPipelineEnabled");
+     public static ReflectorClass ForgePotion = new ReflectorClass(Potion.class);
+@@ -239,6 +319,9 @@
+     public static ReflectorMethod ForgeTileEntity_getRenderBoundingBox = new ReflectorMethod(ForgeTileEntity, "getRenderBoundingBox");
+     public static ReflectorMethod ForgeTileEntity_hasFastRenderer = new ReflectorMethod(ForgeTileEntity, "hasFastRenderer");
+     public static ReflectorMethod ForgeTileEntity_shouldRenderInPass = new ReflectorMethod(ForgeTileEntity, "shouldRenderInPass");
++    public static ReflectorMethod ForgeTileEntity_handleUpdateTag = new ReflectorMethod(ForgeTileEntity, "handleUpdateTag");
++    public static ReflectorMethod ForgeTileEntity_onDataPacket = new ReflectorMethod(ForgeTileEntity, "onDataPacket");
++
+     public static ReflectorClass ForgeVertexFormatElementEnumUseage = new ReflectorClass(VertexFormatElement.EnumUsage.class);
+     public static ReflectorMethod ForgeVertexFormatElementEnumUseage_preDraw = new ReflectorMethod(ForgeVertexFormatElementEnumUseage, "preDraw");
+     public static ReflectorMethod ForgeVertexFormatElementEnumUseage_postDraw = new ReflectorMethod(ForgeVertexFormatElementEnumUseage, "postDraw");
+@@ -250,6 +333,24 @@
      public static ReflectorMethod ForgeWorldProvider_getCloudRenderer = new ReflectorMethod(ForgeWorldProvider, "getCloudRenderer");
      public static ReflectorMethod ForgeWorldProvider_getSkyRenderer = new ReflectorMethod(ForgeWorldProvider, "getSkyRenderer");
      public static ReflectorMethod ForgeWorldProvider_getWeatherRenderer = new ReflectorMethod(ForgeWorldProvider, "getWeatherRenderer");
@@ -129,11 +195,18 @@
 +    public static ReflectorClass ClientCommandHandler = new ReflectorClass("net.minecraftforge.client.ClientCommandHandler");
 +    public static ReflectorField ClientCommandHandler_instance = new ReflectorField(ClientCommandHandler, "instance");
 +    public static ReflectorMethod ClientCommandHandler_executeCommand = new ReflectorMethod(ClientCommandHandler, "executeCommand");
++    
++    public static ReflectorClass AchievementPage = new ReflectorClass("net.minecraftforge.common.AchievementPage");
++    public static ReflectorMethod AchievementPage_isAchievementInPages = new ReflectorMethod(AchievementPage, "isAchievementInPages");
++    public static ReflectorMethod AchievementPage_getTitle = new ReflectorMethod(AchievementPage, "getTitle");
++    public static ReflectorMethod AchievementPage_getAchievementPages = new ReflectorMethod(AchievementPage, "getAchievementPages");
++    public static ReflectorMethod AchievementPage_getAchievementPage = new ReflectorMethod(AchievementPage, "getAchievementPage");
++    public static ReflectorMethod AchievementPage_getAchievements = new ReflectorMethod(AchievementPage, "getAchievements");
 +
      public static ReflectorClass GuiModList = new ReflectorClass("net.minecraftforge.fml.client.GuiModList");
      public static ReflectorConstructor GuiModList_Constructor = new ReflectorConstructor(GuiModList, new Class[] {GuiScreen.class});
      public static ReflectorClass IExtendedBlockState = new ReflectorClass("net.minecraftforge.common.property.IExtendedBlockState");
-@@ -293,6 +349,51 @@
+@@ -293,11 +394,81 @@
      public static ReflectorConstructor RenderLivingEvent_Specials_Pre_Constructor = new ReflectorConstructor(RenderLivingEvent_Specials_Pre, new Class[] {EntityLivingBase.class, RenderLivingBase.class, Double.TYPE, Double.TYPE, Double.TYPE});
      public static ReflectorClass RenderLivingEvent_Specials_Post = new ReflectorClass("net.minecraftforge.client.event.RenderLivingEvent$Specials$Post");
      public static ReflectorConstructor RenderLivingEvent_Specials_Post_Constructor = new ReflectorConstructor(RenderLivingEvent_Specials_Post, new Class[] {EntityLivingBase.class, RenderLivingBase.class, Double.TYPE, Double.TYPE, Double.TYPE});
@@ -165,6 +238,11 @@
 +    public static ReflectorClass RenderPlayerEvent_Post = new ReflectorClass("net.minecraftforge.client.event.RenderPlayerEvent$Post");
 +    public static ReflectorConstructor RenderPlayerEvent_Post_Constructor = new ReflectorConstructor(RenderPlayerEvent_Post, new Class[] {AbstractClientPlayer.class, RenderPlayer.class, Float.TYPE,Double.TYPE, Double.TYPE, Double.TYPE});
 + 
++    public static ReflectorClass NetworkDispatcher = new ReflectorClass("net.minecraftforge.fml.common.network.handshake.NetworkDispatcher");
++    public static ReflectorMethod NetworkDispatcher_get = new ReflectorMethod(NetworkDispatcher, "get");
++    public static ReflectorMethod NetworkDispatcher_getOverrideDimension = new ReflectorMethod(NetworkDispatcher, "getOverrideDimension");
++
++    
 +    public static ReflectorClass PlaySoundAtEntityEvent = new ReflectorClass("net.minecraftforge.client.event.entity.PlaySoundAtEntityEvent");
 +    public static ReflectorMethod PlaySoundAtEntityEvent_getSound = new ReflectorMethod(PlaySoundAtEntityEvent, "getSound");
 +    public static ReflectorMethod PlaySoundAtEntityEvent_getVolume = new ReflectorMethod(PlaySoundAtEntityEvent, "getVolume");
@@ -185,7 +263,33 @@
      public static ReflectorClass ScreenshotEvent = new ReflectorClass("net.minecraftforge.client.event.ScreenshotEvent");
      public static ReflectorMethod ScreenshotEvent_getCancelMessage = new ReflectorMethod(ScreenshotEvent, "getCancelMessage");
      public static ReflectorMethod ScreenshotEvent_getScreenshotFile = new ReflectorMethod(ScreenshotEvent, "getScreenshotFile");
-@@ -400,7 +501,17 @@
+     public static ReflectorMethod ScreenshotEvent_getResultMessage = new ReflectorMethod(ScreenshotEvent, "getResultMessage");
+-    public static ReflectorClass SplashScreen = new ReflectorClass("net.minecraftforge.fml.client.SplashProgress");
++    
++    public static ReflectorClass SplashProgress = new ReflectorClass("net.minecraftforge.fml.client.SplashProgress");
++    public static ReflectorMethod SplashProgress_drawVanillaScreen = new ReflectorMethod(SplashProgress, "drawVanillaScreen");
++    public static ReflectorMethod SplashProgress_clearVanillaResources = new ReflectorMethod(SplashProgress, "clearVanillaResources");
++    public static ReflectorMethod SplashProgress_getMaxTextureSize = new ReflectorMethod(SplashProgress, "getMaxTextureSize");
++    public static ReflectorMethod SplashProgress_pause= new ReflectorMethod(SplashProgress, "pause");
++    public static ReflectorMethod SplashProgress_resume= new ReflectorMethod(SplashProgress, "resume");
++
++    
++    public static ReflectorClass FMLCommonProgressManager = new ReflectorClass("net.minecraftforge.fml.common.ProgressManager");
++    public static ReflectorMethod FMLCommonProgressManager_push = new ReflectorMethod(FMLCommonProgressManager, "push");
++    public static ReflectorMethod FMLCommonProgressManager_pop = new ReflectorMethod(FMLCommonProgressManager, "pop");
++    public static ReflectorClass FMLCommonProgressManager_ProgressBar = new ReflectorClass("net.minecraftforge.fml.common.ProgressManager$ProgressBar");
++    public static ReflectorMethod FMLCommonProgressManager_ProgressBar_step = new ReflectorMethod(FMLCommonProgressManager_ProgressBar, "step", new Class[] {String.class});
++
++    public static ReflectorClass ForgeGuiIngame = new ReflectorClass("net.minecraftforge.client.GuiIngameForge");
++    public static ReflectorConstructor ForgeGuiIngame_Constructor = new ReflectorConstructor(ForgeGuiIngame, new Class[]{Minecraft.class});
++    public static ReflectorField ForgeGuiIngame_renderCrosshairs = new ReflectorField(ForgeGuiIngame, "renderCrosshairs");
++    public static ReflectorField ForgeGuiIngame_renderHelmet = new ReflectorField(ForgeGuiIngame, "renderHelmet");
++
++    
+     public static ReflectorClass WorldEvent_Load = new ReflectorClass("net.minecraftforge.event.world.WorldEvent$Load");
+     public static ReflectorConstructor WorldEvent_Load_Constructor = new ReflectorConstructor(WorldEvent_Load, new Class[] {World.class});
+     private static boolean logVanilla = logEntry("*** Reflector Vanilla ***");
+@@ -400,7 +571,17 @@
      public static ReflectorField TileEntitySkullRenderer_dragonHead = new ReflectorField(TileEntitySkullRenderer, ModelDragonHead.class, 0);
      public static ReflectorField TileEntitySkullRenderer_skeletonHead = new ReflectorField(TileEntitySkullRenderer, ModelSkeletonHead.class, 0);
      public static ReflectorField TileEntitySkullRenderer_humanoidHead = new ReflectorField(TileEntitySkullRenderer, ModelSkeletonHead.class, 1);

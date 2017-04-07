@@ -16,6 +16,7 @@ public class MinecriftForgeTweaker implements ITweaker
     public void injectIntoClassLoader(LaunchClassLoader classLoader)
     {
         dbg("MinecriftForgeTweaker: injectIntoClassLoader");
+        classLoader.addTransformerExclusion("com.mtbs3d.minecrift.asm.");
         classLoader.registerTransformer("com.mtbs3d.minecrift.tweaker.MinecriftClassTransformer");
         classLoader.registerTransformer("com.mtbs3d.minecrift.asm.VivecraftASMTransformer");
     }

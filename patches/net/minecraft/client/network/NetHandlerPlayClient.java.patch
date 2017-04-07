@@ -24,7 +24,16 @@
  import java.util.Arrays;
  import java.util.Collection;
  import java.util.List;
-@@ -243,6 +253,8 @@
+@@ -210,6 +220,8 @@
+ import net.minecraft.scoreboard.ScorePlayerTeam;
+ import net.minecraft.scoreboard.Scoreboard;
+ import net.minecraft.scoreboard.Team;
++import net.minecraft.src.Reflector;
++import net.minecraft.src.ReflectorMethod;
+ import net.minecraft.stats.Achievement;
+ import net.minecraft.stats.AchievementList;
+ import net.minecraft.stats.StatBase;
+@@ -243,6 +255,8 @@
  import net.minecraft.world.WorldSettings;
  import net.minecraft.world.chunk.Chunk;
  import net.minecraft.world.storage.MapData;
@@ -33,7 +42,7 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
-@@ -294,6 +306,12 @@
+@@ -294,6 +308,12 @@
          this.guiScreenServer = p_i46300_2_;
          this.netManager = networkManagerIn;
          this.profile = profileIn;
@@ -46,7 +55,28 @@
      }
  
      /**
-@@ -323,6 +341,17 @@
+@@ -312,7 +332,19 @@
+     {
+         PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.gameController);
+         this.gameController.playerController = new PlayerControllerMP(this.gameController, this);
+-        this.clientWorldController = new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false, packetIn.isHardcoreMode(), packetIn.getWorldType()), packetIn.getDimension(), packetIn.getDifficulty(), this.gameController.mcProfiler);
++        
++        //Forge
++        int dimension = packetIn.getDimension();
++        if(Reflector.forgeExists())
++        {
++        	Object nd = Reflector.call(Reflector.NetworkDispatcher_get, this.getNetworkManager());
++        	dimension = Reflector.callInt(nd, Reflector.NetworkDispatcher_getOverrideDimension, packetIn);
++        }
++        this.clientWorldController = new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false, packetIn.isHardcoreMode(), packetIn.getWorldType()),
++        		dimension,
++        		packetIn.getDifficulty(), this.gameController.mcProfiler);
++        //
++        
+         this.gameController.gameSettings.difficulty = packetIn.getDifficulty();
+         this.gameController.loadWorld(this.clientWorldController);
+         this.gameController.player.dimension = packetIn.getDimension();
+@@ -323,6 +355,17 @@
          this.gameController.playerController.setGameType(packetIn.getGameType());
          this.gameController.gameSettings.sendSettingsToServer();
          this.netManager.sendPacket(new CPacketCustomPayload("MC|Brand", (new PacketBuffer(Unpooled.buffer())).writeString(ClientBrandRetriever.getClientModName())));
@@ -64,7 +94,24 @@
      }
  
      /**
-@@ -850,6 +879,10 @@
+@@ -822,10 +865,15 @@
+             BlockPos blockpos = new BlockPos(nbttagcompound.getInteger("x"), nbttagcompound.getInteger("y"), nbttagcompound.getInteger("z"));
+             TileEntity tileentity = this.clientWorldController.getTileEntity(blockpos);
+ 
++            //Forge
+             if (tileentity != null)
+             {
+-                tileentity.readFromNBT(nbttagcompound);
++            	if(Reflector.forgeExists())
++            		Reflector.call(tileentity, Reflector.ForgeTileEntity_handleUpdateTag, nbttagcompound);
++            	else
++            		tileentity.readFromNBT(nbttagcompound);
+             }
++            //
+         }
+     }
+ 
+@@ -850,6 +898,10 @@
      public void handleDisconnect(SPacketDisconnect packetIn)
      {
          this.netManager.closeChannel(packetIn.getReason());
@@ -75,34 +122,144 @@
      }
  
      /**
-@@ -926,8 +959,24 @@
-         }
-         else
-         {
+@@ -901,8 +953,8 @@
+             else
+             {
+                 this.clientWorldController.playSound(entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, (this.avRandomizer.nextFloat() - this.avRandomizer.nextFloat()) * 1.4F + 2.0F, false);
+-            }
+-
++            }            
++            
+             if (entity instanceof EntityItem)
+             {
+                 ((EntityItem)entity).getEntityItem().setCount(packetIn.getAmount());
+@@ -918,16 +970,25 @@
+      */
+     public void handleChat(SPacketChat packetIn)
+     {
+-        PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.gameController);
++    	PacketThreadUtil.checkThreadAndEnqueue(packetIn, this, this.gameController);
+ 
+-        if (packetIn.getType() == 2)
+-        {
+-            this.gameController.ingameGUI.setOverlayMessage(packetIn.getChatComponent(), false);
+-        }
+-        else
+-        {
 -            this.gameController.ingameGUI.getChatGUI().printChatMessage(packetIn.getChatComponent());
 -        }
-+        	boolean nochat = false;
-+            ITextComponent t = packetIn.getChatComponent();
-+//            if(t instanceof TextComponentTranslation){
-+//            	TextComponentTranslation tt = (TextComponentTranslation) t;
-+            	//vive its a nice thought but unrelable on non-vanilla
-+//            	if(tt.getKey() == "commands.tp.success.coordinates"){
-+//            		Minecraft.getMinecraft().vrPlayer.doTeleportCallback();
-+//            		nochat = true;
-+//            	}
-+//            }
-+            
-+            if(!nochat)this.gameController.ingameGUI.getChatGUI().printChatMessage(t);
-+        	
-+
-+        }
-+        
-+       
-+        
++    	ITextComponent message = packetIn.getChatComponent();
++    	
++    	//Forge
++    	if(Reflector.forgeExists()){
++    		message = (ITextComponent) Reflector.call(Reflector.ForgeEventFactory_onClientChat, packetIn.getChatComponent());
++    		if (message == null) return;
++    	}
++    	//
++    	
++    	if (packetIn.getType() == 2)
++    	{
++    		this.gameController.ingameGUI.setOverlayMessage(message, false);
++    	}
++    	else
++    	{
++    		this.gameController.ingameGUI.getChatGUI().printChatMessage(message);
++    	}
      }
  
      /**
-@@ -2008,6 +2057,109 @@
+@@ -1070,7 +1131,14 @@
+ 
+                     if (entity1 == this.gameController.player && !flag)
+                     {
+-                        this.gameController.ingameGUI.setOverlayMessage(I18n.format("mount.onboard", new Object[] {GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindSneak.getKeyCode())}), false);
++                    	//Forge
++                    	String msg = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindSneak.getKeyCode());
++                    	if (Reflector.forgeExists())
++                    		msg = Reflector.callString(this.gameController.gameSettings.keyBindSneak,
++                    				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++                    	//
++                    	
++                        this.gameController.ingameGUI.setOverlayMessage(I18n.format("mount.onboard", new Object[] {msg}), false);
+                     }
+                 }
+             }
+@@ -1347,7 +1415,19 @@
+             {
+                 tileentity.readFromNBT(packetIn.getNbtCompound());
+             }
+-
++            //Forge
++            else
++            {
++            	if(tileentity == null)
++            	{
++            		LOGGER.error("Received invalid update packet for null tile entity at {} with data: {}", packetIn.getPos(), packetIn.getNbtCompound());
++            		return;
++            	}
++            	if(Reflector.forgeExists())
++            		Reflector.call(tileentity, Reflector.ForgeTileEntity_onDataPacket, netManager, packetIn);
++            }
++            //
++            
+             if (flag && this.gameController.currentScreen instanceof GuiCommandBlock)
+             {
+                 ((GuiCommandBlock)this.gameController.currentScreen).updateGui();
+@@ -1458,15 +1538,41 @@
+             }
+             else if (f == 101.0F)
+             {
+-                this.gameController.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("demo.help.movement", new Object[] {GameSettings.getKeyDisplayString(gamesettings.keyBindForward.getKeyCode()), GameSettings.getKeyDisplayString(gamesettings.keyBindLeft.getKeyCode()), GameSettings.getKeyDisplayString(gamesettings.keyBindBack.getKeyCode()), GameSettings.getKeyDisplayString(gamesettings.keyBindRight.getKeyCode())}));
++            	//Forge
++            	String msg1 = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindForward.getKeyCode());
++            	String msg2 = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindLeft.getKeyCode());
++            	String msg3 = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindBack.getKeyCode());
++            	String msg4 = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindRight.getKeyCode());
++
++            	if (Reflector.forgeExists()){
++            		msg1 = Reflector.callString(this.gameController.gameSettings.keyBindForward,
++            				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++           		msg2 = Reflector.callString(this.gameController.gameSettings.keyBindLeft,
++        				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});       
++           		msg3 = Reflector.callString(this.gameController.gameSettings.keyBindBack,
++                				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++           		msg4 = Reflector.callString(this.gameController.gameSettings.keyBindRight,
++        				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++            	}
++            	//
++            	
++                this.gameController.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("demo.help.movement", new Object[] {msg1, msg2, msg3, msg4}));
+             }
+             else if (f == 102.0F)
+             {
+-                this.gameController.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("demo.help.jump", new Object[] {GameSettings.getKeyDisplayString(gamesettings.keyBindJump.getKeyCode())}));
++            	String msg1 = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindJump.getKeyCode());
++            	if (Reflector.forgeExists())
++            		msg1 = Reflector.callString(this.gameController.gameSettings.keyBindJump,
++            				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++                this.gameController.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("demo.help.jump", new Object[] {msg1}));
+             }
+             else if (f == 103.0F)
+             {
+-                this.gameController.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("demo.help.inventory", new Object[] {GameSettings.getKeyDisplayString(gamesettings.keyBindInventory.getKeyCode())}));
++            	String msg1 = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindInventory.getKeyCode());
++            	if (Reflector.forgeExists())
++            		msg1 = Reflector.callString(this.gameController.gameSettings.keyBindInventory,
++            				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++                this.gameController.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("demo.help.inventory", new Object[] {msg1}));
+             }
+         }
+         else if (i == 6)
+@@ -1587,7 +1693,7 @@
+ 
+         if (entity instanceof EntityLivingBase)
+         {
+-            Potion potion = Potion.getPotionById(packetIn.getEffectId());
++            Potion potion = Potion.getPotionById(packetIn.getEffectId() & 0xff); //Forge adds the and
+ 
+             if (potion != null)
+             {
+@@ -2008,6 +2114,109 @@
              String s1 = packetbuffer3.readString(256);
              this.gameController.getSoundHandler().stop(s1, SoundCategory.getByName(s));
          }
@@ -212,7 +369,7 @@
      }
  
      /**
-@@ -2278,4 +2430,12 @@
+@@ -2278,4 +2487,12 @@
      {
          return this.profile;
      }

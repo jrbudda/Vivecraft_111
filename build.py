@@ -134,6 +134,7 @@ def create_install(mcp_dir):
             
         # Add json files
         install_out.writestr("version.json", process_json("", version))
+        install_out.writestr( "version-forge.json", process_json("-forge", version))
         
         # Add release notes
         install_out.write("CHANGES.md", "release_notes.txt")
