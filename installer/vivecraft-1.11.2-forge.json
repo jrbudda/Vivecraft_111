@@ -3,15 +3,12 @@
 	"time": "2017-03-23T18:25:07+0000",
 	"releaseTime": "1960-01-01T00:00:00-0700",
 	"type": "release",
-	"minecraftArguments": "--username ${auth_player_name} --version ${version_name} --gameDir ${game_directory} --assetsDir ${assets_root} --assetIndex ${assets_index_name} --uuid ${auth_uuid} --accessToken ${auth_access_token} --userType ${user_type} --tweakClass com.mtbs3d.minecrift.tweaker.MinecriftForgeTweaker --tweakClass net.minecraftforge.fml.common.launcher.FMLTweaker --tweakClass optifine.OptiFineTweaker  --versionType Forge",
+	"minecraftArguments": "--username ${auth_player_name} --version ${version_name} --gameDir ${game_directory} --assetsDir ${assets_root} --assetIndex ${assets_index_name} --uuid ${auth_uuid} --accessToken ${auth_access_token} --userType ${user_type} --tweakClass com.mtbs3d.minecrift.tweaker.MinecriftForgeTweaker --tweakClass net.minecraftforge.fml.common.launcher.FMLTweaker --tweakClass optifine.OptiFineForgeTweaker  --versionType Forge",
 	"mainClass": "net.minecraft.launchwrapper.Launch",
 	"inheritsFrom": "1.11.2",
 	"jar": "1.11.2",
 	"logging": {},
 	"libraries": [
-	{
-		"name": "optifine:OptiFine:1.11.2_HD_U_B5"
-	},
 	{
 		"name": "net.minecraftforge:forge:1.11.2-13.20.0.2260",
 		"url": "http://files.minecraftforge.net/maven/"
@@ -160,8 +157,7 @@
 		"name": "net.sf.trove4j:trove4j:3.0.3",
 		"clientreq": true,
 		"serverreq": true
-	}
-	,
+	},
 	{
 		"name": "net.minecraftforge:MercuriusUpdater:1.11.2",
 		"url": "http://files.minecraftforge.net/maven/"
@@ -184,16 +180,9 @@
 	{
 		"url": "http://vivecraft.org/jar/", 
 		"name": "net.aib42.mumblelink:JMumble:1.11"
-	}, 
+	},
 	{
-		"name": "java3d:vecmath:1.3.1",
-		"downloads": {
-			"artifact": {
-				"url": "https://libraries.minecraft.net/java3d/vecmath/1.3.1/vecmath-1.3.1.jar",
-				"sha1": "a0ae4f51da409fa0c20fa0ca59e6bbc9413ae71d",
-				"size": 289881
-			}
-		}
+		"name": "optifine:OptiFine:1.11.2_HD_U_B5"
 	}
 	]
 }
