@@ -70,9 +70,11 @@ def create_install(mcp_dir):
             arc_path = os.path.relpath( abs_path, reobf ).replace('\\','/').replace('.','')+'/'
             for cur_file in fnmatch.filter(filelist, '*.class'):
                 #if cur_file in {'MinecriftClassTransformer.class','MinecriftForgeTweaker.class','MinecriftClassTransformer$Stage.class','MinecriftClassTransformer$1.class','MinecriftClassTransformer$2.class','MinecriftClassTransformer$3.class','MinecriftClassTransformer$4.class'}:
-                if cur_file in {'brj.class','brj$5.class','brj$4.class','brj$3.class','brj$2.class','brj$1.class'}: #skip facebakery
+                if cur_file in {'brl.class', 'brl$1.class', 'brl$2.class', 'brl$3.class', 'brl$4.class', 'brl$5.class', 'brl$a.class'}: #skip facebakery
                     continue
-                if cur_file in {'big.class, bip.class, bip$a.class, bip$b.class'}: #skip guicontainer and guicontainercreative - asm
+                if cur_file in {'big.class', 'bip.class', 'bip$a.class', 'bip$b.class'}: #skip guicontainer and guicontainercreative - asm
+                    continue
+                if cur_file in {'Matrix4f.class'}: #why
                     continue
                 in_file= os.path.join(abs_path,cur_file)
                 arcname =  arc_path + cur_file
