@@ -15,6 +15,7 @@ public class VivecraftASMTransformer implements IClassTransformer {
 	static {
 		asmHandlers.add(new ASMHandlerGuiContainer());
 		asmHandlers.add(new ASMHandlerGuiContainerCreative());
+		asmHandlers.add(new ASMHandlerGuiIngameForge());
 	}
 
 	@Override

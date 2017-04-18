@@ -47,6 +47,7 @@ import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldProviderSurface;
+import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 
 public class MenuWorldRenderer {
@@ -194,6 +195,7 @@ public class MenuWorldRenderer {
 	public void setWorld(FakeBlockAccess blockAccess) {
 		this.blockAccess = blockAccess;
 		this.worldProvider = blockAccess.getDimensionType().createDimension();
+		MCReflection.setField(MCReflection.WorldProvider_terrainType, this.worldProvider, WorldType.DEFAULT);
 		MCReflection.invokeMethod(MCReflection.WorldProvider_generateLightBrightnessTable, this.worldProvider);
         this.lightmapUpdateNeeded = true;
 	}

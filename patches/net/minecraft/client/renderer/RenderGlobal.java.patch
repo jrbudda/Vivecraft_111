@@ -61,6 +61,15 @@
      {
          Random random = new Random(10842L);
          worldRendererIn.begin(7, DefaultVertexFormats.POSITION);
+@@ -648,7 +654,7 @@
+ 
+         if (Reflector.MinecraftForgeClient_getRenderPass.exists())
+         {
+-            i = Reflector.callInt(Reflector.MinecraftForgeClient_getRenderPass, new Object[0]);
++            i = Reflector.callInt(Reflector.MinecraftForgeClient_getRenderPass);
+         }
+ 
+         if (this.renderEntitiesStartupCounter > 0)
 @@ -748,6 +754,8 @@
                              {
                                  boolean flag3 = this.mc.getRenderViewEntity() instanceof EntityLivingBase ? ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping() : false;
@@ -70,6 +79,15 @@
                                  if ((entity2 != this.mc.getRenderViewEntity() || this.mc.gameSettings.thirdPersonView != 0 || flag3) && (entity2.posY < 0.0D || entity2.posY >= 256.0D || this.world.isBlockLoaded(blockpos$pooledmutableblockpos.setPos(entity2))))
                                  {
                                      ++this.countEntitiesRendered;
+@@ -924,7 +932,7 @@
+ 
+                             if (Reflector.callBoolean(tileentity1, Reflector.ForgeTileEntity_shouldRenderInPass, new Object[] {Integer.valueOf(i)}))
+                             {
+-                                AxisAlignedBB axisalignedbb = (AxisAlignedBB)Reflector.call(tileentity1, Reflector.ForgeTileEntity_getRenderBoundingBox, new Object[0]);
++                                AxisAlignedBB axisalignedbb = (AxisAlignedBB)Reflector.call(tileentity1, Reflector.ForgeTileEntity_getRenderBoundingBox);
+ 
+                                 if (axisalignedbb == null || camera.isBoundingBoxInFrustum(axisalignedbb))
+                                 {
 @@ -1111,10 +1119,12 @@
          }
  
@@ -138,6 +156,15 @@
  
      public int renderBlockLayer(BlockRenderLayer blockLayerIn, double partialTicks, int pass, Entity entityIn)
      {
+@@ -1706,7 +1719,7 @@
+         if (Reflector.ForgeWorldProvider_getSkyRenderer.exists())
+         {
+             WorldProvider worldprovider = this.mc.world.provider;
+-            Object object = Reflector.call(worldprovider, Reflector.ForgeWorldProvider_getSkyRenderer, new Object[0]);
++            Object object = Reflector.call(worldprovider, Reflector.ForgeWorldProvider_getSkyRenderer);
+ 
+             if (object != null)
+             {
 @@ -1722,9 +1735,9 @@
          else if (this.mc.world.provider.isSurfaceWorld())
          {
@@ -256,3 +283,21 @@
              {
                  Shaders.enableTexture2D();
              }
+@@ -2040,7 +2053,7 @@
+             if (Reflector.ForgeWorldProvider_getCloudRenderer.exists())
+             {
+                 WorldProvider worldprovider = this.mc.world.provider;
+-                Object object = Reflector.call(worldprovider, Reflector.ForgeWorldProvider_getCloudRenderer, new Object[0]);
++                Object object = Reflector.call(worldprovider, Reflector.ForgeWorldProvider_getCloudRenderer);
+ 
+                 if (object != null)
+                 {
+@@ -2578,7 +2591,7 @@
+ 
+                         if (tileentity != null)
+                         {
+-                            flag1 = Reflector.callBoolean(tileentity, Reflector.ForgeTileEntity_canRenderBreaking, new Object[0]);
++                            flag1 = Reflector.callBoolean(tileentity, Reflector.ForgeTileEntity_canRenderBreaking);
+                         }
+                     }
+ 

@@ -8,4 +8,8 @@ public class ASMDelegator {
 	public static boolean containerCreativeMouseDown() {
 		return Mouse.isButtonDown(0) || GuiScreen.mouseDown;
 	}
+	
+	public static void dummy(float f) {
+		// does nothing
+	}
 }

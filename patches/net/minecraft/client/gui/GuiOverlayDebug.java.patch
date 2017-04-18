@@ -58,6 +58,15 @@
              return list;
          }
      }
+@@ -187,7 +215,7 @@
+ 
+         if (Reflector.FMLCommonHandler_getBrandings.exists())
+         {
+-            Object object = Reflector.call(Reflector.FMLCommonHandler_instance, new Object[0]);
++            Object object = Reflector.call(Reflector.FMLCommonHandler_instance);
+             list.add("");
+             list.addAll((Collection)Reflector.call(object, Reflector.FMLCommonHandler_getBrandings, new Object[] {Boolean.valueOf(false)}));
+         }
 @@ -235,7 +263,7 @@
          }
      }

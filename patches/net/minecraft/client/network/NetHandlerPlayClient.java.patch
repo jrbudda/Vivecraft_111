@@ -152,7 +152,7 @@
 +    	
 +    	//Forge
 +    	if(Reflector.forgeExists()){
-+    		message = (ITextComponent) Reflector.call(Reflector.ForgeEventFactory_onClientChat, packetIn.getChatComponent());
++    		message = (ITextComponent) Reflector.call(Reflector.ForgeEventFactory_onClientChat, packetIn.getType(), packetIn.getChatComponent());
 +    		if (message == null) return;
 +    	}
 +    	//
@@ -177,14 +177,26 @@
 +                    	String msg = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindSneak.getKeyCode());
 +                    	if (Reflector.forgeExists())
 +                    		msg = Reflector.callString(this.gameController.gameSettings.keyBindSneak,
-+                    				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++                    				Reflector.ForgeKeyBinding_getDisplayName);
 +                    	//
 +                    	
 +                        this.gameController.ingameGUI.setOverlayMessage(I18n.format("mount.onboard", new Object[] {msg}), false);
                      }
                  }
              }
-@@ -1347,7 +1415,19 @@
+@@ -1153,7 +1221,10 @@
+         {
+             this.doneLoadingTerrain = false;
+             Scoreboard scoreboard = this.clientWorldController.getScoreboard();
+-            this.clientWorldController = new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false, this.gameController.world.getWorldInfo().isHardcoreModeEnabled(), packetIn.getWorldType()), packetIn.getDimensionID(), packetIn.getDifficulty(), this.gameController.mcProfiler);
++            int dimId = packetIn.getDimensionID();
++            if (Reflector.forgeExists())
++            	Reflector.call(Reflector.call(Reflector.NetworkDispatcher_get, getNetworkManager()), Reflector.NetworkDispatcher_getOverrideDimension, packetIn);
++            this.clientWorldController = new WorldClient(this, new WorldSettings(0L, packetIn.getGameType(), false, this.gameController.world.getWorldInfo().isHardcoreModeEnabled(), packetIn.getWorldType()), dimId, packetIn.getDifficulty(), this.gameController.mcProfiler);
+             this.clientWorldController.setWorldScoreboard(scoreboard);
+             this.gameController.loadWorld(this.clientWorldController);
+             this.gameController.player.dimension = packetIn.getDimensionID();
+@@ -1347,7 +1418,19 @@
              {
                  tileentity.readFromNBT(packetIn.getNbtCompound());
              }
@@ -205,7 +217,7 @@
              if (flag && this.gameController.currentScreen instanceof GuiCommandBlock)
              {
                  ((GuiCommandBlock)this.gameController.currentScreen).updateGui();
-@@ -1458,15 +1538,41 @@
+@@ -1458,15 +1541,41 @@
              }
              else if (f == 101.0F)
              {
@@ -218,13 +230,13 @@
 +
 +            	if (Reflector.forgeExists()){
 +            		msg1 = Reflector.callString(this.gameController.gameSettings.keyBindForward,
-+            				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++            				Reflector.ForgeKeyBinding_getDisplayName);
 +           		msg2 = Reflector.callString(this.gameController.gameSettings.keyBindLeft,
-+        				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});       
++        				Reflector.ForgeKeyBinding_getDisplayName);       
 +           		msg3 = Reflector.callString(this.gameController.gameSettings.keyBindBack,
-+                				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++                				Reflector.ForgeKeyBinding_getDisplayName);
 +           		msg4 = Reflector.callString(this.gameController.gameSettings.keyBindRight,
-+        				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++        				Reflector.ForgeKeyBinding_getDisplayName);
 +            	}
 +            	//
 +            	
@@ -236,7 +248,7 @@
 +            	String msg1 = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindJump.getKeyCode());
 +            	if (Reflector.forgeExists())
 +            		msg1 = Reflector.callString(this.gameController.gameSettings.keyBindJump,
-+            				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++            				Reflector.ForgeKeyBinding_getDisplayName);
 +                this.gameController.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("demo.help.jump", new Object[] {msg1}));
              }
              else if (f == 103.0F)
@@ -245,12 +257,12 @@
 +            	String msg1 = GameSettings.getKeyDisplayString(this.gameController.gameSettings.keyBindInventory.getKeyCode());
 +            	if (Reflector.forgeExists())
 +            		msg1 = Reflector.callString(this.gameController.gameSettings.keyBindInventory,
-+            				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++            				Reflector.ForgeKeyBinding_getDisplayName);
 +                this.gameController.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("demo.help.inventory", new Object[] {msg1}));
              }
          }
          else if (i == 6)
-@@ -1587,7 +1693,7 @@
+@@ -1587,7 +1696,7 @@
  
          if (entity instanceof EntityLivingBase)
          {
@@ -259,7 +271,7 @@
  
              if (potion != null)
              {
-@@ -2008,6 +2114,109 @@
+@@ -2008,6 +2117,109 @@
              String s1 = packetbuffer3.readString(256);
              this.gameController.getSoundHandler().stop(s1, SoundCategory.getByName(s));
          }
@@ -369,7 +381,7 @@
      }
  
      /**
-@@ -2278,4 +2487,12 @@
+@@ -2278,4 +2490,12 @@
      {
          return this.profile;
      }

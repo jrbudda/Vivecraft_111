@@ -112,7 +112,7 @@
      {
 +    	//Forge
 +    	if(Reflector.forgeExists())
-+    		Reflector.call(Reflector.ForgeHooks_onLivingAttack,new Object[]{this, source, amount});
++    		Reflector.call(Reflector.ForgeHooks_onLivingAttack, new Object[]{this, source, amount});
 +    	//
          return false;
      }
@@ -474,13 +474,13 @@
 +    	//Forge
 +    	if(Reflector.forgeExists()){
 +    		Object event = Reflector.call(Reflector.ForgeEventFactory_onPlaySoundAtEntity, new Object[]{this, soundIn, this.getSoundCategory(), volume, pitch});
-+    		if ((Boolean)(Reflector.call(event, Reflector.PlaySoundAtEntityEvent_isCanceled, new Object[]{})) ||
-+    				(Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getSound, new Object[]{}) == null)) return;
-+    		soundIn = (SoundEvent) Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getSound, new Object[]{});
-+    		volume = (Float) Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getVolume, new Object[]{});
-+    		pitch = (Float) Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getPitch, new Object[]{});
++    		if ((Boolean)(Reflector.call(event, Reflector.Event_isCanceled)) ||
++    				(Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getSound) == null)) return;
++    		soundIn = (SoundEvent) Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getSound);
++    		volume = (Float) Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getVolume);
++    		pitch = (Float) Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getPitch);
 +          
-+    		this.world.playSound(this.posX, this.posY, this.posZ, soundIn, (SoundCategory)Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getCategory, new Object[]{}), volume, pitch, false);
++    		this.world.playSound(this.posX, this.posY, this.posZ, soundIn, (SoundCategory)Reflector.call(event, Reflector.PlaySoundAtEntityEvent_getCategory), volume, pitch, false);
 +   		///
 +    	} else
 +    		this.world.playSound(this.posX, this.posY, this.posZ, soundIn, this.getSoundCategory(), volume, pitch, false);

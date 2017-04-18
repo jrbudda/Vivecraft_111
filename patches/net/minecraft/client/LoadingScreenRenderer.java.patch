@@ -153,7 +153,7 @@
 +    				Object fmlClientHandler = null;
 +    				if(Reflector.FMLClientHandler_instance.exists())
 +    				{
-+    					fmlClientHandler = Reflector.call( Reflector.FMLClientHandler_instance, new Object[0]);
++    					fmlClientHandler = Reflector.call( Reflector.FMLClientHandler_instance);
 +    					if (fmlClientHandler != null && Reflector.callBoolean(fmlClientHandler, Reflector.FMLClientHandler_handleLoadingScreen, new Object[]{scaledresolution})) {
 +    						draw = false;
 +    					}

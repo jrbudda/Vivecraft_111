@@ -85,7 +85,17 @@
  
                  if (stack.hasEffect() && (!Config.isCustomItems() || !CustomItems.renderCustomEffect(this, stack, model)))
                  {
-@@ -322,7 +371,7 @@
+@@ -307,7 +356,8 @@
+                 k = k | -16777216;
+             }
+ 
+-            this.renderQuad(renderer, bakedquad, k);
++            if (Reflector.forgeExists()) Reflector.callVoid(Reflector.LightUtil_renderQuadColor, renderer, bakedquad, k);
++            else this.renderQuad(renderer, bakedquad, k);
+         }
+     }
+ 
+@@ -322,7 +372,7 @@
          if (!stack.isEmpty())
          {
              IBakedModel ibakedmodel = this.getItemModelWithOverrides(stack, (World)null, (EntityLivingBase)null);
@@ -94,7 +104,7 @@
          }
      }
  
-@@ -351,16 +400,16 @@
+@@ -351,16 +401,16 @@
          }
      }
  
@@ -114,7 +124,7 @@
      {
          if (!stack.isEmpty())
          {
-@@ -388,7 +437,7 @@
+@@ -388,7 +438,7 @@
                  }
              }
  
@@ -123,7 +133,7 @@
              GlStateManager.cullFace(GlStateManager.CullFace.BACK);
              GlStateManager.popMatrix();
              GlStateManager.disableRescaleNormal();
-@@ -434,7 +483,7 @@
+@@ -434,7 +484,7 @@
              bakedmodel.getItemCameraTransforms().applyTransform(ItemCameraTransforms.TransformType.GUI);
          }
  
@@ -132,7 +142,7 @@
          GlStateManager.disableAlpha();
          GlStateManager.disableRescaleNormal();
          GlStateManager.disableLighting();
-@@ -1148,6 +1197,10 @@
+@@ -1148,6 +1198,10 @@
          this.registerItem(Items.DIAMOND_HORSE_ARMOR, "diamond_horse_armor");
          this.registerItem(Items.LEAD, "lead");
          this.registerItem(Items.NAME_TAG, "name_tag");

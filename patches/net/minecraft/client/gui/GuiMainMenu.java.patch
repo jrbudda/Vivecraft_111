@@ -1,0 +1,11 @@
+--- a/net/minecraft/client/gui/GuiMainMenu.java
++++ b/net/minecraft/client/gui/GuiMainMenu.java
+@@ -681,7 +681,7 @@
+ 
+         if (Reflector.FMLCommonHandler_getBrandings.exists())
+         {
+-            Object object = Reflector.call(Reflector.FMLCommonHandler_instance, new Object[0]);
++            Object object = Reflector.call(Reflector.FMLCommonHandler_instance);
+             List<String> list = Lists.<String>reverse((List)Reflector.call(object, Reflector.FMLCommonHandler_getBrandings, new Object[] {Boolean.valueOf(true)}));
+ 
+             for (int l1 = 0; l1 < list.size(); ++l1)

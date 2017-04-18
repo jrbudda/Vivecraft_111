@@ -104,7 +104,7 @@
 +            	this.mc.displayGuiScreen(new GuiShareToLan(this));
 +            	break;
 +            case 12:
-+            	Reflector.call(Reflector.call(Reflector.FMLClientHandler_instance, new Object[0]), Reflector.FMLClientHandler_showInGameModOptions,new Object[]{this});
++            	Reflector.call(Reflector.call(Reflector.FMLClientHandler_instance), Reflector.FMLClientHandler_showInGameModOptions,new Object[]{this});
 +            	break;
 +            case 100:
 +            	this.mc.displayGuiScreen(new GuiChat());

@@ -66,6 +66,27 @@
                      }
  
                      for (SoundCategory soundcategory : SoundCategory.values())
+@@ -1181,9 +1187,9 @@
+     {
+         if (Reflector.FMLClientHandler.exists())
+         {
+-            Object object = Reflector.call(Reflector.FMLClientHandler_instance, new Object[0]);
++            Object object = Reflector.call(Reflector.FMLClientHandler_instance);
+ 
+-            if (object != null && Reflector.callBoolean(object, Reflector.FMLClientHandler_isLoading, new Object[0]))
++            if (object != null && Reflector.callBoolean(object, Reflector.FMLClientHandler_isLoading))
+             {
+                 return;
+             }
+@@ -1267,7 +1273,7 @@
+                 if (Reflector.ForgeKeyBinding_getKeyModifier.exists())
+                 {
+                     String s = "key_" + keybinding.getKeyDescription() + ":" + keybinding.getKeyCode();
+-                    Object object1 = Reflector.call(keybinding, Reflector.ForgeKeyBinding_getKeyModifier, new Object[0]);
++                    Object object1 = Reflector.call(keybinding, Reflector.ForgeKeyBinding_getKeyModifier);
+                     Object object2 = Reflector.getFieldValue(Reflector.KeyModifier_NONE);
+                     printwriter.println(object1 != object2 ? s + ":" + object1 : s);
+                 }
 @@ -1781,7 +1787,7 @@
          {
              ++this.ofChunkUpdates;

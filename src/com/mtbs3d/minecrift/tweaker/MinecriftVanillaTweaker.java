@@ -6,7 +6,7 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import java.io.File;
 import java.util.List;
 
-public class MinecriftForgeTweaker implements ITweaker
+public class MinecriftVanillaTweaker implements ITweaker
 {
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile)
     {
@@ -17,12 +17,14 @@ public class MinecriftForgeTweaker implements ITweaker
     {
         dbg("MinecriftForgeTweaker: injectIntoClassLoader");
         classLoader.addTransformerExclusion("com.mtbs3d.minecrift.asm.");
+        classLoader.registerTransformer("com.mtbs3d.minecrift.tweaker.MinecriftClassTransformer");
+        classLoader.registerTransformer("com.mtbs3d.minecrift.asm.VivecraftASMTransformer");
     }
 
     public String getLaunchTarget()
     {
         dbg("MinecriftForgeTweaker: getLaunchTarget");
-        return "com.mtbs3d.minecrift.main.VivecraftMain";
+        return "net.minecraft.client.main.Main";
     }
 
     public String[] getLaunchArguments()

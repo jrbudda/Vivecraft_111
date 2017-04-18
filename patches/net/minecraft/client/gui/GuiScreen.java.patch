@@ -18,7 +18,13 @@
  import net.minecraft.client.Minecraft;
  import net.minecraft.client.renderer.GlStateManager;
  import net.minecraft.client.renderer.RenderHelper;
-@@ -28,6 +32,7 @@
+@@ -23,11 +27,13 @@
+ import net.minecraft.client.renderer.Tessellator;
+ import net.minecraft.client.renderer.VertexBuffer;
+ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
++import net.minecraft.command.CommandHandler;
+ import net.minecraft.item.ItemStack;
+ import net.minecraft.nbt.JsonToNBT;
  import net.minecraft.nbt.NBTBase;
  import net.minecraft.nbt.NBTException;
  import net.minecraft.nbt.NBTTagCompound;
@@ -26,7 +32,7 @@
  import net.minecraft.stats.Achievement;
  import net.minecraft.stats.StatBase;
  import net.minecraft.stats.StatList;
-@@ -36,6 +41,7 @@
+@@ -36,6 +42,7 @@
  import net.minecraft.util.text.TextFormatting;
  import net.minecraft.util.text.event.ClickEvent;
  import net.minecraft.util.text.event.HoverEvent;
@@ -34,7 +40,7 @@
  import org.apache.commons.lang3.StringUtils;
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
-@@ -49,7 +55,7 @@
+@@ -49,7 +56,7 @@
      private static final Splitter NEWLINE_SPLITTER = Splitter.on('\n');
  
      /** Reference to the Minecraft object. */
@@ -43,7 +49,7 @@
  
      /**
       * Holds a instance of RenderItem, used to draw the achievement icons on screen (is based on ItemStack)
-@@ -66,7 +72,7 @@
+@@ -66,7 +73,7 @@
      public boolean allowUserInput;
  
      /** The FontRenderer used by GuiScreen */
@@ -52,7 +58,7 @@
  
      /** The button that was just pressed. */
      private GuiButton selectedButton;
-@@ -78,6 +84,8 @@
+@@ -78,6 +85,8 @@
       */
      private int touchValue;
      private URI clickedLinkURI;
@@ -61,7 +67,7 @@
  
      /**
       * Draws the screen and all the components in it.
-@@ -103,6 +111,10 @@
+@@ -103,6 +112,10 @@
      {
          if (keyCode == 1)
          {
@@ -72,7 +78,7 @@
              this.mc.displayGuiScreen((GuiScreen)null);
  
              if (this.mc.currentScreen == null)
-@@ -111,6 +123,10 @@
+@@ -111,6 +124,10 @@
              }
          }
      }
@@ -83,7 +89,7 @@
  
      protected <T extends GuiButton> T addButton(T p_189646_1_)
      {
-@@ -175,7 +191,14 @@
+@@ -175,7 +192,14 @@
              }
          }
  
@@ -99,7 +105,7 @@
      }
  
      /**
-@@ -192,7 +215,16 @@
+@@ -192,7 +216,16 @@
       */
      protected void drawHoveringText(List<String> textLines, int x, int y)
      {
@@ -117,15 +123,18 @@
          {
              GlStateManager.disableRescaleNormal();
              RenderHelper.disableStandardItemLighting();
-@@ -465,6 +497,7 @@
+@@ -465,6 +498,10 @@
          {
              this.mc.ingameGUI.getChatGUI().addToSentMessages(msg);
          }
-+        if (Reflector.forgeExists() && Reflector.callInt(Reflector.getFieldValue(Reflector.ClientCommandHandler_instance), Reflector.ClientCommandHandler_executeCommand, mc.player, msg) != 0) return;
++        if (Reflector.forgeExists()) {
++        	CommandHandler cmd = (CommandHandler)Reflector.getFieldValue(Reflector.ClientCommandHandler_instance);
++        	if (cmd.executeCommand(mc.player, msg) != 0) return;
++        }
  
          this.mc.player.sendChatMessage(msg);
      }
-@@ -482,9 +515,19 @@
+@@ -482,9 +519,19 @@
  
                  if (guibutton.mousePressed(this.mc, mouseX, mouseY))
                  {
@@ -145,7 +154,7 @@
                  }
              }
          }
-@@ -528,8 +571,11 @@
+@@ -528,8 +575,11 @@
          this.fontRendererObj = mc.fontRendererObj;
          this.width = width;
          this.height = height;
@@ -159,7 +168,7 @@
      }
  
      /**
-@@ -558,7 +604,22 @@
+@@ -558,7 +608,22 @@
          {
              while (Mouse.next())
              {
@@ -182,7 +191,7 @@
              }
          }
  
-@@ -566,7 +627,10 @@
+@@ -566,7 +631,10 @@
          {
              while (Keyboard.next())
              {
@@ -193,7 +202,7 @@
              }
          }
      }
-@@ -580,6 +644,15 @@
+@@ -580,6 +648,15 @@
          int j = this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1;
          int k = Mouse.getEventButton();
  
@@ -209,7 +218,7 @@
          if (Mouse.getEventButtonState())
          {
              if (this.mc.gameSettings.touchscreen && this.touchValue++ > 0)
-@@ -613,13 +686,20 @@
+@@ -613,13 +690,20 @@
       */
      public void handleKeyboardInput() throws IOException
      {
@@ -231,7 +240,7 @@
          this.mc.dispatchKeypresses();
      }
  
-@@ -643,13 +723,23 @@
+@@ -643,13 +727,23 @@
      public void drawDefaultBackground()
      {
          this.drawWorldBackground(0);
@@ -256,7 +265,7 @@
          }
          else
          {
-@@ -727,7 +817,7 @@
+@@ -727,7 +821,7 @@
       */
      public static boolean isShiftKeyDown()
      {
@@ -265,7 +274,7 @@
      }
  
      /**
-@@ -765,4 +855,75 @@
+@@ -765,4 +859,75 @@
      {
          this.setWorldAndResolution(mcIn, w, h);
      }

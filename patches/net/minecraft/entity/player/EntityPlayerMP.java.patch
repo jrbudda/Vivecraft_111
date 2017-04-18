@@ -67,6 +67,15 @@
  import net.minecraft.util.text.ITextComponent;
  import net.minecraft.util.text.Style;
  import net.minecraft.util.text.TextComponentTranslation;
+@@ -166,7 +182,7 @@
+     /**
+      * The currently in use window ID. Incremented every time a window is opened.
+      */
+-    private int currentWindowId;
++    public int currentWindowId;
+ 
+     /**
+      * set to true when player is moving quantity of items from one inventory to another(crafting) but item in either
 @@ -186,9 +202,15 @@
          super(worldIn, profile);
          interactionManagerIn.player = this;
@@ -76,7 +85,7 @@
 +        
 +        //FORGE
 +        if(Reflector.forgeExists())
-+        	blockpos= (BlockPos) Reflector.call(Reflector.ForgeWorldProvider_getRandomizedSpawnPoint, new Object[]{});
++        	blockpos= (BlockPos) Reflector.call(worldIn.provider, Reflector.ForgeWorldProvider_getRandomizedSpawnPoint);
 +        else
 +        	blockpos= worldIn.getSpawnPoint();
  
@@ -158,9 +167,9 @@
 +        
 +        	//FORGE
 +        	if(Reflector.forgeExists()){
-+        	Reflector.setFieldValue(Reflector.ForgeEntity_captureDrops, true);
-+        	c = (ArrayList<EntityItem>) Reflector.getFieldValue(Reflector.ForgeEntity_capturedDrops);
-+        	c.clear();
++	        	Reflector.setFieldValue(Reflector.ForgeEntity_captureDrops, true);
++	        	c = (ArrayList<EntityItem>) Reflector.getFieldValue(Reflector.ForgeEntity_capturedDrops);
++	        	c.clear();
 +        	}
 +        	///
 +        	
@@ -169,15 +178,15 @@
 +
 +        	//FORGE
 +        	if(Reflector.forgeExists()){
-+        	Reflector.setFieldValue(Reflector.ForgeEntity_captureDrops, false);
-+
-+        	Object event = Reflector.newInstance(Reflector.PlayerDropsEvent_Constructor, new Object[]{this, cause, c, this.recentlyHit > 0});
-+        	if(!Reflector.postForgeBusEvent(event)){
-+        		for (net.minecraft.entity.item.EntityItem item : c)
-+        		{
-+        			this.world.spawnEntity(item);
-+        		}
-+        	}
++	        	Reflector.setFieldValue(Reflector.ForgeEntity_captureDrops, false);
++	
++	        	Object event = Reflector.newInstance(Reflector.PlayerDropsEvent_Constructor, new Object[]{this, cause, c, this.recentlyHit > 0});
++	        	if(!Reflector.postForgeBusEvent(event)){
++	        		for (net.minecraft.entity.item.EntityItem item : c)
++	        		{
++	        			this.world.spawnEntity(item);
++	        		}
++	        	}
 +        	}
 +        	///
          }
@@ -206,12 +215,21 @@
 +        boolean air = iblockstate.getMaterial() == Material.AIR;
 +     
 +        if(Reflector.forgeExists())
-+        	air = Reflector.callBoolean(Reflector.ForgeBlock_isAir, new Object[]{iblockstate, this.world, blockpos});
++        	air = Reflector.callBoolean(iblockstate.getBlock(), Reflector.ForgeBlock_isAir, new Object[]{iblockstate, this.world, blockpos});
 +        
 +        if (air)
          {
              BlockPos blockpos1 = blockpos.down();
              IBlockState iblockstate1 = this.world.getBlockState(blockpos1);
+@@ -837,7 +918,7 @@
+     /**
+      * get the next window id to use
+      */
+-    private void getNextWindowId()
++    public void getNextWindowId()
+     {
+         this.currentWindowId = this.currentWindowId % 100 + 1;
+     }
 @@ -850,11 +931,17 @@
          }
          else

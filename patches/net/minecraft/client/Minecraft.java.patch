@@ -304,7 +304,7 @@
 +	 * The minecriftVerString will be automatically updated by the build scripts, do not modify here.
 +	 * Modify minecriftversion.py in root minecrift dir.
 +	 */
-+    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-9alpha";
++    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-9alpha7";
 +	/* end version */
 +	/** END MINECRIFT */
 +    
@@ -338,17 +338,18 @@
      private boolean integratedServerIsRunning;
  
      /** The profiler instance */
-@@ -341,7 +527,8 @@
+@@ -341,15 +527,16 @@
      private long debugCrashKeyPressTime = -1L;
      private IReloadableResourceManager mcResourceManager;
      private final MetadataSerializer metadataSerializer_ = new MetadataSerializer();
 -    private final List<IResourcePack> defaultResourcePacks = Lists.<IResourcePack>newArrayList();
+-    private final DefaultResourcePack mcDefaultResourcePack;
 +    //Forge make public
 +    public final List<IResourcePack> defaultResourcePacks = Lists.<IResourcePack>newArrayList();
-     private final DefaultResourcePack mcDefaultResourcePack;
++    public final DefaultResourcePack mcDefaultResourcePack;
      private ResourcePackRepository mcResourcePackRepository;
      private LanguageManager mcLanguageManager;
-@@ -349,7 +536,7 @@
+     private BlockColors blockColors;
      private ItemColors itemColors;
      private Framebuffer framebufferMc;
      private TextureMap textureMapBlocks;
@@ -449,7 +450,7 @@
 +        Object fmlClientHandler = null;
 +		if( Reflector.FMLClientHandler_instance.exists())
 +		{
-+			fmlClientHandler = Reflector.call( Reflector.FMLClientHandler_instance, new Object[0]);
++			fmlClientHandler = Reflector.call( Reflector.FMLClientHandler_instance);
 +		}
 +		if( fmlClientHandler != null)
 +		{
@@ -500,7 +501,7 @@
 +                	String msg = GameSettings.getKeyDisplayString(gameSettings.keyBindInventory.getKeyCode());
 +                	if (Reflector.forgeExists())
 +                		msg = Reflector.callString(gameSettings.keyBindInventory,
-+                				Reflector.ForgeKeyBinding_getDisplayName, new Object[]{});
++                				Reflector.ForgeKeyBinding_getDisplayName);
 +                	//
 +                    return String.format(str, new Object[] {msg});
                  }
@@ -512,8 +513,8 @@
          });
 +		Object bar = null;
 +		if (hasForge) {
-+			bar = Reflector.call(Reflector.FMLCommonProgressManager_push, new Object[] {"Rendering Setup", 9, true});
-+			Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, new Object[] {"Loading Render Manager"});
++			bar = Reflector.call(Reflector.FMLCommonProgressManager_push, "Rendering Setup", 5, true);
++			Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, "Loading Render Manager");
 +		}
          this.mouseHelper = new MouseHelper();
          this.checkGLError("Pre startup");
@@ -523,38 +524,38 @@
          GlStateManager.matrixMode(5888);
          this.checkGLError("Startup");
 -        this.textureMapBlocks = new TextureMap("textures");
-+		if (hasForge) Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, new Object[] {"Loading Texture Map"});
++		if (hasForge) Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, "Loading Texture Map");
 +        this.textureMapBlocks = new TextureMap("textures", true);
          this.textureMapBlocks.setMipmapLevels(this.gameSettings.mipmapLevels);
          this.renderEngine.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
          this.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
          this.textureMapBlocks.setBlurMipmapDirect(false, this.gameSettings.mipmapLevels > 0);
-+		if (hasForge) Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, new Object[] {"Loading Model Manager"});
++		if (hasForge) Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, "Loading Model Manager");
          this.modelManager = new ModelManager(this.textureMapBlocks);
          this.mcResourceManager.registerReloadListener(this.modelManager);
          this.blockColors = BlockColors.init();
          this.itemColors = ItemColors.init(this.blockColors);
          this.renderItem = new RenderItem(this.renderEngine, this.modelManager, this.itemColors);
          this.renderManager = new RenderManager(this.renderEngine, this.renderItem);
-+		if (hasForge) Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, new Object[] {"Loading Item Renderer"});
++		if (hasForge) Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, "Loading Item Renderer");
          this.itemRenderer = new ItemRenderer(this);
          this.mcResourceManager.registerReloadListener(this.renderItem);
 +		if (hasForge){
-+			Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, new Object[] {"Loading Item Renderer"});
-+			Reflector.callVoid(Reflector.SplashProgress_pause, new Object(){});
++			Reflector.callVoid(bar, Reflector.FMLCommonProgressManager_ProgressBar_step, "Loading Item Renderer");
++			Reflector.callVoid(Reflector.SplashProgress_pause);
 +		}
          this.entityRenderer = new EntityRenderer(this, this.mcResourceManager);
          this.mcResourceManager.registerReloadListener(this.entityRenderer);
          this.blockRenderDispatcher = new BlockRendererDispatcher(this.modelManager.getBlockModelShapes(), this.blockColors);
-@@ -589,23 +861,83 @@
+@@ -589,23 +861,79 @@
          this.guiAchievement = new GuiAchievement(this);
          GlStateManager.viewport(0, 0, this.displayWidth, this.displayHeight);
          this.effectRenderer = new ParticleManager(this.world, this.renderEngine);
 +        //Forge
 +        if (hasForge){
-+        	Reflector.callVoid(Reflector.SplashProgress_resume, new Object(){});
++        	Reflector.callVoid(Reflector.SplashProgress_resume);
 +        	Reflector.call(Reflector.FMLCommonProgressManager_pop, bar);
-+        	Reflector.callVoid(fmlClientHandler, Reflector.FMLClientHandler_finishMinecraftLoading, new Object[] {});
++        	Reflector.callVoid(fmlClientHandler, Reflector.FMLClientHandler_finishMinecraftLoading);
 +        } else {
 +        	this.refreshResources();
 +        }
@@ -564,11 +565,7 @@
 +        
 +		if(hasForge)
 +		{
-+			try {
-+				this.ingameGUI = (GuiIngame)Reflector.ForgeGuiIngame_Constructor.getTargetConstructor().newInstance(new Object[]{this});
-+			} catch (Exception e) {
-+				e.printStackTrace(); //srsly?
-+			}
++			this.ingameGUI = (GuiIngame)Reflector.newInstance(Reflector.ForgeGuiIngame_Constructor, this);
 +		}
 +		else
 +		{
@@ -622,7 +619,7 @@
 +		//
 +		
 +		if( hasForge ) {
-+			Reflector.callVoid(fmlClientHandler, Reflector.FMLClientHandler_onInitializationComplete, new Object[]{});
++			Reflector.callVoid(fmlClientHandler, Reflector.FMLClientHandler_onInitializationComplete);
 +		}
 +		
          this.mojangLogo = null;
@@ -634,7 +631,7 @@
          if (this.gameSettings.fullScreen && !this.fullscreen)
          {
              this.toggleFullscreen();
-@@ -613,7 +945,7 @@
+@@ -613,7 +941,7 @@
  
          try
          {
@@ -643,7 +640,7 @@
          }
          catch (OpenGLException var2)
          {
-@@ -622,6 +954,11 @@
+@@ -622,6 +950,11 @@
          }
  
          this.renderGlobal.makeEntityOutlineShader();
@@ -655,7 +652,7 @@
      }
  
      private void registerMetadataSerializers()
-@@ -787,22 +1124,30 @@
+@@ -787,22 +1120,30 @@
          File file1 = new File(getMinecraft().mcDataDir, "crash-reports");
          File file2 = new File(file1, "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-client.txt");
          Bootstrap.printToSYSOUT(crashReportIn.getCompleteReport());
@@ -682,7 +679,7 @@
          }
 +        
 +        if(Reflector.forgeExists()){
-+        	Object object = Reflector.call(Reflector.FMLCommonHandler_instance, new Object[0]);
++        	Object object = Reflector.call(Reflector.FMLCommonHandler_instance);
 +            Reflector.call(object, Reflector.FMLCommonHandler_handleExit, new Object[] {retVal});
 +        } else
 +        	System.exit(retVal);
@@ -690,7 +687,7 @@
      }
  
      public boolean isUnicode()
-@@ -920,8 +1265,8 @@
+@@ -920,8 +1261,8 @@
          this.displayWidth = displaymode.getWidth();
          this.displayHeight = displaymode.getHeight();
      }
@@ -701,7 +698,7 @@
      {
          ScaledResolution scaledresolution = new ScaledResolution(this);
          int i = scaledresolution.getScaleFactor();
-@@ -1004,7 +1349,8 @@
+@@ -1004,7 +1345,8 @@
       */
      public void displayGuiScreen(@Nullable GuiScreen guiScreenIn)
      {
@@ -711,7 +708,7 @@
          {
              this.currentScreen.onGuiClosed();
          }
-@@ -1018,12 +1364,33 @@
+@@ -1018,12 +1360,33 @@
              guiScreenIn = new GuiGameOver((ITextComponent)null);
          }
  
@@ -745,7 +742,7 @@
          this.currentScreen = (GuiScreen)guiScreenIn;
  
          if (guiScreenIn != null)
-@@ -1057,7 +1424,8 @@
+@@ -1057,7 +1420,8 @@
      /**
       * Checks for an OpenGL error. If there is one, prints the error ID and error string.
       */
@@ -755,7 +752,7 @@
      {
          int i = GlStateManager.glGetError();
  
-@@ -1094,6 +1462,7 @@
+@@ -1094,6 +1458,7 @@
          finally
          {
              Display.destroy();
@@ -763,7 +760,7 @@
  
              if (!this.hasCrashed)
              {
-@@ -1109,28 +1478,76 @@
+@@ -1109,28 +1474,76 @@
       */
      private void runGameLoop() throws IOException
      {
@@ -861,7 +858,7 @@
          {
              while (!this.scheduledTasks.isEmpty())
              {
-@@ -1138,98 +1555,260 @@
+@@ -1138,98 +1551,260 @@
              }
          }
  
@@ -1209,7 +1206,7 @@
      public void updateDisplay()
      {
          this.mcProfiler.startSection("display_update");
-@@ -1342,7 +1921,7 @@
+@@ -1342,7 +1917,7 @@
      /**
       * Parameter appears to be unused
       */
@@ -1218,7 +1215,7 @@
      {
          if (this.mcProfiler.profilingEnabled)
          {
-@@ -1479,7 +2058,8 @@
+@@ -1479,7 +2054,8 @@
                  }
  
                  this.inGameHasFocus = true;
@@ -1228,7 +1225,7 @@
                  this.displayGuiScreen((GuiScreen)null);
                  this.leftClickCounter = 10000;
              }
-@@ -1514,43 +2094,54 @@
+@@ -1514,43 +2090,56 @@
          }
      }
  
@@ -1293,11 +1290,13 @@
 +                if (!this.player.isRowingBoat()) { // fuck it
 +                    this.leftClickCounter = 10; // this.playerController.isNotCreative() ? 10 : 0;
 +                    this.player.resetCooldown();
++                	if(Reflector.forgeExists())
++                  	   Reflector.callVoid(Reflector.ForgeHooks_onEmptyLeftClick, this.player);
 +                	this.player.swingArm(EnumHand.MAIN_HAND);
                  }
              }
              else if (!this.player.isRowingBoat())
-@@ -1564,42 +2155,51 @@
+@@ -1564,42 +2153,51 @@
                      case BLOCK:
                          BlockPos blockpos = this.objectMouseOver.getBlockPos();
  
@@ -1361,7 +1360,7 @@
                  }
  
                  for (EnumHand enumhand : EnumHand.values())
-@@ -1626,7 +2226,7 @@
+@@ -1626,7 +2224,7 @@
                              case BLOCK:
                                  BlockPos blockpos = this.objectMouseOver.getBlockPos();
  
@@ -1370,7 +1369,7 @@
                                  {
                                      int i = itemstack.getCount();
                                      EnumActionResult enumactionresult = this.playerController.processRightClickBlock(this.player, this.world, blockpos, this.objectMouseOver.sideHit, this.objectMouseOver.hitVec, enumhand);
-@@ -1634,10 +2234,14 @@
+@@ -1634,10 +2232,14 @@
                                      if (enumactionresult == EnumActionResult.SUCCESS)
                                      {
                                          this.player.swingArm(enumhand);
@@ -1386,7 +1385,7 @@
                                          }
  
                                          return;
-@@ -1721,29 +2325,14 @@
+@@ -1721,29 +2323,14 @@
      /**
       * Called to resize the current screen.
       */
@@ -1419,7 +1418,7 @@
      }
  
      /**
-@@ -1759,11 +2348,21 @@
+@@ -1759,11 +2346,21 @@
       */
      public void runTick() throws IOException
      {
@@ -1434,14 +1433,14 @@
 +        boolean hasForge = Reflector.forgeExists();
 +        
 +		if( hasForge) {
-+			fmlCommonHandler = Reflector.call( Reflector.FMLCommonHandler_instance, new Object[0]);
-+			Reflector.callVoid(fmlCommonHandler, Reflector.FMLCommonHandler_onPreClientTick, new Object[0]);
++			fmlCommonHandler = Reflector.call( Reflector.FMLCommonHandler_instance);
++			Reflector.callVoid(fmlCommonHandler, Reflector.FMLCommonHandler_onPreClientTick);
 +		}
 +        
          this.mcProfiler.startSection("gui");
  
          if (!this.isGamePaused)
-@@ -1862,12 +2461,23 @@
+@@ -1862,12 +2459,23 @@
  
              this.mcProfiler.endStartSection("keyboard");
              this.runTickKeyboard();
@@ -1465,18 +1464,18 @@
                  ++this.joinPlayerCounter;
  
                  if (this.joinPlayerCounter == 30)
-@@ -1875,6 +2485,10 @@
+@@ -1875,6 +2483,10 @@
                      this.joinPlayerCounter = 0;
                      this.world.joinEntityInSurroundings(this.player);
                  }
 +                
 +                if(hasForge)
-+                	Reflector.callVoid(fmlCommonHandler, Reflector.FMLCommonHandler_fireMouseInput, new Object[0]);
++                	Reflector.callVoid(fmlCommonHandler, Reflector.FMLCommonHandler_fireMouseInput);
 +
              }
  
              this.mcProfiler.endStartSection("gameRenderer");
-@@ -1908,6 +2522,9 @@
+@@ -1908,6 +2520,9 @@
              this.entityRenderer.stopUseShader();
          }
  
@@ -1486,7 +1485,7 @@
          if (!this.isGamePaused)
          {
              this.mcMusicTicker.update();
-@@ -1961,8 +2578,12 @@
+@@ -1961,8 +2576,12 @@
              this.mcProfiler.endStartSection("pendingConnection");
              this.myNetworkManager.processReceivedPackets();
          }
@@ -1495,12 +1494,12 @@
 +        
          this.mcProfiler.endSection();
 +        if(hasForge)
-+        	Reflector.callVoid(fmlCommonHandler, Reflector.FMLCommonHandler_onPostClientTick, new Object[0]);
++        	Reflector.callVoid(fmlCommonHandler, Reflector.FMLCommonHandler_onPostClientTick);
 +
          this.systemTime = getSystemTime();
      }
  
-@@ -1997,6 +2618,14 @@
+@@ -1997,6 +2616,14 @@
                  this.currentScreen.handleKeyboardInput();
              }
  
@@ -1515,7 +1514,7 @@
              boolean flag = Keyboard.getEventKeyState();
  
              if (flag)
-@@ -2006,6 +2635,8 @@
+@@ -2006,6 +2633,8 @@
                      this.entityRenderer.switchUseShader();
                  }
  
@@ -1524,7 +1523,7 @@
                  boolean flag1 = false;
  
                  if (this.currentScreen == null)
-@@ -2013,6 +2644,7 @@
+@@ -2013,6 +2642,7 @@
                      if (i == 1)
                      {
                          this.displayInGameMenu();
@@ -1532,7 +1531,7 @@
                      }
  
                      flag1 = Keyboard.isKeyDown(61) && this.processKeyF3(i);
-@@ -2020,7 +2652,9 @@
+@@ -2020,7 +2650,9 @@
  
                      if (i == 59)
                      {
@@ -1543,19 +1542,19 @@
                      }
                  }
  
-@@ -2068,6 +2702,11 @@
+@@ -2068,6 +2700,11 @@
                      }
                  }
              }
 +            
 +            //Forge
 +            if(Reflector.forgeExists())
-+            	Reflector.callVoid(Reflector.call( Reflector.FMLCommonHandler_instance, new Object[0]), Reflector.FMLCommonHandler_fireKeyInput, new Object[0]);
++            	Reflector.callVoid(Reflector.call( Reflector.FMLCommonHandler_instance), Reflector.FMLCommonHandler_fireKeyInput);
 +            //
          }
  
          this.processKeyBinds();
-@@ -2172,20 +2811,35 @@
+@@ -2172,20 +2809,35 @@
      {
          for (; this.gameSettings.keyBindTogglePerspective.isPressed(); this.renderGlobal.setDisplayListEntitiesDirty())
          {
@@ -1605,7 +1604,7 @@
              }
          }
  
-@@ -2243,11 +2897,26 @@
+@@ -2243,11 +2895,26 @@
  
          if (flag)
          {
@@ -1637,7 +1636,7 @@
              if (this.currentScreen == null && this.gameSettings.keyBindCommand.isPressed())
              {
                  this.displayGuiScreen(new GuiChat("/"));
-@@ -2256,9 +2925,10 @@
+@@ -2256,9 +2923,10 @@
  
          if (this.player.isHandActive())
          {
@@ -1650,7 +1649,7 @@
              }
  
              label472:
-@@ -2284,17 +2954,30 @@
+@@ -2284,17 +2952,30 @@
                  }
              }
          }
@@ -1688,7 +1687,7 @@
  
              while (this.gameSettings.keyBindPickBlock.isPressed())
              {
-@@ -2302,18 +2985,23 @@
+@@ -2302,18 +2983,23 @@
              }
          }
  
@@ -1709,13 +1708,13 @@
          {
 +        	
 +			if (Reflector.forgeExists()) {
-+				if (Reflector.callBoolean(Reflector.ForgeHooksClient_postMouseEvent, new Object[0])) continue;
++				if (Reflector.callBoolean(Reflector.ForgeHooksClient_postMouseEvent)) continue;
 +			}
 +			
              int i = Mouse.getEventButton();
              KeyBinding.setKeyBindState(i - 100, Mouse.getEventButtonState());
  
-@@ -2328,6 +3016,13 @@
+@@ -2328,6 +3014,13 @@
                      KeyBinding.onTick(i - 100);
                  }
              }
@@ -1729,13 +1728,13 @@
  
              long j = getSystemTime() - this.systemTime;
  
-@@ -2382,6 +3077,15 @@
+@@ -2382,6 +3075,15 @@
       */
      public void launchIntegratedServer(String folderName, String worldName, @Nullable WorldSettings worldSettingsIn)
      {
 +		Object fmlClientHandler = null;
 +		if( Reflector.FMLClientHandler_instance.exists()) {
-+			fmlClientHandler = Reflector.call( Reflector.FMLClientHandler_instance, new Object[0]);
++			fmlClientHandler = Reflector.call( Reflector.FMLClientHandler_instance);
 +		}
 +		if( fmlClientHandler != null) {
 +			Reflector.callVoid(fmlClientHandler, Reflector.FMLClientHandler_startIntegratedServer, new Object[] {folderName, worldName, worldSettingsIn});
@@ -1745,13 +1744,13 @@
          this.loadWorld((WorldClient)null);
          System.gc();
          ISaveHandler isavehandler = this.saveLoader.getSaveLoader(folderName, false);
-@@ -2424,6 +3128,16 @@
+@@ -2424,6 +3126,16 @@
  
          while (!this.theIntegratedServer.serverIsInRunLoop())
          {
 +			if (Reflector.forgeExists())
 +			{
-+				if (!Reflector.callBoolean(Reflector.FMLStartupQuery_check, new Object[0]))
++				if (!Reflector.callBoolean(Reflector.FMLStartupQuery_check))
 +				{
 +					loadWorld(null);
 +					displayGuiScreen(null);
@@ -1762,7 +1761,7 @@
              String s = this.theIntegratedServer.getUserMessage();
  
              if (s != null)
-@@ -2444,13 +3158,21 @@
+@@ -2444,13 +3156,21 @@
                  ;
              }
          }
@@ -1778,7 +1777,7 @@
 +        //Forge thing
 +        networkmanager.sendPacket(new C00Handshake(316, socketaddress.toString(), 0, EnumConnectionState.LOGIN, Reflector.forgeExists()));
 +        if(Reflector.forgeExists())
-+        	if (!Reflector.callBoolean(this.getSession(), Reflector.ForgeSession_hasCachedProperties, new Object[]{}))
++        	if (!Reflector.callBoolean(this.getSession(), Reflector.ForgeSession_hasCachedProperties))
 +        	{
 +        		gameProfile = sessionService.fillProfileProperties(gameProfile, true); //Forge: Fill profile properties upon game load. Fixes MC-52974.
 +        		Reflector.call(this.getSession(), Reflector.ForgeSession_setProperties, new Object[]{gameProfile.getProperties()});
@@ -1787,7 +1786,7 @@
          this.myNetworkManager = networkmanager;
      }
  
-@@ -2459,6 +3181,9 @@
+@@ -2459,6 +3179,9 @@
       */
      public void loadWorld(@Nullable WorldClient worldClientIn)
      {
@@ -1797,7 +1796,7 @@
          this.loadWorld(worldClientIn, "");
      }
  
-@@ -2467,6 +3192,11 @@
+@@ -2467,6 +3190,11 @@
       */
      public void loadWorld(@Nullable WorldClient worldClientIn, String loadingMessage)
      {
@@ -1809,7 +1808,7 @@
          if (worldClientIn == null)
          {
              NetHandlerPlayClient nethandlerplayclient = this.getConnection();
-@@ -2478,9 +3208,25 @@
+@@ -2478,9 +3206,25 @@
  
              if (this.theIntegratedServer != null && this.theIntegratedServer.isAnvilFileSet())
              {
@@ -1837,19 +1836,19 @@
              this.theIntegratedServer = null;
              this.guiAchievement.clearAchievements();
              this.entityRenderer.resetData();
-@@ -2502,6 +3248,11 @@
+@@ -2502,6 +3246,11 @@
              this.ingameGUI.resetPlayersOverlayFooterHeader();
              this.setServerData((ServerData)null);
              this.integratedServerIsRunning = false;
 +			//Forge
 +            if(Reflector.forgeExists()) {
-+				Reflector.callVoid(Reflector.call( Reflector.FMLClientHandler_instance, new Object[0]), Reflector.FMLClientHandler_handleClientWorldClosing, new Object[]{this.world});
++				Reflector.callVoid(Reflector.call( Reflector.FMLClientHandler_instance), Reflector.FMLClientHandler_handleClientWorldClosing, new Object[]{this.world});
 +			}
 +            //
          }
  
          this.mcSoundHandler.stopSounds();
-@@ -2608,6 +3359,7 @@
+@@ -2608,6 +3357,7 @@
          return theMinecraft == null || !theMinecraft.gameSettings.hideGUI;
      }
  
@@ -1857,7 +1856,7 @@
      public static boolean isFancyGraphicsEnabled()
      {
          return theMinecraft != null && theMinecraft.gameSettings.fancyGraphics;
-@@ -2624,8 +3376,16 @@
+@@ -2624,8 +3374,16 @@
      /**
       * Called when user clicked he's mouse middle button (pick block)
       */
@@ -1875,7 +1874,7 @@
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
              boolean flag = this.player.capabilities.isCreativeMode;
-@@ -2789,7 +3549,8 @@
+@@ -2789,7 +3547,8 @@
          }
      }
  
@@ -1885,19 +1884,19 @@
      {
          NBTTagCompound nbttagcompound = te.writeToNBT(new NBTTagCompound());
  
-@@ -3100,6 +3861,11 @@
+@@ -3100,6 +3859,11 @@
       */
      public static int getGLMaximumTextureSize()
      {
 +    	//Forge
 +    	if(Reflector.forgeExists())
-+    		return Reflector.callInt(Reflector.SplashProgress_getMaxTextureSize, new Object[]{});
++    		return Reflector.callInt(Reflector.SplashProgress_getMaxTextureSize);
 +    	//
 +    	
          for (int i = 16384; i > 0; i >>= 1)
          {
              GlStateManager.glTexImage2D(32868, 0, 6408, i, i, 0, 6408, 5121, (IntBuffer)null);
-@@ -3266,7 +4032,7 @@
+@@ -3266,7 +4030,7 @@
      }
  
      public void dispatchKeypresses()
@@ -1906,7 +1905,7 @@
          int i = Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey();
  
          if (i != 0 && !Keyboard.isRepeatEvent())
-@@ -3419,4 +4185,1209 @@
+@@ -3419,4 +4183,1209 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }

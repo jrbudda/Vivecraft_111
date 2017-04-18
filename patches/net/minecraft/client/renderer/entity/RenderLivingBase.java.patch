@@ -43,6 +43,15 @@
      public <V extends EntityLivingBase, U extends LayerRenderer<V>> boolean addLayer(U layer)
      {
          return this.layerRenderers.add((LayerRenderer<T>) layer);
+@@ -104,7 +114,7 @@
+ 
+             if (Reflector.ForgeEntity_shouldRiderSit.exists())
+             {
+-                this.mainModel.isRiding = entity.isRiding() && entity.getRidingEntity() != null && Reflector.callBoolean(entity.getRidingEntity(), Reflector.ForgeEntity_shouldRiderSit, new Object[0]);
++                this.mainModel.isRiding = entity.isRiding() && entity.getRidingEntity() != null && Reflector.callBoolean(entity.getRidingEntity(), Reflector.ForgeEntity_shouldRiderSit);
+             }
+ 
+             this.mainModel.isChild = entity.isChild();
 @@ -143,7 +153,29 @@
                  float f7 = entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTicks;
                  this.renderLivingAt(entity, x, y, z);

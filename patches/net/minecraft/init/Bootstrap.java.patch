@@ -1,6 +1,18 @@
 --- a/net/minecraft/init/Bootstrap.java
 +++ b/net/minecraft/init/Bootstrap.java
-@@ -14,6 +14,7 @@
+@@ -1,9 +1,11 @@
+ package net.minecraft.init;
+ 
+ import com.mojang.authlib.GameProfile;
++
+ import java.io.PrintStream;
+ import java.util.Random;
+ import java.util.UUID;
++
+ import net.minecraft.block.Block;
+ import net.minecraft.block.BlockDispenser;
+ import net.minecraft.block.BlockFire;
+@@ -14,6 +16,7 @@
  import net.minecraft.block.BlockTNT;
  import net.minecraft.block.material.Material;
  import net.minecraft.block.state.IBlockState;
@@ -8,7 +20,7 @@
  import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
  import net.minecraft.dispenser.BehaviorProjectileDispense;
  import net.minecraft.dispenser.IBehaviorDispenseItem;
-@@ -36,13 +37,17 @@
+@@ -36,19 +39,24 @@
  import net.minecraft.entity.projectile.EntitySnowball;
  import net.minecraft.entity.projectile.EntitySpectralArrow;
  import net.minecraft.entity.projectile.EntityTippedArrow;
@@ -26,7 +38,14 @@
  import net.minecraft.nbt.NBTTagCompound;
  import net.minecraft.nbt.NBTUtil;
  import net.minecraft.potion.Potion;
-@@ -56,6 +61,7 @@
+ import net.minecraft.potion.PotionHelper;
+ import net.minecraft.potion.PotionType;
+ import net.minecraft.server.DebugLoggingPrintStream;
++import net.minecraft.src.Reflector;
+ import net.minecraft.stats.StatList;
+ import net.minecraft.tileentity.TileEntity;
+ import net.minecraft.tileentity.TileEntityDispenser;
+@@ -56,12 +64,14 @@
  import net.minecraft.tileentity.TileEntitySkull;
  import net.minecraft.util.EnumFacing;
  import net.minecraft.util.LoggingPrintStream;
@@ -34,7 +53,26 @@
  import net.minecraft.util.SoundCategory;
  import net.minecraft.util.SoundEvent;
  import net.minecraft.util.StringUtils;
-@@ -495,7 +501,34 @@
+ import net.minecraft.util.math.BlockPos;
+ import net.minecraft.world.World;
+ import net.minecraft.world.biome.Biome;
++
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+@@ -261,6 +271,11 @@
+         };
+         BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(Items.LAVA_BUCKET, ibehaviordispenseitem);
+         BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(Items.WATER_BUCKET, ibehaviordispenseitem);
++        if (Reflector.forgeExists()) {
++        	BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(Items.MILK_BUCKET, (IBehaviorDispenseItem)Reflector.call(Reflector.DispenseFluidContainer_getInstance));
++        	BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(Items.BUCKET, (IBehaviorDispenseItem)Reflector.call(Reflector.DispenseFluidContainer_getInstance));
++        }
++        else
+         BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(Items.BUCKET, new BehaviorDefaultDispenseItem()
+         {
+             private final BehaviorDefaultDispenseItem dispenseBehavior = new BehaviorDefaultDispenseItem();
+@@ -495,13 +510,41 @@
              BlockFire.init();
              Potion.registerPotions();
              Enchantment.registerEnchantments();
@@ -69,3 +107,10 @@
              PotionType.registerPotionTypes();
              PotionHelper.init();
              EntityList.init();
+             StatList.init();
+             Biome.registerBiomes();
+             registerDispenserBehaviors();
++            Reflector.callVoid(Reflector.GameData_vanillaSnapshot);
+         }
+     }
+ 

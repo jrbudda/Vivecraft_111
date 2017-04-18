@@ -55,7 +55,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
     private static final String OF_JSON_NAME      = "1.11.2_HD_U_B5";
     private static final String OF_MD5            = "c2df3b1be3f038ca3cbe04f947e1d63e";
     private static final String OF_VERSION_EXT    = ".jar";
-    private static final String FORGE_VERSION     = "13.20.0.2260";
+    private static final String FORGE_VERSION     = "13.20.0.2282";
     /* END OF DO NOT RENAME */
 
     private String mc_url = "https://s3.amazonaws.com/Minecraft.Download/versions/" + MINECRAFT_VERSION + "/" + MINECRAFT_VERSION +".jar";
@@ -83,6 +83,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
     private JComboBox forgeVersion;
     private JCheckBox useHydra;
     private JCheckBox useHrtf;
+	private JComboBox ramAllocation;
     private final boolean QUIET_DEV = false;
 	private File releaseNotes = null;
     private static String releaseNotePathAddition = "";
@@ -651,6 +652,25 @@ public class Installer extends JPanel  implements PropertyChangeListener
                         }
                         ver_json.close();
 
+						//modify json args if needed
+							try {
+								int jsonIndentSpaces = 2;
+								String profileName = getMinecraftProfileName(useForge.isSelected(), useShadersMod.isSelected());
+								File fileJson = ver_json_file;
+								String json = readAsciiFile(fileJson);
+								JSONObject root = new JSONObject(json);
+								String args = (String)root.get("minecraftArguments");
+								args += " --test";
+								root.put("minecraftArguments", args);
+								FileWriter fwJson = new FileWriter(fileJson);
+								fwJson.write(root.toString(jsonIndentSpaces));
+								fwJson.flush();
+								fwJson.close();
+							}
+							catch (Exception e) {
+								e.printStackTrace();
+							}
+
                         // Extract new lib
                         File lib_dir = new File(targetDir,"libraries/com/mtbs3d/minecrift/"+version);
                         lib_dir.mkdirs();
@@ -1163,18 +1183,20 @@ public class Installer extends JPanel  implements PropertyChangeListener
                 prof = (JSONObject) profiles.get(profileName);
             }
             catch (Exception e) {}
-
+			java.text.DateFormat dateFormat=new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             if (prof == null) {
                 prof = new JSONObject();
                 prof.put("name", profileName);
-                prof.put("javaArgs", "-Xmx2G -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy -Xmn256M -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true");
                 prof.put("useHopperCrashService", false);
                 prof.put("launcherVisibilityOnGameClose", "keep the launcher open");
-				prof.put("launcherVisibilityOnGameClose", "keep the launcher open");
+                prof.put("created", dateFormat.format(new java.util.Date()));
                 profiles.put(profileName, prof);
             }
+
             prof.put("lastVersionId", minecriftVer + mod);
+			prof.put("javaArgs", "-Xmx" + ramAllocation.getSelectedItem() + "G -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy -Xmn256M -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true");
             root.put("selectedProfile", profileName);
+            prof.put("lastUsed", dateFormat.format(new java.util.Date()));
 
             FileWriter fwJson = new FileWriter(fileJson);
             fwJson.write(root.toString(jsonIndentSpaces));
@@ -1370,6 +1392,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
         //Add "yes" and "which version" to the forgePanel
         useForge.setAlignmentX(LEFT_ALIGNMENT);
         forgeVersion.setAlignmentX(LEFT_ALIGNMENT);
+        forgePanel.setAlignmentX(LEFT_ALIGNMENT);
         forgePanel.add(useForge);
         //forgePanel.add(forgeVersion);
 		
@@ -1422,12 +1445,34 @@ public class Installer extends JPanel  implements PropertyChangeListener
                         "</html>");
         useHrtf.setAlignmentX(LEFT_ALIGNMENT);
 
-        //Add option panels option panel
-        forgePanel.setAlignmentX(LEFT_ALIGNMENT);
+		
+        JPanel ramPanel = new JPanel();
+        ramPanel.setLayout( new BoxLayout(ramPanel, BoxLayout.X_AXIS));
+        ramPanel.setAlignmentX(LEFT_ALIGNMENT);
+        ramPanel.setAlignmentY(TOP_ALIGNMENT);
+
+		Integer[] rams = {1,2,4,6,8};
+
+		ramAllocation = new JComboBox(rams);
+		ramAllocation.setSelectedIndex(1);
+        ramAllocation.setToolTipText(
+                "<html>" +
+                "Select the amount of Ram, in GB to allocate to the Vivecraft profile." +
+                "At least 2GB is recommened. More than 1GB of ram requires 64 bit PC and java." +
+                "</html>");
+		ramAllocation.setAlignmentX(LEFT_ALIGNMENT);
+		ramAllocation.setMaximumSize( ramAllocation.getPreferredSize() );
+
+		JLabel ram = new JLabel("         Profile Ram Allocation (GB)");
+		ram.setAlignmentX(LEFT_ALIGNMENT);
         
+		ramPanel.add(ram);
+        ramPanel.add(ramAllocation);
+
         optPanel.add(forgePanel);
         //optPanel.add(useShadersMod);
         optPanel.add(createProfile);
+		optPanel.add(ramPanel);
         optPanel.add(useHrtf);
         this.add(optPanel);
 
@@ -1481,6 +1526,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
     	}
     	out+="</html>";
     	instructions.setText(out);
+		ramAllocation.setEnabled(createProfile.isSelected());
     	
     }
     
