@@ -76,6 +76,17 @@ def create_install(mcp_dir):
                     continue
                 if cur_file in {'Matrix4f.class'}: #why
                     continue
+				# Just don't ask about this nonsense because I don't have any idea
+                if cur_file in {'brd.class'}: #skip bakedquad
+                    continue
+                if cur_file in {'bsz.class', 'bsz$1.class', 'bsz$2.class', 'bsz$3.class', 'bsz$a.class'}: #skip chunkrenderdispatcher
+                    continue
+                if cur_file in {'atm.class', 'atm$1.class', 'atm$a.class', 'atm$Builder.class'}: #skip blockstatecontainer
+                    continue
+                if cur_file in {'byz.class', 'byz$1.class'}: #skip textureatlassprite
+                    continue
+                if cur_file in {'bpy.class', 'bpy$1.class', 'bpy$2.class', 'bpy$a.class'}: #skip texturemap
+                    continue
                 in_file= os.path.join(abs_path,cur_file)
                 arcname =  arc_path + cur_file
                 zipout.write(in_file, arcname)
