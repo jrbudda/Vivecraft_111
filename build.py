@@ -85,7 +85,9 @@ def create_install(mcp_dir):
                     continue
                 if cur_file in {'byz.class', 'byz$1.class'}: #skip textureatlassprite
                     continue
-                if cur_file in {'bpy.class', 'bpy$1.class', 'bpy$2.class', 'bpy$a.class'}: #skip texturemap
+                if cur_file in {'byy.class', 'byy$1.class', 'byy$2.class', 'byy$3.class'}: #skip texturemap
+                    continue
+                if cur_file in {'bpy.class', 'bpy$1.class', 'bpy$2.class', 'bpy$a.class'}: #skip vertexbuffer
                     continue
                 in_file= os.path.join(abs_path,cur_file)
                 arcname =  arc_path + cur_file
