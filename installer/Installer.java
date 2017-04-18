@@ -65,9 +65,9 @@ public class Installer extends JPanel  implements PropertyChangeListener
     static private File targetDir;
     private String[] forgeVersions = null;
     private boolean forgeVersionInstalled = false;
-    private static final String FULL_FORGE_VERSION = MINECRAFT_VERSION + "-" + FORGE_VERSION + "-" + MINECRAFT_VERSION;
+    private static final String FULL_FORGE_VERSION = MINECRAFT_VERSION + "-" + FORGE_VERSION;
     private String forge_url = "http://files.minecraftforge.net/maven/net/minecraftforge/forge/" + FULL_FORGE_VERSION + "/forge-" + FULL_FORGE_VERSION + "-installer.jar";
-    private File forgeInstaller = new File(tempDir + "/" + FULL_FORGE_VERSION + ".jar");
+    private File forgeInstaller = new File(tempDir + "/forge-" + FULL_FORGE_VERSION + "-installer.jar");
     private JTextField selectedDirText;
     private JLabel infoLabel;
     private JDialog dialog;
@@ -377,6 +377,46 @@ public class Installer extends JPanel  implements PropertyChangeListener
         // Shamelessly ripped from Forge ClientInstall
         private boolean installForge(File target)
         {
+        	try {
+        		JOptionPane.showMessageDialog(null, "The Forge installer will launch. In it, please ensure \"Install client\" is selected and the correct directory is specified (default unless you changed it).", "Forge Installation", JOptionPane.INFORMATION_MESSAGE);
+        		final Process proc = new ProcessBuilder(isWindows ? "javaw" : "java", "-jar", target.getAbsolutePath()).start();
+        		new Thread("Forge Installer Stdout") { // needed otherwise subprocess blocks
+        			@Override
+        			public void run() {
+        				try {
+	        				BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+	        				String line;
+	        				while ((line = br.readLine()) != null) {
+	        					System.out.println(line);
+	        				}
+        				} catch (Exception e) {
+        					e.printStackTrace();
+        				}
+        			}
+        		}.start();
+        		new Thread("Forge Installer Stderr") { // same
+        			@Override
+        			public void run() {
+        				try {
+	        				BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+	        				String line;
+	        				while ((line = br.readLine()) != null) {
+	        					System.err.println(line);
+	        				}
+        				} catch (Exception e) {
+        					e.printStackTrace();
+        				}
+        			}
+        		}.start();
+        		proc.waitFor();
+        	} catch (Exception ex) {
+        		ex.printStackTrace();
+        		JOptionPane.showMessageDialog(null, "Error occurred launching Forge installer: " + ex.getClass().getName() + ": " + ex.getMessage() + "\nYou will need to install Forge " + FULL_FORGE_VERSION + " manually.", "Error", JOptionPane.ERROR_MESSAGE);
+        		return false;
+        	}
+        	
+        	return true;
+        	
 /*            File versionRootDir = new File(target,"versions");
             File versionTarget = new File(versionRootDir,MINECRAFT_VERSION);
             if (!versionTarget.mkdirs() && !versionTarget.isDirectory())
@@ -552,7 +592,6 @@ public class Installer extends JPanel  implements PropertyChangeListener
                 return false;
             }
  */
-            return true;
 
 
 //            return success;
