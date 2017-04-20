@@ -138,7 +138,7 @@
 +                	EnumHand enumhand1 = packetIn.getHand();
 +                	//FORGE
 +                	if(Reflector.forgeExists()){
-+                		if(Reflector.callBoolean(Reflector.ForgeHooks_onInteractEntityAt, new Object[]{this.playerEntity, entity, packetIn.getHitVec(), enumhand1}))
++                		if(Reflector.call(Reflector.ForgeHooks_onInteractEntityAtAction, this.playerEntity, entity, packetIn.getHitVec(), enumhand1) != null)
 +                			return;
 +                	}
 +                	entity.applyPlayerInteraction(this.playerEntity, packetIn.getHitVec(), enumhand1);

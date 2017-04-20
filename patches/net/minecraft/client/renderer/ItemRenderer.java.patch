@@ -291,7 +291,7 @@
 +        
 +        GlStateManager.pushMatrix();
 +        
-+			this.doSwingItemAnimation(side, swingProgress);
++			this.transformFirstPerson(side, swingProgress);
 +        
 +        	GlStateManager.scale(0.4f, 0.4F, 0.4F);
 +        	GlStateManager.translate(0.375*-f, 0, .75);
@@ -313,8 +313,8 @@
      }
  
 -    private void transformEatFirstPerson(float p_187454_1_, EnumHandSide p_187454_2_, ItemStack p_187454_3_)
-+    //was transformEatFirstPerson
-+    private void doEatAnimation(float progress, EnumHandSide side, ItemStack item)
++    //better name would be doEatAnimation
++    private void transformEatFirstPerson(float progress, EnumHandSide side, ItemStack item)
      {
 -        float f = (float)this.mc.player.getItemInUseCount() - p_187454_1_ + 1.0F;
 -        float f1 = f / (float)p_187454_3_.getMaxItemUseDuration();
@@ -347,8 +347,8 @@
 +	    }
 +    }
 +
-+    //was transformFirstPerson
-+    private void doSwingItemAnimation(EnumHandSide side, float swingprogress)
++    //better name would be doSwingItemAnimation
++    private void transformFirstPerson(EnumHandSide side, float swingprogress)
 +    {
 +    	if(swingprogress == 0) return;
 +    	//VIVE TODO: SOMETHING
@@ -366,8 +366,8 @@
 +    	//        GlStateManager.rotate((float)i * -45.0F, 0.0F, 1.0F, 0.0F);
 +    }
 +
-+    //was transformSideFirstPerson
-+    private void doEquipItemAnimation(EnumHandSide side, float equippingprogress)
++    //better name would be doEquipItemAnimation
++    private void transformSideFirstPerson(EnumHandSide side, float equippingprogress)
 +    {
 +    	//VIVE NOOP
 +//        int i = side == EnumHandSide.RIGHT ? 1 : -1;
@@ -600,13 +600,13 @@
 +    					switch (itemstack.getItemUseAction())
 +    					{
 +    					case NONE:
-+    						this.doEquipItemAnimation(enumhandside, equippingprogress);
++    						this.transformSideFirstPerson(enumhandside, equippingprogress);
 +    						break;
 +
 +    					case EAT:
 +    					case DRINK:
-+    						this.doEatAnimation(partialTicks, enumhandside, itemstack);
-+    						this.doEquipItemAnimation(enumhandside, equippingprogress);
++    						this.transformEatFirstPerson(partialTicks, enumhandside, itemstack);
++    						this.transformSideFirstPerson(enumhandside, equippingprogress);
 +    						break;
 +
 +    					case BLOCK:
@@ -617,7 +617,7 @@
 +    							GlStateManager.rotate((1-equippingprogress)*i*90.0F, 0.0F, 1.0F, 0.0F);
 +    						}
 +
-+    						this.doEquipItemAnimation(enumhandside, equippingprogress);
++    						this.transformSideFirstPerson(enumhandside, equippingprogress);
 +    						break;
 +
 +    					case BOW:
@@ -658,10 +658,10 @@
 +    					float f2 = -0.2F * MathHelper.sin(swingProgress * (float)Math.PI);
 +
 +    					//GlStateManager.translate((float)i * f, f1, f2);
-+    					this.doEquipItemAnimation(enumhandside, equippingprogress);
++    					this.transformSideFirstPerson(enumhandside, equippingprogress);
 +
 +    					if(player.swingingHand == hand)
-+    						this.doSwingItemAnimation(enumhandside, swingProgress);	
++    						this.transformFirstPerson(enumhandside, swingProgress);	
 +
 +    					//VIVE manually adjust items based on type... no other choice :(
 +
