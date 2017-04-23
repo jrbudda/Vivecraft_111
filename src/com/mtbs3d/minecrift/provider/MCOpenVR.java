@@ -8,6 +8,7 @@ import com.mtbs3d.minecrift.settings.VRHotkeys;
 import com.mtbs3d.minecrift.settings.VRSettings;
 import com.mtbs3d.minecrift.utils.KeyboardSimulator;
 import com.mtbs3d.minecrift.utils.MCReflection;
+import com.mtbs3d.minecrift.utils.jkatvr;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.Pointer;
@@ -41,6 +42,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketClientStatus;
 import net.minecraft.network.play.client.CPacketClientStatus.State;
+import net.minecraft.src.Reflector;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -312,7 +314,7 @@ public class MCOpenVR
 		System.out.println( "Adding OpenVR search path: "+openVRPath);
 
 		NativeLibrary.addSearchPath("openvr_api", openVRPath);		
-
+			
 		if(jopenvr.JOpenVRLibrary.VR_IsHmdPresent() == 0){
 			initStatus =  "VR Headset not detected.";
 			return false;
@@ -358,6 +360,24 @@ public class MCOpenVR
 	
 		
 		initialized = true;
+		
+		if(Main.katvr){
+			try {
+				System.out.println( "Waiting for KATVR...." );
+				NativeLibrary.addSearchPath(jkatvr.KATVR_LIBRARY_NAME, new File( minecraftDir, "katvr" ).getPath());		
+				jkatvr.Init(1);
+				jkatvr.Launch();
+				if(jkatvr.CheckForLaunch()){
+					System.out.println( "KATVR Loaded" );
+				}else {
+					System.out.println( "KATVR Failed to load" );
+				}
+
+			} catch (Exception e) {
+				System.out.println( "KATVR crashed: " + e.getMessage() );
+			}
+		}
+		
 		return true;
 	}
 
@@ -1003,21 +1023,23 @@ public class MCOpenVR
 			}
 		}
 	}
-
-
 	
 	public static void destroy()
 	{
 		if (initialized)
 		{
-			JOpenVRLibrary.VR_ShutdownInternal();
-			initialized = false;
+			try {
+				JOpenVRLibrary.VR_ShutdownInternal();
+				initialized = false;
+				if(Main.katvr)
+					jkatvr.Halt();
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+
 		}
 	}
 
-	
-	
-//	
 //	public HmdParameters getHMDInfo()
 //	{
 //		HmdParameters hmd = new HmdParameters();
@@ -1696,12 +1718,12 @@ public class MCOpenVR
 
 		if (mc.currentScreen != null) {
 			if(pressedRStickUp && !lastpressedRStickUp){
-				KeyboardSimulator.robot.mouseWheel(-25);
+				KeyboardSimulator.robot.mouseWheel(-120);
 				MCOpenVR.triggerHapticPulse(0, 100);
 			}
 			
 			if(pressedRStickDown && !lastpressedRStickDown){
-				KeyboardSimulator.robot.mouseWheel(25);
+				KeyboardSimulator.robot.mouseWheel(120);
 				MCOpenVR.triggerHapticPulse(0, 100);
 			}
 		}
@@ -1842,7 +1864,10 @@ public class MCOpenVR
 
 	
 	private static void changeHotbar(int dir){
-		mc.player.inventory.changeCurrentItem(dir);
+		if (Reflector.forgeExists() && mc.currentScreen == null)
+			KeyboardSimulator.robot.mouseWheel(dir * 120);
+		else
+			mc.player.inventory.changeCurrentItem(dir);
 	}
 		
 	//jrbuda:: oh hello there you are.
@@ -1972,7 +1997,7 @@ public class MCOpenVR
 					if(c==0){
 						if (mc.currentScreen != null){
 							MCOpenVR.triggerHapticPulse(0, 100);
-							KeyboardSimulator.robot.mouseWheel(-25); //still hardcoded GUI scrolling
+							KeyboardSimulator.robot.mouseWheel(-120); //still hardcoded GUI scrolling
 						}else
 							mc.vrSettings.buttonMappings[ViveButtons.BUTTON_RIGHT_TOUCHPAD_SWIPE_UP.ordinal()].press();
 					}else
@@ -1985,7 +2010,7 @@ public class MCOpenVR
 					if(c==0){
 						if (mc.currentScreen != null){
 							MCOpenVR.triggerHapticPulse(0, 100);
-							KeyboardSimulator.robot.mouseWheel(25); //still hardcoded GUI scrolling
+							KeyboardSimulator.robot.mouseWheel(120); //still hardcoded GUI scrolling
 						}else
 							mc.vrSettings.buttonMappings[ViveButtons.BUTTON_RIGHT_TOUCHPAD_SWIPE_DOWN.ordinal()].press();
 					}else

@@ -83,6 +83,8 @@ public class Installer extends JPanel  implements PropertyChangeListener
     private JComboBox forgeVersion;
     private JCheckBox useHydra;
     private JCheckBox useHrtf;
+    private JCheckBox katvr;
+    private JCheckBox kiosk;
 	private JComboBox ramAllocation;
     private final boolean QUIET_DEV = false;
 	private File releaseNotes = null;
@@ -699,7 +701,8 @@ public class Installer extends JPanel  implements PropertyChangeListener
 								String json = readAsciiFile(fileJson);
 								JSONObject root = new JSONObject(json);
 								String args = (String)root.get("minecraftArguments");
-								args += " --test";
+								if(katvr.isSelected()) args += " --katvr";
+								if(kiosk.isSelected()) args += " --kiosk";
 								root.put("minecraftArguments", args);
 								FileWriter fwJson = new FileWriter(fileJson);
 								fwJson.write(root.toString(jsonIndentSpaces));
@@ -778,11 +781,20 @@ public class Installer extends JPanel  implements PropertyChangeListener
 			String resource = "win32/openvr_api.dll";
 				
 			if (osname.contains("windows")){	
-
 				installFile(osFolder, resource);
-					osFolder = "win64";
-					resource = "win64/openvr_api.dll";
-					installFile(osFolder, resource);
+
+				osFolder = "win64";
+				resource = "win64/openvr_api.dll";
+				installFile(osFolder, resource);
+
+				if(katvr.isSelected()){
+				installFile("katvr", "katvr/WalkerBase.dll");
+				installFile("katvr", "katvr/msvcp120d.dll");
+				installFile("katvr", "katvr/msvcp140d.dll");
+				installFile("katvr", "katvr/msvcr120d.dll");
+				installFile("katvr", "katvr/vcruntime140d.dll");
+				installFile("katvr", "katvr/ucrtbased.dll");
+				}
 			}
 			else if( osname.contains("linux")){
 				osFolder = "linux32";
@@ -805,9 +817,10 @@ public class Installer extends JPanel  implements PropertyChangeListener
 			win32_dir.mkdirs();
 			InputStream openvrdll = Installer.class.getResourceAsStream(resource);
 			File dll_out = new File (targetDir, resource);
-			if (!copyInputStreamToFile(openvrdll, dll_out))
+			if (!copyInputStreamToFile(openvrdll, dll_out)){
 				return false;
-				
+			}
+
 			return true;		
 		}
 		
@@ -1508,11 +1521,30 @@ public class Installer extends JPanel  implements PropertyChangeListener
 		ramPanel.add(ram);
         ramPanel.add(ramAllocation);
 
+		katvr = new JCheckBox("         KATVR Driver", false);
+        katvr.setToolTipText(
+                "<html>" +
+                "If checked, install the drivers needed for KATVR Treadmill" +
+                "</html>");
+		katvr.setAlignmentX(LEFT_ALIGNMENT);
+
+
+		kiosk = new JCheckBox("         Kiosk Mode", false);
+        kiosk.setToolTipText(
+                "<html>" +
+                "If checked, disables use of in-game menu via controller" +
+                "</html>");
+		kiosk.setAlignmentX(LEFT_ALIGNMENT);
+
         optPanel.add(forgePanel);
         //optPanel.add(useShadersMod);
         optPanel.add(createProfile);
 		optPanel.add(ramPanel);
         optPanel.add(useHrtf);
+		optPanel.add(new JLabel("         "));
+		optPanel.add(new JLabel("Advanced Options"));
+		optPanel.add(kiosk);
+		optPanel.add(katvr);
         this.add(optPanel);
 
         this.add(Box.createRigidArea(new Dimension(5,20))); 

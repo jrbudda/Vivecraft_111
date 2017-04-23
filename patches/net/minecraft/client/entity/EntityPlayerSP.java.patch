@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/entity/EntityPlayerSP.java
 +++ b/net/minecraft/client/entity/EntityPlayerSP.java
-@@ -1,7 +1,20 @@
+@@ -1,7 +1,21 @@
  package net.minecraft.client.entity;
  
 +import java.lang.reflect.Field;
@@ -14,6 +14,7 @@
 +import com.mtbs3d.minecrift.provider.OpenVRPlayer;
 +import com.mtbs3d.minecrift.settings.VRSettings;
 +import com.mtbs3d.minecrift.utils.Utils;
++import com.mtbs3d.minecrift.utils.jkatvr;
 +
 +import io.netty.buffer.ByteBuf;
 +import io.netty.buffer.Unpooled;
@@ -21,7 +22,15 @@
  import net.minecraft.block.state.IBlockState;
  import net.minecraft.client.Minecraft;
  import net.minecraft.client.audio.ElytraSound;
-@@ -34,11 +47,13 @@
+@@ -25,6 +39,7 @@
+ import net.minecraft.client.gui.inventory.GuiFurnace;
+ import net.minecraft.client.gui.inventory.GuiScreenHorseInventory;
+ import net.minecraft.client.gui.inventory.GuiShulkerBox;
++import net.minecraft.client.main.Main;
+ import net.minecraft.client.network.NetHandlerPlayClient;
+ import net.minecraft.entity.Entity;
+ import net.minecraft.entity.IJumpingMount;
+@@ -34,11 +49,13 @@
  import net.minecraft.entity.item.EntityItem;
  import net.minecraft.entity.item.EntityMinecart;
  import net.minecraft.entity.passive.AbstractHorse;
@@ -35,7 +44,7 @@
  import net.minecraft.item.Item;
  import net.minecraft.item.ItemElytra;
  import net.minecraft.item.ItemStack;
-@@ -47,6 +62,7 @@
+@@ -47,6 +64,7 @@
  import net.minecraft.network.play.client.CPacketChatMessage;
  import net.minecraft.network.play.client.CPacketClientStatus;
  import net.minecraft.network.play.client.CPacketCloseWindow;
@@ -43,7 +52,7 @@
  import net.minecraft.network.play.client.CPacketEntityAction;
  import net.minecraft.network.play.client.CPacketInput;
  import net.minecraft.network.play.client.CPacketPlayer;
-@@ -55,7 +71,10 @@
+@@ -55,7 +73,10 @@
  import net.minecraft.network.play.client.CPacketVehicleMove;
  import net.minecraft.potion.Potion;
  import net.minecraft.potion.PotionEffect;
@@ -54,7 +63,7 @@
  import net.minecraft.stats.StatisticsManager;
  import net.minecraft.tileentity.CommandBlockBaseLogic;
  import net.minecraft.tileentity.TileEntityCommandBlock;
-@@ -66,6 +85,7 @@
+@@ -66,6 +87,7 @@
  import net.minecraft.util.EnumHand;
  import net.minecraft.util.EnumParticleTypes;
  import net.minecraft.util.MovementInput;
@@ -62,7 +71,7 @@
  import net.minecraft.util.SoundEvent;
  import net.minecraft.util.math.AxisAlignedBB;
  import net.minecraft.util.math.BlockPos;
-@@ -136,6 +156,21 @@
+@@ -136,6 +158,21 @@
       */
      protected int sprintToggleTimer;
  
@@ -84,7 +93,7 @@
      /** Ticks left before sprinting is disabled. */
      public int sprintingTicksLeft;
      public float renderArmYaw;
-@@ -164,13 +199,32 @@
+@@ -164,13 +201,32 @@
          this.statWriter = statFile;
          this.mc = mcIn;
          this.dimension = 0;
@@ -117,7 +126,7 @@
          return false;
      }
  
-@@ -205,11 +259,30 @@
+@@ -205,11 +261,30 @@
          }
      }
  
@@ -149,7 +158,7 @@
  
      /**
       * interpolated look vector
-@@ -283,6 +356,7 @@
+@@ -283,6 +358,7 @@
              this.serverSneakState = flag1;
          }
  
@@ -157,7 +166,7 @@
          if (this.isCurrentViewEntity())
          {
              AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
-@@ -295,26 +369,39 @@
+@@ -295,26 +371,39 @@
              boolean flag2 = d0 * d0 + d1 * d1 + d2 * d2 > 9.0E-4D || this.positionUpdateTicks >= 20;
              boolean flag3 = d3 != 0.0D || d4 != 0.0D;
  
@@ -217,7 +226,7 @@
              }
  
              if (flag2)
-@@ -333,9 +420,15 @@
+@@ -333,9 +422,15 @@
  
              this.prevOnGround = this.onGround;
              this.autoJumpEnabled = this.mc.gameSettings.autoJump;
@@ -233,7 +242,7 @@
      @Nullable
  
      /**
-@@ -349,11 +442,23 @@
+@@ -349,11 +444,23 @@
          return null;
      }
  
@@ -259,7 +268,7 @@
      /**
       * Sends a chat message from the player.
       */
-@@ -522,72 +627,129 @@
+@@ -522,72 +629,129 @@
          }
      }
  
@@ -453,7 +462,7 @@
      }
  
      /**
-@@ -595,7 +757,11 @@
+@@ -595,7 +759,11 @@
       */
      private boolean isOpenBlockSpace(BlockPos pos)
      {
@@ -466,7 +475,7 @@
      }
  
      /**
-@@ -656,7 +822,19 @@
+@@ -656,7 +824,19 @@
  
      public void playSound(SoundEvent soundIn, float volume, float pitch)
      {
@@ -487,7 +496,7 @@
      }
  
      /**
-@@ -1000,7 +1178,7 @@
+@@ -1000,7 +1180,7 @@
                      this.sendPlayerAbilities();
                  }
              }
@@ -496,7 +505,7 @@
              {
                  if (this.flyToggleTimer == 0)
                  {
-@@ -1088,6 +1266,10 @@
+@@ -1088,6 +1268,10 @@
  
          super.onLivingUpdate();
  
@@ -507,7 +516,7 @@
          if (this.onGround && this.capabilities.isFlying && !this.mc.playerController.isSpectatorMode())
          {
              this.capabilities.isFlying = false;
-@@ -1106,8 +1288,11 @@
+@@ -1106,8 +1290,11 @@
          if (this.getRidingEntity() instanceof EntityBoat)
          {
              EntityBoat entityboat = (EntityBoat)this.getRidingEntity();
@@ -521,7 +530,7 @@
          }
      }
  
-@@ -1138,10 +1323,40 @@
+@@ -1138,10 +1325,40 @@
       */
      public void move(MoverType type, double x, double y, double z)
      {
@@ -566,7 +575,7 @@
      }
  
      public boolean isAutoJumpEnabled()
-@@ -1167,12 +1382,16 @@
+@@ -1167,12 +1384,16 @@
                      float f = this.getAIMoveSpeed();
                      float f1 = (float)vec3d2.lengthSquared();
  
@@ -585,7 +594,7 @@
                          vec3d2 = new Vec3d((double)(f2 * f5 - f3 * f4), vec3d2.yCoord, (double)(f3 * f5 + f2 * f4));
                          f1 = (float)vec3d2.lengthSquared();
  
-@@ -1292,4 +1511,323 @@
+@@ -1292,4 +1513,335 @@
              }
          }
      }
@@ -721,11 +730,11 @@
 +    	double mY = 0d;
 +    	double addFactor = 1f;
 +
-+    	if (speed >= 1.0E-4F)
++    	if (speed >= 1.0E-4F || Main.katvr)
 +    	{
 +    		speed = MathHelper.sqrt(speed);
 +
-+    		if (speed < 1.0F)
++    		if (speed < 1.0F && !Main.katvr)
 +    		{
 +    			speed = 1.0F;
 +    		}
@@ -735,22 +744,34 @@
 +    		forward *= speed;
 +    		Vec3d directionVec = new Vec3d(strafe, 0,forward);
 +    		IRoomscaleAdapter con = mc.roomScale;
-+    		
-+    		if(mc.vrSettings.seated){
++
++    		if(Main.katvr){
++    			jkatvr.query();
++  			
++            	speed =  jkatvr.getSpeed() * jkatvr.walkDirection() * mc.vrSettings.movementSpeedMultiplier;
++            	directionVec = new Vec3d(0, 0,speed);
++    			directionVec=directionVec.rotateYaw(-jkatvr.getYaw()* PIOVER180);	    		
++
++    			if(this.capabilities.isFlying || this.inWater){
++					directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);				
++    			}else{
++
++    			}
++    		} else if(mc.vrSettings.seated){
 +    			int c = 0;
 +    			if(mc.vrSettings.seatedUseHMD) c = 1;
 +    			directionVec=directionVec.rotateYaw(-con.getControllerYaw_World(c) * PIOVER180);	    		
 +    		}else{
 +    			if(this.capabilities.isFlying || this.inWater){
-+    					switch (mc.vrSettings.vrFreeMoveMode){
-+    					case VRSettings.FREEMOVE_CONTROLLER:
-+    						directionVec= directionVec.rotatePitch(con.getControllerPitch_World(1) * PIOVER180);		   
-+    						break;
-+    					case VRSettings.FREEMOVE_HMD:
-+    						directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);				
-+    						break;
-+    					case VRSettings.FREEMOVE_RUNINPLACE:
-+    						//hmd pitch
++    				switch (mc.vrSettings.vrFreeMoveMode){
++    				case VRSettings.FREEMOVE_CONTROLLER:
++    					directionVec= directionVec.rotatePitch(con.getControllerPitch_World(1) * PIOVER180);		   
++    					break;
++    				case VRSettings.FREEMOVE_HMD:
++    					directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);				
++    					break;
++    				case VRSettings.FREEMOVE_RUNINPLACE:
++    					//hmd pitch
 +    						directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);	
 +    						break;
 +    					}

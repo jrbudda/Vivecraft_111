@@ -304,7 +304,7 @@
 +	 * The minecriftVerString will be automatically updated by the build scripts, do not modify here.
 +	 * Modify minecriftversion.py in root minecrift dir.
 +	 */
-+    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-9alpha7";
++    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-9alpha15";
 +	/* end version */
 +	/** END MINECRIFT */
 +    
@@ -1040,7 +1040,7 @@
 +		
 +		if( Math.abs((hmdYawTotal - yawAvg)) < 1) trigger = false;
 +		
-+		if(trigger)
++		if(trigger || hmdYawSamples.isEmpty())
 +			hmdYawSamples.add(hmdYawTotal);
 +
 +		this.mcProfiler.endSection();
@@ -1154,13 +1154,13 @@
 -            this.debugUpdateTime += 1000L;
 -            this.fpsCounter = 0;
 -            this.usageSnooper.addMemoryStatsToSnooper();
- 
+-
 -            if (!this.usageSnooper.isSnooperRunning())
 -            {
 -                this.usageSnooper.startSnooper();
 -            }
 -        }
--
+ 
 -        if (this.isFramerateLimitBelowMax())
 -        {
 -            this.mcProfiler.startSection("fpslimit_wait");
@@ -1296,7 +1296,7 @@
                  }
              }
              else if (!this.player.isRowingBoat())
-@@ -1564,42 +2153,51 @@
+@@ -1564,42 +2153,47 @@
                      case BLOCK:
                          BlockPos blockpos = this.objectMouseOver.getBlockPos();
  
@@ -1335,13 +1335,12 @@
      }
  
      @SuppressWarnings("incomplete-switch")
-+	public //VIVECRAFT MAKE PUBLIC
- 
-     /**
-      * Called when user clicked he's mouse right button (place)
+-
+-    /**
+-     * Called when user clicked he's mouse right button (place)
 -     */
 -    private void rightClickMouse()
-+     */ void rightClickMouse()
++	public void rightClickMouse()
      {
 -        if (!this.playerController.getIsHittingBlock())
 +    	if (rightClickDelayTimer > 0)return;
@@ -1360,7 +1359,7 @@
                  }
  
                  for (EnumHand enumhand : EnumHand.values())
-@@ -1626,7 +2224,7 @@
+@@ -1626,7 +2220,7 @@
                              case BLOCK:
                                  BlockPos blockpos = this.objectMouseOver.getBlockPos();
  
@@ -1369,7 +1368,7 @@
                                  {
                                      int i = itemstack.getCount();
                                      EnumActionResult enumactionresult = this.playerController.processRightClickBlock(this.player, this.world, blockpos, this.objectMouseOver.sideHit, this.objectMouseOver.hitVec, enumhand);
-@@ -1634,10 +2232,14 @@
+@@ -1634,10 +2228,14 @@
                                      if (enumactionresult == EnumActionResult.SUCCESS)
                                      {
                                          this.player.swingArm(enumhand);
@@ -1385,7 +1384,7 @@
                                          }
  
                                          return;
-@@ -1721,29 +2323,14 @@
+@@ -1721,29 +2319,14 @@
      /**
       * Called to resize the current screen.
       */
@@ -1418,7 +1417,7 @@
      }
  
      /**
-@@ -1759,11 +2346,21 @@
+@@ -1759,11 +2342,21 @@
       */
      public void runTick() throws IOException
      {
@@ -1440,7 +1439,7 @@
          this.mcProfiler.startSection("gui");
  
          if (!this.isGamePaused)
-@@ -1862,12 +2459,23 @@
+@@ -1862,12 +2455,23 @@
  
              this.mcProfiler.endStartSection("keyboard");
              this.runTickKeyboard();
@@ -1464,7 +1463,7 @@
                  ++this.joinPlayerCounter;
  
                  if (this.joinPlayerCounter == 30)
-@@ -1875,6 +2483,10 @@
+@@ -1875,6 +2479,10 @@
                      this.joinPlayerCounter = 0;
                      this.world.joinEntityInSurroundings(this.player);
                  }
@@ -1475,7 +1474,7 @@
              }
  
              this.mcProfiler.endStartSection("gameRenderer");
-@@ -1908,6 +2520,9 @@
+@@ -1908,6 +2516,9 @@
              this.entityRenderer.stopUseShader();
          }
  
@@ -1485,7 +1484,7 @@
          if (!this.isGamePaused)
          {
              this.mcMusicTicker.update();
-@@ -1961,8 +2576,12 @@
+@@ -1961,8 +2572,12 @@
              this.mcProfiler.endStartSection("pendingConnection");
              this.myNetworkManager.processReceivedPackets();
          }
@@ -1499,7 +1498,7 @@
          this.systemTime = getSystemTime();
      }
  
-@@ -1997,6 +2616,14 @@
+@@ -1997,6 +2612,14 @@
                  this.currentScreen.handleKeyboardInput();
              }
  
@@ -1514,7 +1513,7 @@
              boolean flag = Keyboard.getEventKeyState();
  
              if (flag)
-@@ -2006,6 +2633,8 @@
+@@ -2006,6 +2629,8 @@
                      this.entityRenderer.switchUseShader();
                  }
  
@@ -1523,7 +1522,7 @@
                  boolean flag1 = false;
  
                  if (this.currentScreen == null)
-@@ -2013,6 +2642,7 @@
+@@ -2013,6 +2638,7 @@
                      if (i == 1)
                      {
                          this.displayInGameMenu();
@@ -1531,7 +1530,7 @@
                      }
  
                      flag1 = Keyboard.isKeyDown(61) && this.processKeyF3(i);
-@@ -2020,7 +2650,9 @@
+@@ -2020,7 +2646,9 @@
  
                      if (i == 59)
                      {
@@ -1542,7 +1541,7 @@
                      }
                  }
  
-@@ -2068,6 +2700,11 @@
+@@ -2068,6 +2696,11 @@
                      }
                  }
              }
@@ -1554,7 +1553,7 @@
          }
  
          this.processKeyBinds();
-@@ -2172,20 +2809,35 @@
+@@ -2172,20 +2805,35 @@
      {
          for (; this.gameSettings.keyBindTogglePerspective.isPressed(); this.renderGlobal.setDisplayListEntitiesDirty())
          {
@@ -1604,7 +1603,7 @@
              }
          }
  
-@@ -2243,11 +2895,26 @@
+@@ -2243,11 +2891,26 @@
  
          if (flag)
          {
@@ -1636,7 +1635,7 @@
              if (this.currentScreen == null && this.gameSettings.keyBindCommand.isPressed())
              {
                  this.displayGuiScreen(new GuiChat("/"));
-@@ -2256,9 +2923,10 @@
+@@ -2256,9 +2919,10 @@
  
          if (this.player.isHandActive())
          {
@@ -1649,7 +1648,7 @@
              }
  
              label472:
-@@ -2284,17 +2952,30 @@
+@@ -2284,17 +2948,30 @@
                  }
              }
          }
@@ -1687,7 +1686,7 @@
  
              while (this.gameSettings.keyBindPickBlock.isPressed())
              {
-@@ -2302,18 +2983,23 @@
+@@ -2302,18 +2979,23 @@
              }
          }
  
@@ -1714,7 +1713,7 @@
              int i = Mouse.getEventButton();
              KeyBinding.setKeyBindState(i - 100, Mouse.getEventButtonState());
  
-@@ -2328,6 +3014,13 @@
+@@ -2328,6 +3010,13 @@
                      KeyBinding.onTick(i - 100);
                  }
              }
@@ -1728,7 +1727,7 @@
  
              long j = getSystemTime() - this.systemTime;
  
-@@ -2382,6 +3075,15 @@
+@@ -2382,6 +3071,15 @@
       */
      public void launchIntegratedServer(String folderName, String worldName, @Nullable WorldSettings worldSettingsIn)
      {
@@ -1744,7 +1743,7 @@
          this.loadWorld((WorldClient)null);
          System.gc();
          ISaveHandler isavehandler = this.saveLoader.getSaveLoader(folderName, false);
-@@ -2424,6 +3126,16 @@
+@@ -2424,6 +3122,16 @@
  
          while (!this.theIntegratedServer.serverIsInRunLoop())
          {
@@ -1761,7 +1760,7 @@
              String s = this.theIntegratedServer.getUserMessage();
  
              if (s != null)
-@@ -2444,13 +3156,21 @@
+@@ -2444,12 +3152,20 @@
                  ;
              }
          }
@@ -1772,21 +1771,19 @@
          NetworkManager networkmanager = NetworkManager.provideLocalClient(socketaddress);
          networkmanager.setNetHandler(new NetHandlerLoginClient(networkmanager, this, (GuiScreen)null));
 -        networkmanager.sendPacket(new C00Handshake(316, socketaddress.toString(), 0, EnumConnectionState.LOGIN));
--        networkmanager.sendPacket(new CPacketLoginStart(this.getSession().getProfile()));
-+        com.mojang.authlib.GameProfile gameProfile = this.getSession().getProfile();
 +        //Forge thing
 +        networkmanager.sendPacket(new C00Handshake(316, socketaddress.toString(), 0, EnumConnectionState.LOGIN, Reflector.forgeExists()));
 +        if(Reflector.forgeExists())
 +        	if (!Reflector.callBoolean(this.getSession(), Reflector.ForgeSession_hasCachedProperties))
 +        	{
++                com.mojang.authlib.GameProfile gameProfile = this.getSession().getProfile();
 +        		gameProfile = sessionService.fillProfileProperties(gameProfile, true); //Forge: Fill profile properties upon game load. Fixes MC-52974.
 +        		Reflector.call(this.getSession(), Reflector.ForgeSession_setProperties, new Object[]{gameProfile.getProperties()});
 +        	}
-+        networkmanager.sendPacket(new CPacketLoginStart(gameProfile));
+         networkmanager.sendPacket(new CPacketLoginStart(this.getSession().getProfile()));
          this.myNetworkManager = networkmanager;
      }
- 
-@@ -2459,6 +3179,9 @@
+@@ -2459,6 +3175,9 @@
       */
      public void loadWorld(@Nullable WorldClient worldClientIn)
      {
@@ -1796,19 +1793,19 @@
          this.loadWorld(worldClientIn, "");
      }
  
-@@ -2467,6 +3190,11 @@
+@@ -2467,6 +3186,11 @@
       */
      public void loadWorld(@Nullable WorldClient worldClientIn, String loadingMessage)
      {
-+		if (worldClientIn != null && Reflector.EventBus.exists())
++		if (this.world != null && Reflector.EventBus.exists())
 +		{
-+			Reflector.postForgeBusEvent(Reflector.ForgeWorldEvent_Unload_Constructor, new Object[] {this.world});
++			Reflector.postForgeBusEvent(Reflector.ForgeWorldEvent_Unload_Constructor, this.world);
 +		}
 +    	
          if (worldClientIn == null)
          {
              NetHandlerPlayClient nethandlerplayclient = this.getConnection();
-@@ -2478,9 +3206,25 @@
+@@ -2478,9 +3202,25 @@
  
              if (this.theIntegratedServer != null && this.theIntegratedServer.isAnvilFileSet())
              {
@@ -1836,7 +1833,7 @@
              this.theIntegratedServer = null;
              this.guiAchievement.clearAchievements();
              this.entityRenderer.resetData();
-@@ -2502,6 +3246,11 @@
+@@ -2502,6 +3242,11 @@
              this.ingameGUI.resetPlayersOverlayFooterHeader();
              this.setServerData((ServerData)null);
              this.integratedServerIsRunning = false;
@@ -1848,7 +1845,7 @@
          }
  
          this.mcSoundHandler.stopSounds();
-@@ -2608,6 +3357,7 @@
+@@ -2608,6 +3353,7 @@
          return theMinecraft == null || !theMinecraft.gameSettings.hideGUI;
      }
  
@@ -1856,7 +1853,7 @@
      public static boolean isFancyGraphicsEnabled()
      {
          return theMinecraft != null && theMinecraft.gameSettings.fancyGraphics;
-@@ -2624,8 +3374,16 @@
+@@ -2624,8 +3370,16 @@
      /**
       * Called when user clicked he's mouse middle button (pick block)
       */
@@ -1874,7 +1871,7 @@
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
              boolean flag = this.player.capabilities.isCreativeMode;
-@@ -2789,7 +3547,8 @@
+@@ -2789,7 +3543,8 @@
          }
      }
  
@@ -1884,7 +1881,7 @@
      {
          NBTTagCompound nbttagcompound = te.writeToNBT(new NBTTagCompound());
  
-@@ -3100,6 +3859,11 @@
+@@ -3100,6 +3855,11 @@
       */
      public static int getGLMaximumTextureSize()
      {
@@ -1896,7 +1893,7 @@
          for (int i = 16384; i > 0; i >>= 1)
          {
              GlStateManager.glTexImage2D(32868, 0, 6408, i, i, 0, 6408, 5121, (IntBuffer)null);
-@@ -3266,7 +4030,7 @@
+@@ -3266,7 +4026,7 @@
      }
  
      public void dispatchKeypresses()
@@ -1905,7 +1902,7 @@
          int i = Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey();
  
          if (i != 0 && !Keyboard.isRepeatEvent())
-@@ -3419,4 +4183,1209 @@
+@@ -3419,4 +4179,1209 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }
