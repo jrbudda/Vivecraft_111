@@ -749,11 +749,11 @@
 +    			jkatvr.query();
 +  			
 +            	speed =  jkatvr.getSpeed() * jkatvr.walkDirection() * mc.vrSettings.movementSpeedMultiplier;
-+            	directionVec = new Vec3d(0, 0,speed);
-+    			directionVec=directionVec.rotateYaw(-jkatvr.getYaw()* PIOVER180);	    		
++             	directionVec = new Vec3d(0, 0,speed);
++    			directionVec=directionVec.rotateYaw(-jkatvr.getYaw()* PIOVER180 + mc.vrPlayer.worldRotationRadians);	    		
 +
 +    			if(this.capabilities.isFlying || this.inWater){
-+					directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);				
++                	directionVec=directionVec.rotatePitch(con.getHMDPitch_World()* PIOVER180);				
 +    			}else{
 +
 +    			}

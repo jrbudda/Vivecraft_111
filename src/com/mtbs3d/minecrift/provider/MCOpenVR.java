@@ -133,6 +133,10 @@ public class MCOpenVR
 	static float laimPitch = 0;
 	static float laimYaw = 0;
 
+	
+	static float haimPitch = 0;
+	static float haimYaw = 0;
+	
 	static Vec3d[] aimSource = new Vec3d[3];
 
 	static Vector3f headDirection = new Vector3f();
@@ -2407,6 +2411,10 @@ public class MCOpenVR
 			hmdHistory.add(eye);
 			Vector3f v3 = MCOpenVR.hmdRotation.transform(new Vector3f(0,-.1f, .1f));
 			hmdPivotHistory.add(new Vec3d(v3.x+eye.xCoord, v3.y+eye.yCoord, v3.z+eye.zCoord));
+			
+			haimPitch = (float)Math.toDegrees(Math.asin(headDirection.y/headDirection.length()));
+			haimYaw = (float)Math.toDegrees(Math.atan2(headDirection.x, headDirection.z));
+
 		}
 		
 		{//right controller

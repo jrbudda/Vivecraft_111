@@ -36,7 +36,7 @@ public class jkatvr implements Library {
 			IntByReference isMoving, 
 			FloatByReference Distancer);
 	
-	static float yaw;
+	static float yaw, yawOffset;
 	static double power;
 	static int direction;
 	static int ismoving;
@@ -56,20 +56,26 @@ public class jkatvr implements Library {
 			boolean b = GetWalkerData(0, y, pow, m, is, fl);
 			yaw = y.getValue();
 			power = pow.getValue();
-			direction = m.getValue();
+			direction = -m.getValue();
 			ismoving = is.getValue();
+			yaw = yaw / 1024f * 360f;
 		} catch (Exception e) {
 			System.out.println("KATVR Error: " + e.getMessage());		
 		}
 	}
 	
 	public static float getYaw(){
-		return yaw / 1024f * 360f;
+		return yaw - yawOffset;
 	}
 	
 	public static boolean isMoving(){
 		return ismoving == 1;
 	}
+	
+	public static void resetYaw(float offsetDegrees){
+		yawOffset = offsetDegrees + yaw;
+	}
+	
 	
 	public static float walkDirection(){
 		return direction;

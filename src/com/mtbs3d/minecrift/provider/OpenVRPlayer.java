@@ -1462,7 +1462,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 		Vec3d dir = getHMDDir_World();
 		 return (float)Math.toDegrees(Math.atan2(-dir.xCoord, dir.zCoord));      
 	}
-
+	
 	@Override
 	public float getHMDPitch_World() {
 		Vec3d dir = getHMDDir_World();
@@ -1559,6 +1559,10 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 		return MCOpenVR.laimYaw;
 	}
 
+	public float getHMDYaw_Room() {
+		return MCOpenVR.haimYaw;
+	}
+	
 	@Override
 	public float getControllerPitch_Room(int controller) {
 		if(controller == 0) return MCOpenVR.aimPitch;

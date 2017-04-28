@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/gui/GuiIngameMenu.java
 +++ b/net/minecraft/client/gui/GuiIngameMenu.java
-@@ -1,11 +1,18 @@
+@@ -1,11 +1,21 @@
  package net.minecraft.client.gui;
  
  import java.io.IOException;
@@ -8,9 +8,12 @@
 +import com.mtbs3d.minecrift.gui.GuiQuickCommandsInGame;
 +import com.mtbs3d.minecrift.provider.MCOpenVR;
 +import com.mtbs3d.minecrift.settings.AutoCalibration;
++import com.mtbs3d.minecrift.utils.jkatvr;
++
 +import net.minecraft.client.Minecraft;
  import net.minecraft.client.gui.achievement.GuiAchievements;
  import net.minecraft.client.gui.achievement.GuiStats;
++import net.minecraft.client.main.Main;
  import net.minecraft.client.multiplayer.WorldClient;
  import net.minecraft.client.resources.I18n;
 +import net.minecraft.client.settings.KeyBinding;
@@ -19,7 +22,7 @@
  
  public class GuiIngameMenu extends GuiScreen
  {
-@@ -19,22 +26,40 @@
+@@ -19,22 +29,43 @@
      public void initGui()
      {
          this.saveStep = 0;
@@ -72,11 +75,14 @@
 +     	this.buttonList.add(new GuiButton(5, this.width / 2 - 100, this.height / 4 + 48 + var1, 98, 20, I18n.format("gui.achievements", new Object[0])));
 +     	this.buttonList.add(new GuiButton(6, this.width / 2 + 2, this.height / 4 + 48 + var1, 98, 20, I18n.format("gui.stats", new Object[0])));
 + 
++     	if(Main.katvr)
++           	this.buttonList.add(new GuiButton(106, this.width / 2 + 100,this.height / 4  + var1, 98, 20, "Align KAT WALK"));
++     	
 +     	var3.enabled = this.mc.isSingleplayer() && !this.mc.getIntegratedServer().getPublic();
      }
  
      /**
-@@ -71,27 +96,64 @@
+@@ -71,27 +102,69 @@
  
              case 2:
              case 3:
@@ -131,6 +137,11 @@
 +	        case 105:
 +		        AutoCalibration.calibrateManual();
 +		        Minecraft.getMinecraft().vrSettings.saveOptions();
++		        this.mc.displayGuiScreen((GuiScreen)null);
++		        this.mc.setIngameFocus();
++		        break;
++	        case 106:
++	        	jkatvr.resetYaw(mc.vrPlayer.getHMDYaw_Room());
 +		        this.mc.displayGuiScreen((GuiScreen)null);
 +		        this.mc.setIngameFocus();
 +		        break;
