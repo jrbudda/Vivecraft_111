@@ -72,13 +72,13 @@ def create_install(mcp_dir):
                 #if cur_file in {'MinecriftClassTransformer.class','MinecriftForgeTweaker.class','MinecriftClassTransformer$Stage.class','MinecriftClassTransformer$1.class','MinecriftClassTransformer$2.class','MinecriftClassTransformer$3.class','MinecriftClassTransformer$4.class'}:
                 if cur_file in {'brl.class', 'brl$1.class', 'brl$2.class', 'brl$3.class', 'brl$4.class', 'brl$5.class', 'brl$a.class'}: #skip facebakery
                     continue
-				if cur_file in {'aej.class', 'aej$1.class', 'aej$2.class', 'aej$3.class', 'aej$4.class', 'aej$5.class', 'aej$6.class', 'aej$7.class', 'aej$8.class', 'aej$9.class', 'aej$10.class', 'aej$11.class', 'aej$12.class'}: #skip creativetabs - wtf
-					continue
+                if cur_file in {'aej.class', 'aej$1.class', 'aej$2.class', 'aej$3.class', 'aej$4.class', 'aej$5.class', 'aej$6.class', 'aej$7.class', 'aej$8.class', 'aej$9.class', 'aej$10.class', 'aej$11.class', 'aej$12.class'}: #skip creativetabs - wtf
+                    continue
                 if cur_file in {'big.class', 'bip.class', 'bip$a.class', 'bip$b.class'}: #skip guicontainer and guicontainercreative - asm
                     continue
                 if cur_file in {'Matrix4f.class'}: #why
                     continue
-				# Just don't ask about this nonsense because I don't have any idea
+                # Just don't ask about this nonsense because I don't have any idea
                 if cur_file in {'brd.class'}: #skip bakedquad
                     continue
                 if cur_file in {'bsz.class', 'bsz$1.class', 'bsz$2.class', 'bsz$3.class', 'bsz$a.class'}: #skip chunkrenderdispatcher
