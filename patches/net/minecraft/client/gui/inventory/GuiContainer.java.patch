@@ -27,14 +27,14 @@
              this.drawItemStack(itemstack, mouseX - i - 8, mouseY - j - k2, s);
          }
  
-@@ -195,6 +196,7 @@
+@@ -192,6 +193,7 @@
+         }
+ 
+         GlStateManager.popMatrix();
++        GlStateManager.colorMask(true, true, true, true);
  
          if (inventoryplayer.getItemStack().isEmpty() && this.theSlot != null && this.theSlot.getHasStack())
          {
-+            GlStateManager.colorMask(true, true, true, true);
-             ItemStack itemstack1 = this.theSlot.getStack();
-             this.renderToolTip(itemstack1, mouseX, mouseY);
-         }
 @@ -422,7 +424,7 @@
                          }
                          else

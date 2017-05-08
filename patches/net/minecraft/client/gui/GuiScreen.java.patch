@@ -281,7 +281,7 @@
      }
  
      /**
-@@ -765,4 +862,75 @@
+@@ -765,4 +862,74 @@
      {
          this.setWorldAndResolution(mcIn, w, h);
      }
@@ -343,17 +343,16 @@
 +        this.mouseClickMove(guiX, guiY, this.eventButton, var3);
 +    }
 +
-+    public int getMouseX()
++    public int getMouseXPos()
 +    {
 +        int mX = Mouse.getX() * this.mc.currentScreen.width / this.mc.displayWidth;
 +        return mX;
 +    }
 +
-+    public int getMouseY()
++    public int getMouseYPos()
 +    {
 +        int mY = this.mc.currentScreen.height - Mouse.getY() * this.mc.currentScreen.height / this.mc.displayHeight - 1;
 +        return mY;
 +    }
 +
-+    
  }

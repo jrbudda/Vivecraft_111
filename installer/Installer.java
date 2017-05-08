@@ -1593,7 +1593,9 @@ public class Installer extends JPanel  implements PropertyChangeListener
 		if(createProfile.isSelected()){
 			out += "Please make sure the Minecraft Launcher is not running.";
 		}
+		ramAllocation.setSelectedIndex(1);
     	if (useForge.isSelected()){
+			ramAllocation.setSelectedIndex(2);
 			out += "<br>Please make sure Forge has been installed first.";
     	}
     	if (useForge.isSelected() && useShadersMod.isSelected()){
@@ -1602,7 +1604,6 @@ public class Installer extends JPanel  implements PropertyChangeListener
     	out+="</html>";
     	instructions.setText(out);
 		ramAllocation.setEnabled(createProfile.isSelected());
-    	
     }
     
     private void updateFilePath()
