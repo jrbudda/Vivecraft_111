@@ -2224,7 +2224,7 @@ public class MCOpenVR
 			guiPos_World = new Vector3f(
 					(float) (0 + mc.vrPlayer.getRoomOriginPos_World().xCoord),
 					(float) (1.3f + mc.vrPlayer.getRoomOriginPos_World().yCoord),
-					(float) ((playArea != null ? -playArea[1] / 2 : 1.5f) - 0.3f + mc.vrPlayer.getRoomOriginPos_World().zCoord));			
+					(float) ((playArea != null ? -playArea[1] / 2 : -1.5f) - 0.3f + mc.vrPlayer.getRoomOriginPos_World().zCoord));			
 			
 			guiRotationPose = new Matrix4f();
 			guiRotationPose.M[0][0] = guiRotationPose.M[1][1] = guiRotationPose.M[2][2] = guiRotationPose.M[3][3] = 1.0F;
