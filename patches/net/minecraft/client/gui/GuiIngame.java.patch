@@ -352,7 +352,7 @@
      {
          if (!stack.isEmpty())
          {
-@@ -1380,4 +1394,42 @@
+@@ -1380,4 +1394,43 @@
      {
          return this.overlayBoss;
      }
@@ -367,6 +367,7 @@
 +		GlStateManager.disableDepth();
 +		GlStateManager.disableLighting();
 +		GlStateManager.colorMask(true, true, true, false);
++		GlStateManager.color(1, 1, 1, 1);
 +
 +		this.mc.getTextureManager().bindTexture(Gui.ICONS);
 +		float menuMousePointerSize = 16f * this.mc.vrSettings.menuCrosshairScale;

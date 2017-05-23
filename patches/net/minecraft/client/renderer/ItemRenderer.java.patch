@@ -64,7 +64,7 @@
  public class ItemRenderer
  {
      private static final ResourceLocation RES_MAP_BACKGROUND = new ResourceLocation("textures/map/map_background.png");
-@@ -48,21 +77,29 @@
+@@ -48,21 +77,34 @@
      private float prevEquippedProgressOffHand;
      private final RenderManager renderManager;
      private final RenderItem itemRenderer;
@@ -91,14 +91,19 @@
 -        this.renderItemSide(entityIn, heldStack, transform, false);
 +        this.renderItemSide(0,entityIn, heldStack, transform, false);
      }
- 
+-
 -    public void renderItemSide(EntityLivingBase entitylivingbaseIn, ItemStack heldStack, ItemCameraTransforms.TransformType transform, boolean leftHanded)
--    {
++    
++    public void renderItemSide(EntityLivingBase entityIn, ItemStack heldStack, ItemCameraTransforms.TransformType transform)
+     {
++        this.renderItemSide(0,entityIn, heldStack, transform, false);
++    }
++
 +    public void renderItemSide(float par1, EntityLivingBase entitylivingbaseIn, ItemStack heldStack, ItemCameraTransforms.TransformType transform, boolean rightSide)    {
          if (!heldStack.isEmpty())
          {
              Item item = heldStack.getItem();
-@@ -70,17 +107,17 @@
+@@ -70,17 +112,17 @@
              GlStateManager.pushMatrix();
              boolean flag = this.itemRenderer.shouldRenderItemIn3D(heldStack) && block.getBlockLayer() == BlockRenderLayer.TRANSLUCENT;
  
@@ -127,7 +132,7 @@
  
              GlStateManager.popMatrix();
          }
-@@ -98,7 +135,7 @@
+@@ -98,7 +140,7 @@
          GlStateManager.popMatrix();
      }
  
@@ -136,7 +141,7 @@
      {
          AbstractClientPlayer abstractclientplayer = this.mc.player;
          int i = this.mc.world.getCombinedLight(new BlockPos(abstractclientplayer.posX, abstractclientplayer.posY + (double)abstractclientplayer.getEyeHeight(), abstractclientplayer.posZ), 0);
-@@ -113,6 +150,7 @@
+@@ -113,6 +155,7 @@
          OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, f, f1);
      }
  
@@ -144,7 +149,7 @@
      private void rotateArm(float p_187458_1_)
      {
          EntityPlayerSP entityplayersp = this.mc.player;
-@@ -133,6 +171,7 @@
+@@ -133,6 +176,7 @@
          return f;
      }
  
@@ -152,7 +157,7 @@
      private void renderArms()
      {
          if (!this.mc.player.isInvisible())
-@@ -147,6 +186,7 @@
+@@ -147,6 +191,7 @@
          }
      }
  
@@ -160,7 +165,7 @@
      private void renderArm(EnumHandSide p_187455_1_)
      {
          this.mc.getTextureManager().bindTexture(this.mc.player.getLocationSkin());
-@@ -174,27 +214,29 @@
+@@ -174,27 +219,29 @@
      private void renderMapFirstPersonSide(float p_187465_1_, EnumHandSide p_187465_2_, float p_187465_3_, ItemStack p_187465_4_)
      {
          float f = p_187465_2_ == EnumHandSide.RIGHT ? 1.0F : -1.0F;
@@ -205,7 +210,7 @@
          GlStateManager.popMatrix();
      }
  
-@@ -203,14 +245,17 @@
+@@ -203,14 +250,17 @@
          float f = MathHelper.sqrt(p_187463_3_);
          float f1 = -0.2F * MathHelper.sin(p_187463_3_ * (float)Math.PI);
          float f2 = -0.4F * MathHelper.sin(f * (float)Math.PI);
@@ -229,7 +234,7 @@
          this.renderMapFirstPerson(this.itemStackMainHand);
      }
  
-@@ -241,100 +286,132 @@
+@@ -241,100 +291,132 @@
          GlStateManager.enableLighting();
      }
  
@@ -431,7 +436,7 @@
              }
          }
  
-@@ -343,200 +420,532 @@
+@@ -343,200 +425,529 @@
          this.rotateArm(partialTicks);
          GlStateManager.enableRescaleNormal();
  
@@ -847,9 +852,6 @@
 +    				this.itemRenderer.ismainhand = mainHand;
 +    				this.itemRenderer.isfphand = true;
 +
-+
-+
-+
 +    				//VIVE use 'NONE' transforms.
 +    				if(!thing)
 +    					this.renderItemSide(partialTicks,player, itemstack, rightSide ? ItemCameraTransforms.TransformType.NONE : ItemCameraTransforms.TransformType.NONE, !rightSide);
@@ -1109,7 +1111,7 @@
          vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
          vertexbuffer.pos(-1.0D, -1.0D, -0.5D).tex((double)f7, (double)f9).endVertex();
          vertexbuffer.pos(1.0D, -1.0D, -0.5D).tex((double)f6, (double)f9).endVertex();
-@@ -560,17 +969,14 @@
+@@ -560,17 +971,14 @@
              VertexBuffer vertexbuffer = tessellator.getBuffer();
              float f = this.mc.player.getBrightness(partialTicks);
              GlStateManager.color(f, f, f, 0.5F);
