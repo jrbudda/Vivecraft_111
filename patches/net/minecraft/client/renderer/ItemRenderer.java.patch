@@ -94,9 +94,9 @@
 -
 -    public void renderItemSide(EntityLivingBase entitylivingbaseIn, ItemStack heldStack, ItemCameraTransforms.TransformType transform, boolean leftHanded)
 +    
-+    public void renderItemSide(EntityLivingBase entityIn, ItemStack heldStack, ItemCameraTransforms.TransformType transform)
++    public void renderItemSide(EntityLivingBase entityIn, ItemStack heldStack, ItemCameraTransforms.TransformType transform, boolean rightSide)
      {
-+        this.renderItemSide(0,entityIn, heldStack, transform, false);
++        this.renderItemSide(0,entityIn, heldStack, transform, rightSide);
 +    }
 +
 +    public void renderItemSide(float par1, EntityLivingBase entitylivingbaseIn, ItemStack heldStack, ItemCameraTransforms.TransformType transform, boolean rightSide)    {

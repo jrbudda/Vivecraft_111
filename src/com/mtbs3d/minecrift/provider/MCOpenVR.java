@@ -2222,9 +2222,9 @@ public class MCOpenVR
 			mc.vrPlayer.worldRotationRadians = (float) Math.toRadians( mc.vrSettings.vrWorldRotation);
 			float[] playArea = getPlayAreaSize();
 			guiPos_Room = new Vector3f(
-					(float) (0 + mc.vrPlayer.getRoomOriginPos_World().xCoord),
-					(float) (1.3f + mc.vrPlayer.getRoomOriginPos_World().yCoord),
-					(float) ((playArea != null ? -playArea[1] / 2 : -1.5f) - 0.3f + mc.vrPlayer.getRoomOriginPos_World().zCoord));			
+					(float) (0),
+					(float) (1.3f),
+					(float) (playArea != null ? -playArea[1] / 2 : -1.5f) - 0.3f);			
 			
 			guiRotationPose = new Matrix4f();
 			guiRotationPose.M[0][0] = guiRotationPose.M[1][1] = guiRotationPose.M[2][2] = guiRotationPose.M[3][3] = 1.0F;
@@ -2279,13 +2279,14 @@ public class MCOpenVR
 					;
 
 			if(appearOverBlock && mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == RayTraceResult.Type.BLOCK){	
-
-				guiScale =(float) (Math.sqrt(mc.vrPlayer.worldScale) * 2);
+				
 				Vector3f guiPos_World =new Vector3f((float) mc.objectMouseOver.getBlockPos().getX() + 0.5f,
 						(float) mc.objectMouseOver.getBlockPos().getY() + 1.7f,
 						(float) mc.objectMouseOver.getBlockPos().getZ() + 0.5f);
-
+				
 				Vec3d pos = mc.roomScale.getHMDPos_World();
+				guiScale =(float) (Math.sqrt(mc.vrPlayer.worldScale) * (pos.distanceTo(new Vec3d(guiPos_World.x, guiPos_World.y, guiPos_World.z)) / 2) * 2);
+
 				Vector3f look = new Vector3f();
 				look.x = (float) (guiPos_World.x - pos.xCoord);
 				look.y = (float) (guiPos_World.y - pos.yCoord);
@@ -2297,7 +2298,7 @@ public class MCOpenVR
 				Matrix4f tilt = OpenVRUtil.rotationXMatrix(pitch);	
 				guiRotationPose = Matrix4f.multiply(guiRotationPose,tilt);		
 				
-				guiPos_World = guiPos_World.subtract(new Vector3f((float)mc.entityRenderer.interPolatedRoomOrigin.xCoord,
+				guiPos_Room = guiPos_World.subtract(new Vector3f((float)mc.entityRenderer.interPolatedRoomOrigin.xCoord,
 						(float) mc.entityRenderer.interPolatedRoomOrigin.yCoord, (float) mc.entityRenderer.interPolatedRoomOrigin.zCoord));
 			
 			}				
