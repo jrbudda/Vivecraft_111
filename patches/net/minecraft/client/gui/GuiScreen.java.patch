@@ -161,17 +161,27 @@
                  }
              }
          }
-@@ -528,8 +578,11 @@
-         this.fontRendererObj = mc.fontRendererObj;
-         this.width = width;
-         this.height = height;
+@@ -523,13 +573,16 @@
+      */
+     public void setWorldAndResolution(Minecraft mc, int width, int height)
+     {
+-        this.mc = mc;
+-        this.itemRender = mc.getRenderItem();
+-        this.fontRendererObj = mc.fontRendererObj;
+-        this.width = width;
+-        this.height = height;
 -        this.buttonList.clear();
 -        this.initGui();
-+        if (!Reflector.forgeExists() || !Reflector.postForgeBusEvent(Reflector.GuiScreenEvent_InitGuiEvent_Pre_Constructor, this, this.buttonList)) {
-+	        this.buttonList.clear();
-+	        this.initGui();
-+	        if (Reflector.forgeExists()) Reflector.postForgeBusEvent(Reflector.GuiScreenEvent_InitGuiEvent_Post_Constructor, this, this.buttonList);
-+        }
++    	this.mc = mc;
++    	this.itemRender = mc.getRenderItem();
++    	this.fontRendererObj = mc.fontRendererObj;
++    	this.width = width;
++    	this.height = height;
++    	if (!Reflector.forgeExists() || !Reflector.postForgeBusEvent(Reflector.GuiScreenEvent_InitGuiEvent_Pre_Constructor, this, this.buttonList)) {
++    		this.buttonList.clear();
++    		this.initGui();
++    		if (Reflector.forgeExists()) Reflector.postForgeBusEvent(Reflector.GuiScreenEvent_InitGuiEvent_Post_Constructor, this, this.buttonList);
++    	}
      }
  
      /**

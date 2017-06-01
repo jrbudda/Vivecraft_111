@@ -1,10 +1,11 @@
 --- a/net/minecraft/client/renderer/entity/layers/LayerHeldItem.java
 +++ b/net/minecraft/client/renderer/entity/layers/LayerHeldItem.java
-@@ -1,13 +1,24 @@
+@@ -1,13 +1,26 @@
  package net.minecraft.client.renderer.entity.layers;
  
 +import java.util.UUID;
 +
++import com.mtbs3d.minecrift.gameplay.BowTracker;
 +import com.mtbs3d.minecrift.render.PlayerModelController;
 +import com.mtbs3d.minecrift.render.PlayerModelController.RotInfo;
 +
@@ -19,13 +20,14 @@
  import net.minecraft.entity.EntityLivingBase;
 +import net.minecraft.entity.player.EntityPlayer;
 +import net.minecraft.init.Items;
++import net.minecraft.item.ItemBow;
  import net.minecraft.item.ItemStack;
  import net.minecraft.util.EnumHandSide;
 +import net.minecraft.util.math.Vec3d;
  
  public class LayerHeldItem implements LayerRenderer<EntityLivingBase>
  {
-@@ -45,19 +56,93 @@
+@@ -45,19 +58,93 @@
      {
          if (!p_188358_2_.isEmpty())
          {
@@ -45,7 +47,7 @@
 +            	}
 +            }
 +            
-+            if(handSide == EnumHandSide.LEFT && vr && p_188358_1_.getHeldItemMainhand().getItem() == Items.BOW ){
++            if(handSide == EnumHandSide.LEFT && vr && BowTracker.isHoldingBow(p_188358_1_)){
 +            	return;
 +            }
 +            
@@ -72,7 +74,7 @@
 +            }
 +            else{
 +    			GlStateManager.translate((float)(flag ? -1 : 1) / 16.0F, 0.125F,  -.2125f);
-+            	if(p_188358_2_.getItem() == Items.BOW && !rotinfo.seated){
++            	if(BowTracker.isBow(p_188358_2_) && !rotinfo.seated){
 +      
 +              		Vec3d diff = rotinfo.leftArmPos.subtract(rotinfo.rightArmPos);
 +            		double ltor = Math.atan2(-diff.xCoord, diff.zCoord) + Math.PI/2;   

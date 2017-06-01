@@ -93,7 +93,7 @@
      /** Ticks left before sprinting is disabled. */
      public int sprintingTicksLeft;
      public float renderArmYaw;
-@@ -164,13 +201,32 @@
+@@ -164,13 +201,43 @@
          this.statWriter = statFile;
          this.mc = mcIn;
          this.dimension = 0;
@@ -119,6 +119,17 @@
       */
      public boolean attackEntityFrom(DamageSource source, float amount)
      {
++    	//VIVECRAFT
++    	if(amount > 0){
++    		int dur = 1000;
++    		if(source.isExplosion())dur = 2000;
++    		if(source == DamageSource.CACTUS) dur = 200;
++    		//Vivecraft trigger haptics
++    		MCOpenVR.triggerHapticPulse(0, dur);
++    		MCOpenVR.triggerHapticPulse(1, dur);    	
++    	}
++    	//END VIVECRAFT
++
 +    	//Forge
 +    	if(Reflector.forgeExists())
 +    		Reflector.call(Reflector.ForgeHooks_onLivingAttack, new Object[]{this, source, amount});
@@ -126,7 +137,7 @@
          return false;
      }
  
-@@ -205,11 +261,30 @@
+@@ -205,11 +272,30 @@
          }
      }
  
@@ -158,7 +169,7 @@
  
      /**
       * interpolated look vector
-@@ -283,6 +358,7 @@
+@@ -283,6 +369,7 @@
              this.serverSneakState = flag1;
          }
  
@@ -166,7 +177,7 @@
          if (this.isCurrentViewEntity())
          {
              AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
-@@ -295,26 +371,39 @@
+@@ -295,26 +382,39 @@
              boolean flag2 = d0 * d0 + d1 * d1 + d2 * d2 > 9.0E-4D || this.positionUpdateTicks >= 20;
              boolean flag3 = d3 != 0.0D || d4 != 0.0D;
  
@@ -226,7 +237,7 @@
              }
  
              if (flag2)
-@@ -333,9 +422,15 @@
+@@ -333,9 +433,15 @@
  
              this.prevOnGround = this.onGround;
              this.autoJumpEnabled = this.mc.gameSettings.autoJump;
@@ -242,7 +253,7 @@
      @Nullable
  
      /**
-@@ -349,11 +444,23 @@
+@@ -349,11 +455,23 @@
          return null;
      }
  
@@ -268,7 +279,7 @@
      /**
       * Sends a chat message from the player.
       */
-@@ -522,72 +629,129 @@
+@@ -522,72 +640,129 @@
          }
      }
  
@@ -462,7 +473,7 @@
      }
  
      /**
-@@ -595,7 +759,11 @@
+@@ -595,7 +770,11 @@
       */
      private boolean isOpenBlockSpace(BlockPos pos)
      {
@@ -475,7 +486,7 @@
      }
  
      /**
-@@ -656,7 +824,19 @@
+@@ -656,7 +835,19 @@
  
      public void playSound(SoundEvent soundIn, float volume, float pitch)
      {
@@ -496,7 +507,7 @@
      }
  
      /**
-@@ -1000,7 +1180,7 @@
+@@ -1000,7 +1191,7 @@
                      this.sendPlayerAbilities();
                  }
              }
@@ -505,7 +516,7 @@
              {
                  if (this.flyToggleTimer == 0)
                  {
-@@ -1088,6 +1268,10 @@
+@@ -1088,6 +1279,10 @@
  
          super.onLivingUpdate();
  
@@ -516,7 +527,7 @@
          if (this.onGround && this.capabilities.isFlying && !this.mc.playerController.isSpectatorMode())
          {
              this.capabilities.isFlying = false;
-@@ -1106,8 +1290,11 @@
+@@ -1106,8 +1301,11 @@
          if (this.getRidingEntity() instanceof EntityBoat)
          {
              EntityBoat entityboat = (EntityBoat)this.getRidingEntity();
@@ -530,7 +541,7 @@
          }
      }
  
-@@ -1138,10 +1325,40 @@
+@@ -1138,10 +1336,40 @@
       */
      public void move(MoverType type, double x, double y, double z)
      {
@@ -575,7 +586,7 @@
      }
  
      public boolean isAutoJumpEnabled()
-@@ -1167,12 +1384,16 @@
+@@ -1167,12 +1395,16 @@
                      float f = this.getAIMoveSpeed();
                      float f1 = (float)vec3d2.lengthSquared();
  
@@ -594,7 +605,7 @@
                          vec3d2 = new Vec3d((double)(f2 * f5 - f3 * f4), vec3d2.yCoord, (double)(f3 * f5 + f2 * f4));
                          f1 = (float)vec3d2.lengthSquared();
  
-@@ -1292,4 +1513,335 @@
+@@ -1292,4 +1524,337 @@
              }
          }
      }
@@ -635,6 +646,8 @@
 +        OpenVRPlayer.get().snapRoomOriginToPlayerEntity(this, true, false, 1);
 +      
 +		if(initFromServer == false){
++			this.setLocationAndAngles(x, y, z, yaw, pitch);
++			mc.entityRenderer.interpolatedPlayerPos = new Vec3d(x,y,z);
 +            initFromServer = true;    
 +        }
 +    }

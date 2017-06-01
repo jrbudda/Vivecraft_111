@@ -40,12 +40,11 @@ public class BackpackTracker {
 		for(int c=0; c<2; c++) { //just main for 1710, no dual wielding
 			Vec3d controllerPos = provider.getControllerPos_Room(c);//.add(provider.getCustomControllerVector(c, new Vec3(0, 0, -0.1)));
 			Vec3d controllerDir = minecraft.roomScale.getControllerDir_World(c);
-			Vec3d hmddir = provider.getHMDDir_World();
+			Vec3d hmddir = minecraft.vrPlayer.getHMDDir_Room();
 			Vec3d hmdpos = provider.getHMDPos_Room();
 			Vec3d delta = hmdPos.subtract(controllerPos);
 			double dot = controllerDir.dotProduct(down);
 			double dotDelta = delta.dotProduct(hmddir);
-
 			boolean zone = ((Math.abs(hmdPos.yCoord - controllerPos.yCoord)) < 0.25) && //controller below hmd
 					(dotDelta > 0); // behind head
 			

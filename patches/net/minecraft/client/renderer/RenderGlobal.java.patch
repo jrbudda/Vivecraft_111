@@ -1,16 +1,17 @@
 --- a/net/minecraft/client/renderer/RenderGlobal.java
 +++ b/net/minecraft/client/renderer/RenderGlobal.java
-@@ -4,7 +4,9 @@
+@@ -4,7 +4,10 @@
  import com.google.common.collect.Maps;
  import com.google.common.collect.Sets;
  import com.google.gson.JsonSyntaxException;
++import com.mtbs3d.minecrift.provider.MCOpenVR;
 +
  import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 +
  import java.io.IOException;
  import java.util.ArrayDeque;
  import java.util.ArrayList;
-@@ -19,7 +21,9 @@
+@@ -19,7 +22,9 @@
  import java.util.Map;
  import java.util.Random;
  import java.util.Set;
@@ -20,7 +21,7 @@
  import net.minecraft.block.Block;
  import net.minecraft.block.BlockChest;
  import net.minecraft.block.BlockEnderChest;
-@@ -104,11 +108,13 @@
+@@ -104,11 +109,13 @@
  import net.minecraft.world.border.WorldBorder;
  import net.minecraft.world.chunk.Chunk;
  import net.minecraft.world.chunk.IChunkProvider;
@@ -34,7 +35,7 @@
  import shadersmod.client.Shaders;
  import shadersmod.client.ShadersRender;
  
-@@ -200,7 +206,7 @@
+@@ -200,7 +207,7 @@
      public Set chunksToResortTransparency = new LinkedHashSet();
      public Set chunksToUpdateForced = new LinkedHashSet();
      private Deque visibilityDeque = new ArrayDeque();
@@ -43,7 +44,7 @@
      private List<ContainerLocalRenderInformation> renderInfosTileEntities = new ArrayList(1024);
      private List renderInfosNormal = new ArrayList(1024);
      private List renderInfosEntitiesNormal = new ArrayList(1024);
-@@ -391,7 +397,7 @@
+@@ -391,7 +398,7 @@
          }
      }
  
@@ -52,7 +53,7 @@
      {
          int i = 64;
          int j = 6;
-@@ -454,7 +460,7 @@
+@@ -454,7 +461,7 @@
          }
      }
  
@@ -61,7 +62,7 @@
      {
          Random random = new Random(10842L);
          worldRendererIn.begin(7, DefaultVertexFormats.POSITION);
-@@ -648,7 +654,7 @@
+@@ -648,7 +655,7 @@
  
          if (Reflector.MinecraftForgeClient_getRenderPass.exists())
          {
@@ -70,7 +71,7 @@
          }
  
          if (this.renderEntitiesStartupCounter > 0)
-@@ -748,6 +754,8 @@
+@@ -748,6 +755,8 @@
                              {
                                  boolean flag3 = this.mc.getRenderViewEntity() instanceof EntityLivingBase ? ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping() : false;
  
@@ -79,7 +80,7 @@
                                  if ((entity2 != this.mc.getRenderViewEntity() || this.mc.gameSettings.thirdPersonView != 0 || flag3) && (entity2.posY < 0.0D || entity2.posY >= 256.0D || this.world.isBlockLoaded(blockpos$pooledmutableblockpos.setPos(entity2))))
                                  {
                                      ++this.countEntitiesRendered;
-@@ -924,7 +932,7 @@
+@@ -924,7 +933,7 @@
  
                              if (Reflector.callBoolean(tileentity1, Reflector.ForgeTileEntity_shouldRenderInPass, new Object[] {Integer.valueOf(i)}))
                              {
@@ -88,7 +89,7 @@
  
                                  if (axisalignedbb == null || camera.isBoundingBoxInFrustum(axisalignedbb))
                                  {
-@@ -1111,10 +1119,12 @@
+@@ -1111,10 +1120,12 @@
          }
  
          this.mc.mcProfiler.endStartSection("culling");
@@ -103,7 +104,7 @@
          this.lastViewEntityX = viewEntity.posX;
          this.lastViewEntityY = viewEntity.posY;
          this.lastViewEntityZ = viewEntity.posZ;
-@@ -1199,8 +1209,11 @@
+@@ -1199,8 +1210,11 @@
  
                  if (set1.size() == 1)
                  {
@@ -117,7 +118,7 @@
                      set1.remove(enumfacing);
                  }
  
-@@ -1443,22 +1456,22 @@
+@@ -1443,22 +1457,22 @@
          }
      }
  
@@ -156,7 +157,7 @@
  
      public int renderBlockLayer(BlockRenderLayer blockLayerIn, double partialTicks, int pass, Entity entityIn)
      {
-@@ -1706,7 +1719,7 @@
+@@ -1706,7 +1720,7 @@
          if (Reflector.ForgeWorldProvider_getSkyRenderer.exists())
          {
              WorldProvider worldprovider = this.mc.world.provider;
@@ -165,7 +166,7 @@
  
              if (object != null)
              {
-@@ -1722,9 +1735,9 @@
+@@ -1722,9 +1736,9 @@
          else if (this.mc.world.provider.isSurfaceWorld())
          {
              GlStateManager.disableTexture2D();
@@ -177,7 +178,7 @@
              {
                  Shaders.disableTexture2D();
              }
-@@ -1732,7 +1745,7 @@
+@@ -1732,7 +1746,7 @@
              Vec3d vec3d = this.world.getSkyColor(this.mc.getRenderViewEntity(), partialTicks);
              vec3d = CustomColors.getSkyColor(vec3d, this.mc.world, this.mc.getRenderViewEntity().posX, this.mc.getRenderViewEntity().posY + 1.0D, this.mc.getRenderViewEntity().posZ);
  
@@ -186,7 +187,7 @@
              {
                  Shaders.setSkyColor(vec3d);
              }
-@@ -1757,14 +1770,14 @@
+@@ -1757,14 +1771,14 @@
              GlStateManager.depthMask(false);
              GlStateManager.enableFog();
  
@@ -203,7 +204,7 @@
              {
                  Shaders.preSkyList();
              }
-@@ -1788,7 +1801,7 @@
+@@ -1788,7 +1802,7 @@
  
              GlStateManager.disableFog();
  
@@ -212,7 +213,7 @@
              {
                  Shaders.disableFog();
              }
-@@ -1803,7 +1816,7 @@
+@@ -1803,7 +1817,7 @@
              {
                  GlStateManager.disableTexture2D();
  
@@ -221,7 +222,7 @@
                  {
                      Shaders.disableTexture2D();
                  }
-@@ -1846,7 +1859,7 @@
+@@ -1846,7 +1860,7 @@
  
              GlStateManager.enableTexture2D();
  
@@ -230,7 +231,7 @@
              {
                  Shaders.enableTexture2D();
              }
-@@ -1858,14 +1871,14 @@
+@@ -1858,14 +1872,14 @@
              GlStateManager.rotate(-90.0F, 0.0F, 1.0F, 0.0F);
              CustomSky.renderSky(this.world, this.renderEngine, this.world.getCelestialAngle(partialTicks), f15);
  
@@ -247,7 +248,7 @@
              {
                  Shaders.postCelestialRotate();
              }
-@@ -1905,7 +1918,7 @@
+@@ -1905,7 +1919,7 @@
  
              GlStateManager.disableTexture2D();
  
@@ -256,7 +257,7 @@
              {
                  Shaders.disableTexture2D();
              }
-@@ -1936,7 +1949,7 @@
+@@ -1936,7 +1950,7 @@
              GlStateManager.enableAlpha();
              GlStateManager.enableFog();
  
@@ -265,7 +266,7 @@
              {
                  Shaders.enableFog();
              }
-@@ -1944,7 +1957,7 @@
+@@ -1944,7 +1958,7 @@
              GlStateManager.popMatrix();
              GlStateManager.disableTexture2D();
  
@@ -274,7 +275,7 @@
              {
                  Shaders.disableTexture2D();
              }
-@@ -2024,7 +2037,7 @@
+@@ -2024,7 +2038,7 @@
              GlStateManager.popMatrix();
              GlStateManager.enableTexture2D();
  
@@ -283,7 +284,7 @@
              {
                  Shaders.enableTexture2D();
              }
-@@ -2040,7 +2053,7 @@
+@@ -2040,7 +2054,7 @@
              if (Reflector.ForgeWorldProvider_getCloudRenderer.exists())
              {
                  WorldProvider worldprovider = this.mc.world.provider;
@@ -292,7 +293,7 @@
  
                  if (object != null)
                  {
-@@ -2578,7 +2591,7 @@
+@@ -2578,7 +2592,7 @@
  
                          if (tileentity != null)
                          {
@@ -301,3 +302,108 @@
                          }
                      }
  
+@@ -3077,6 +3091,8 @@
+     public void playEvent(EntityPlayer player, int type, BlockPos blockPosIn, int data)
+     {
+         Random random = this.world.rand;
++        
++        boolean playernear =  mc.player !=null && !mc.player.isDead && (mc.player.getPosition().distanceSq(blockPosIn) < 25); ///hmm sure why not.
+ 
+         switch (type)
+         {
+@@ -3133,18 +3149,30 @@
+                 break;
+ 
+             case 1011:
++                if(playernear)
++                	MCOpenVR.triggerHapticPulse(0,250); //VIVECRAFT go thump.
++
+                 this.world.playSound(blockPosIn, SoundEvents.BLOCK_IRON_DOOR_CLOSE, SoundCategory.BLOCKS, 1.0F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
+                 break;
+ 
+             case 1012:
++                if(playernear)
++                	MCOpenVR.triggerHapticPulse(0,250); //VIVECRAFT go thump.
++
+                 this.world.playSound(blockPosIn, SoundEvents.BLOCK_WOODEN_DOOR_CLOSE, SoundCategory.BLOCKS, 1.0F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
+                 break;
+ 
+             case 1013:
++                if(playernear)
++                	MCOpenVR.triggerHapticPulse(0,250); //VIVECRAFT go thump.
++
+                 this.world.playSound(blockPosIn, SoundEvents.BLOCK_WOODEN_TRAPDOOR_CLOSE, SoundCategory.BLOCKS, 1.0F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
+                 break;
+ 
+             case 1014:
++                if(playernear)
++                	MCOpenVR.triggerHapticPulse(0,250); //VIVECRAFT go thump.
++
+                 this.world.playSound(blockPosIn, SoundEvents.BLOCK_FENCE_GATE_CLOSE, SoundCategory.BLOCKS, 1.0F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
+                 break;
+ 
+@@ -3165,14 +3193,26 @@
+                 break;
+ 
+             case 1019:
++                if(playernear){ //this is just mean.
++                	MCOpenVR.triggerHapticPulse(0,750); 
++                	MCOpenVR.triggerHapticPulse(1,750); 
++                }
+                 this.world.playSound(blockPosIn, SoundEvents.ENTITY_ZOMBIE_ATTACK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
+                 break;
+ 
+             case 1020:
++                if(playernear){ //this is just mean.
++                	MCOpenVR.triggerHapticPulse(0,750); 
++                	MCOpenVR.triggerHapticPulse(1,750); 
++                }
+                 this.world.playSound(blockPosIn, SoundEvents.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, SoundCategory.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
+                 break;
+ 
+             case 1021:
++                if(playernear){ //this is just mean.
++                	MCOpenVR.triggerHapticPulse(0,1250); 
++                	MCOpenVR.triggerHapticPulse(1,1250); 
++                }
+                 this.world.playSound(blockPosIn, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
+                 break;
+ 
+@@ -3201,10 +3241,17 @@
+                 break;
+ 
+             case 1030:
++                if(playernear){ 
++                	MCOpenVR.triggerHapticPulse(0,500); 
++                }
+                 this.world.playSound(blockPosIn, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1.0F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
+                 break;
+ 
+             case 1031:
++                if(playernear){ 
++                	MCOpenVR.triggerHapticPulse(0,1250); 
++                	MCOpenVR.triggerHapticPulse(1,1250); 
++                }
+                 this.world.playSound(blockPosIn, SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.BLOCKS, 0.3F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
+                 break;
+ 
+@@ -3225,6 +3272,9 @@
+                 break;
+ 
+             case 1036:
++                if(playernear)
++                	MCOpenVR.triggerHapticPulse(0,250); //VIVECRAFT go thump.
++
+                 this.world.playSound(blockPosIn, SoundEvents.BLOCK_IRON_TRAPDOOR_CLOSE, SoundCategory.BLOCKS, 1.0F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
+                 break;
+ 
+@@ -3264,6 +3314,9 @@
+                     {
+                         soundtype = (SoundType)Reflector.call(block, Reflector.ForgeBlock_getSoundType, new Object[] {Block.getStateById(data), this.world, blockPosIn, null});
+                     }
++                    
++                    if(playernear)
++                    	MCOpenVR.triggerHapticPulse(0,250); //VIVECRAFT go thump.
+ 
+                     this.world.playSound(blockPosIn, soundtype.getBreakSound(), SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F, false);
+                 }

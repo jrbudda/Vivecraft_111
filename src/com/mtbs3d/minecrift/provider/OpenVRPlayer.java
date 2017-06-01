@@ -13,6 +13,8 @@ import de.fruitfly.ovr.util.BufferUtil;
 import io.netty.util.concurrent.GenericFutureListener;
 import jopenvr.OpenVRUtil;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLadder;
+import net.minecraft.block.BlockVine;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
@@ -39,6 +41,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 import net.minecraft.network.play.client.CPacketCustomPayload;
+import net.minecraft.src.Reflector;
 import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -166,6 +169,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     
 	public void checkandUpdateRotateScale(boolean onFrame, float nano){
 		Minecraft mc = Minecraft.getMinecraft();
+		if(mc.player == null || mc.player.initFromServer == false) return;
 		if(!onFrame && mc.currentScreen!=null) return;
 		
 		if(!onFrame) {
@@ -1035,7 +1039,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     	{ //sides  		    		
     		//jrbudda require arc hitting top of block.	unless ladder or vine or creative or limits off.
 
-    		if (testClimb.getBlock() == Blocks.LADDER || testClimb.getBlock() == Blocks.VINE) {
+    		if (testClimb.getBlock() instanceof BlockLadder|| testClimb.getBlock() instanceof BlockVine) {
     			Vec3d dest = new Vec3d(bp.getX()+0.5, bp.getY() + 0.5, bp.getZ()+0.5);
 
     			Block playerblock = mc.world.getBlockState(bp.down()).getBlock();
@@ -1183,25 +1187,44 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 
         	if(is!=null )item = is.getItem();
 
-        	boolean tool = false;
+            boolean tool = false;
+            boolean sword = false;
 
-        	if (item instanceof ItemSword){
-        		entityReachAdd = 2.5f;
-        		weaponLength = 0.4f;
+            if(item instanceof ItemSword){
+            	sword = true;
+            	tool = true;    	
+            }
+            else if (item instanceof ItemTool ||
+            		item instanceof ItemHoe
+            		){
+            	tool = true;
+            }
+            else if(item !=null && Reflector.forgeExists()){ //tinkers hack
+            	String t = item.getClass().getSuperclass().getName().toLowerCase();
+            	//System.out.println(c);
+            	if (t.contains("weapon") || t.contains("sword")) {
+            		sword = true;
+            		tool = true;
+            	} else 	if 	(t.contains("tool")){
+            		tool = true;
+            	}
+            }    
+
+            if (sword){
+                 	entityReachAdd = 2.5f;
+            		weaponLength = 0.3f;
+            		tool = true;
+            } else if (tool){
+            	entityReachAdd = 1.8f;
+            	weaponLength = 0.3f;
         		tool = true;
-        	} else if (item instanceof ItemTool ||
-        			item instanceof ItemHoe
-        			){
-        		entityReachAdd = 1.8f;
-        		weaponLength = 0.4f;
-        		tool = true;
-        	} else if (item !=null){
-        		weaponLength = 0.1f;
-        		entityReachAdd = 0.3f;
-        	} else {
-        		weaponLength = 0.0f;
-        		entityReachAdd = 0.3f;
-        	}
+            } else if (item !=null){
+            	weaponLength = 0.1f;
+            	entityReachAdd = 0.3f;
+            } else {
+            	weaponLength = 0.0f;
+            	entityReachAdd = 0.3f;
+            }
 
         	weaponLength *= this.worldScale;
 
@@ -1305,7 +1328,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         						}
         					}
         				} else {
-        					if(canact && (!mc.vrSettings.realisticClimbEnabled || block.getBlock() != Blocks.LADDER)) { 
+        					if(canact && (!mc.vrSettings.realisticClimbEnabled || !(block.getBlock() instanceof BlockLadder))) { 
         						int p = 3;
         						if(item instanceof ItemHoe){
         							Minecraft.getMinecraft().playerController.
@@ -1459,6 +1482,12 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 		return out;
 	}
 
+	public Vec3d getHMDDir_Room() {
+		Vector3f v3 = MCOpenVR.headDirection;
+		Vec3d out = new Vec3d(v3.x, v3.y, v3.z);
+		return out;
+	}
+	
 	@Override
 	public float getHMDYaw_World() {
 		Vec3d dir = getHMDDir_World();

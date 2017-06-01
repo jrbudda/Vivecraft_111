@@ -21,7 +21,7 @@
  import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
  import net.minecraft.client.renderer.entity.Render;
  import net.minecraft.client.renderer.entity.RenderManager;
-@@ -15,11 +23,25 @@
+@@ -15,11 +23,26 @@
  import net.minecraft.client.renderer.texture.TextureMap;
  import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
  import net.minecraft.entity.EntityLivingBase;
@@ -30,6 +30,7 @@
 +import net.minecraft.init.Blocks;
  import net.minecraft.init.Items;
 +import net.minecraft.init.MobEffects;
++import net.minecraft.item.EnumAction;
  import net.minecraft.item.Item;
 +import net.minecraft.item.ItemArrow;
 +import net.minecraft.item.ItemBlock;
@@ -47,7 +48,7 @@
  import net.minecraft.src.Config;
  import net.minecraft.src.DynamicLights;
  import net.minecraft.src.Reflector;
-@@ -30,9 +52,16 @@
+@@ -30,9 +53,17 @@
  import net.minecraft.util.ResourceLocation;
  import net.minecraft.util.math.BlockPos;
  import net.minecraft.util.math.MathHelper;
@@ -55,6 +56,7 @@
  import net.minecraft.world.storage.MapData;
  import shadersmod.client.Shaders;
  
++import com.mtbs3d.minecrift.gameplay.BowTracker;
 +import com.mtbs3d.minecrift.provider.MCOpenVR;
 +import com.mtbs3d.minecrift.render.OpenGLdebugging;
 +import com.mtbs3d.minecrift.render.RenderVRPlayer;
@@ -64,7 +66,7 @@
  public class ItemRenderer
  {
      private static final ResourceLocation RES_MAP_BACKGROUND = new ResourceLocation("textures/map/map_background.png");
-@@ -48,21 +77,34 @@
+@@ -48,21 +79,34 @@
      private float prevEquippedProgressOffHand;
      private final RenderManager renderManager;
      private final RenderItem itemRenderer;
@@ -103,7 +105,7 @@
          if (!heldStack.isEmpty())
          {
              Item item = heldStack.getItem();
-@@ -70,17 +112,17 @@
+@@ -70,17 +114,17 @@
              GlStateManager.pushMatrix();
              boolean flag = this.itemRenderer.shouldRenderItemIn3D(heldStack) && block.getBlockLayer() == BlockRenderLayer.TRANSLUCENT;
  
@@ -132,7 +134,7 @@
  
              GlStateManager.popMatrix();
          }
-@@ -98,7 +140,7 @@
+@@ -98,7 +142,7 @@
          GlStateManager.popMatrix();
      }
  
@@ -141,7 +143,7 @@
      {
          AbstractClientPlayer abstractclientplayer = this.mc.player;
          int i = this.mc.world.getCombinedLight(new BlockPos(abstractclientplayer.posX, abstractclientplayer.posY + (double)abstractclientplayer.getEyeHeight(), abstractclientplayer.posZ), 0);
-@@ -113,6 +155,7 @@
+@@ -113,6 +157,7 @@
          OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, f, f1);
      }
  
@@ -149,7 +151,7 @@
      private void rotateArm(float p_187458_1_)
      {
          EntityPlayerSP entityplayersp = this.mc.player;
-@@ -133,6 +176,7 @@
+@@ -133,6 +178,7 @@
          return f;
      }
  
@@ -157,7 +159,7 @@
      private void renderArms()
      {
          if (!this.mc.player.isInvisible())
-@@ -147,6 +191,7 @@
+@@ -147,6 +193,7 @@
          }
      }
  
@@ -165,7 +167,7 @@
      private void renderArm(EnumHandSide p_187455_1_)
      {
          this.mc.getTextureManager().bindTexture(this.mc.player.getLocationSkin());
-@@ -174,27 +219,29 @@
+@@ -174,27 +221,29 @@
      private void renderMapFirstPersonSide(float p_187465_1_, EnumHandSide p_187465_2_, float p_187465_3_, ItemStack p_187465_4_)
      {
          float f = p_187465_2_ == EnumHandSide.RIGHT ? 1.0F : -1.0F;
@@ -210,7 +212,7 @@
          GlStateManager.popMatrix();
      }
  
-@@ -203,14 +250,17 @@
+@@ -203,14 +252,17 @@
          float f = MathHelper.sqrt(p_187463_3_);
          float f1 = -0.2F * MathHelper.sin(p_187463_3_ * (float)Math.PI);
          float f2 = -0.4F * MathHelper.sin(f * (float)Math.PI);
@@ -234,7 +236,7 @@
          this.renderMapFirstPerson(this.itemStackMainHand);
      }
  
-@@ -241,100 +291,132 @@
+@@ -241,100 +293,132 @@
          GlStateManager.enableLighting();
      }
  
@@ -410,6 +412,16 @@
 -        float f2 = abstractclientplayer.prevRotationYaw + (abstractclientplayer.rotationYaw - abstractclientplayer.prevRotationYaw) * partialTicks;
 -        boolean flag = true;
 -        boolean flag1 = true;
+-
+-        if (abstractclientplayer.isHandActive())
+-        {
+-            ItemStack itemstack = abstractclientplayer.getActiveItemStack();
+-
+-            if (itemstack != null && itemstack.getItem() == Items.BOW)
+-            {
+-                EnumHand enumhand1 = abstractclientplayer.getActiveHand();
+-                flag = enumhand1 == EnumHand.MAIN_HAND;
+-                flag1 = !flag;
 +        AbstractClientPlayer player = this.mc.player;
 +        float swingprogress = player.getSwingProgress(partialTicks);
 +        EnumHand hand = (EnumHand)Objects.firstNonNull(player.swingingHand, EnumHand.MAIN_HAND);
@@ -417,18 +429,12 @@
 +        float f2 = player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * partialTicks;
 +        boolean doRighthand = true;
 +        boolean doLeftHand = true;
- 
--        if (abstractclientplayer.isHandActive())
++
 +        if (player.isHandActive())
-         {
--            ItemStack itemstack = abstractclientplayer.getActiveItemStack();
++        {
 +            ItemStack itemstack = player.getActiveItemStack();
- 
-             if (itemstack != null && itemstack.getItem() == Items.BOW)
--            {
--                EnumHand enumhand1 = abstractclientplayer.getActiveHand();
--                flag = enumhand1 == EnumHand.MAIN_HAND;
--                flag1 = !flag;
++
++            if (BowTracker.isBow(itemstack))
 +            {//bow mode
 +                EnumHand enumhand1 = player.getActiveHand();
 +                doRighthand = enumhand1 == EnumHand.MAIN_HAND;
@@ -436,7 +442,7 @@
              }
          }
  
-@@ -343,200 +425,529 @@
+@@ -343,200 +427,548 @@
          this.rotateArm(partialTicks);
          GlStateManager.enableRescaleNormal();
  
@@ -674,6 +680,24 @@
 +
 +    					boolean vive = MCOpenVR.isVive;
 +
++    					boolean sword = false, tool = false;
++    					boolean bow = BowTracker.isBow(itemstack);
++
++    					if(bow && item.getClass().getName().equals("FryPan")){
++    						bow = false;
++    						tool = true;
++    					}  					
++
++    					if(!bow && Reflector.forgeExists()){ //tinkers
++    		            	String t = item.getClass().getSuperclass().getName().toLowerCase();
++    		            	if (t.contains("weapon") || t.contains("sword")) {
++    		            		sword = true;
++    		            		tool = true;
++    		            	} else 	if 	(t.contains("tool")){
++    		            		tool = true;
++    		            	}
++    					}
++    					
 +    					if(item instanceof ItemBlock){
 +
 +    						if (this.itemRenderer.shouldRenderItemIn3D(itemstack)){
@@ -690,7 +714,7 @@
 +    							GlStateManager.rotate(-i*45.0F, 0.0F, 1.0F, 0.0F);   
 +    						}
 +    					} 
-+    					else if(item instanceof ItemSword )
++    					else if(item instanceof ItemSword || sword)
 +    					{
 +    						if(vive){
 +    							GlStateManager.translate(0f, 0f, -0.2f);		
@@ -711,7 +735,8 @@
 +    							item instanceof ItemFishingRod || 
 +    							item instanceof ItemCarrotOnAStick ||
 +    							item instanceof ItemShears||
-+    							item instanceof ItemFlintAndSteel)
++    							item instanceof ItemFlintAndSteel ||
++    							tool)
 +
 +    					{
 +
@@ -755,7 +780,7 @@
 +    						GlStateManager.rotate(i*90.0F, 0.0F, 1.0F, 0.0F);  
 +    						GlStateManager.translate(.5,0.5,.6);
 +    					}
-+    					else if(item instanceof ItemBow){
++    					else if(bow){
 +    						//shouldrenderhand = false;
 +    						GlStateManager.scale(1.0f, 1.0f, 1.0f);
 +    						shouldrenderhand = false;
@@ -959,8 +984,8 @@
 +        }
 +		
 +                
-+        GlStateManager.enableAlpha();
-+    }
+         GlStateManager.enableAlpha();
+     }
 +    
 +    public boolean inwater, inportal, inblock, onfire;
 +    public float inBlock = 0;
@@ -997,9 +1022,9 @@
 +        tessellator.draw();
 +        GlStateManager.depthMask(true);
 +        GlStateManager.enableDepth();
-         GlStateManager.enableAlpha();
++        GlStateManager.enableAlpha();
 +        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-     }
++    }
 +    
 +    public boolean isInsideOfMaterial(Vec3d pos, Material materialIn)
 +    {
@@ -1111,7 +1136,7 @@
          vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
          vertexbuffer.pos(-1.0D, -1.0D, -0.5D).tex((double)f7, (double)f9).endVertex();
          vertexbuffer.pos(1.0D, -1.0D, -0.5D).tex((double)f6, (double)f9).endVertex();
-@@ -560,17 +971,14 @@
+@@ -560,17 +992,14 @@
              VertexBuffer vertexbuffer = tessellator.getBuffer();
              float f = this.mc.player.getBrightness(partialTicks);
              GlStateManager.color(f, f, f, 0.5F);

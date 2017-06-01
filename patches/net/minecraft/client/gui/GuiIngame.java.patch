@@ -152,7 +152,7 @@
  
          if (this.mc.playerController.isSpectator())
          {
-@@ -183,20 +184,55 @@
+@@ -183,20 +184,28 @@
          {
              this.renderHotbar(scaledresolution, partialTicks);
          }
@@ -175,34 +175,7 @@
 -        this.overlayBoss.renderBossHealth();
 +        	this.overlayBoss.renderBossHealth();
          this.mc.mcProfiler.endSection();
-+        
-+        //VIVE SPRINTDICATOR
-+        if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
-+        {
-+        	EntityPlayer entityplayer = (EntityPlayer)this.mc.getRenderViewEntity();
-+        	int iconp = 0;
-+        	if(entityplayer.isSprinting()) iconp = 10;
-+        	if(entityplayer.isSneaking()) iconp = 13;
-+        	if(entityplayer.isElytraFlying()) iconp = -1;
-+        	if(iconp!=0){
-+        		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-+
-+        		if(iconp ==-1){
-+            		int w = scaledresolution.getScaledWidth() / 2 - 109;
-+            		int h = scaledresolution.getScaledHeight() -39;
-+                    TextureAtlasSprite textureatlassprite = this.mc.getTextureMapBlocks().getAtlasSprite("minecraft:items/elytra");
-+                    this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-+                    this.drawTexturedModalRect(w, h, textureatlassprite, 16, 16);
-+        		}else{
-+        			this.mc.getTextureManager().bindTexture(INVENTORY_BACKGROUND);
-+            		int w = scaledresolution.getScaledWidth() / 2 - 109;
-+            		int h = scaledresolution.getScaledHeight() -39;
-+            		this.drawTexturedModalRect(w, h, 0 + iconp % 8 * 18, 198 + iconp / 8 * 18, 18, 18);        			
-+        		}
-+        	}
-+        }
-+        //
-+        
++          
          GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
          this.mc.getTextureManager().bindTexture(ICONS);
  
@@ -213,7 +186,7 @@
              this.renderPlayerStats(scaledresolution);
          }
  
-@@ -378,7 +414,7 @@
+@@ -378,7 +387,7 @@
          GlStateManager.enableAlpha();
      }
  
@@ -222,7 +195,7 @@
      {
          GameSettings gamesettings = this.mc.gameSettings;
  
-@@ -569,6 +605,7 @@
+@@ -569,6 +578,7 @@
              int j = 182;
              int k = 91;
              this.zLevel = -90.0F;
@@ -230,7 +203,7 @@
              this.drawTexturedModalRect(i - 91, sr.getScaledHeight() - 22, 0, 0, 182, 22);
              this.drawTexturedModalRect(i - 91 - 1 + entityplayer.inventory.currentItem * 20, sr.getScaledHeight() - 22 - 1, 0, 22, 24, 22);
  
-@@ -587,7 +624,7 @@
+@@ -587,7 +597,7 @@
              this.zLevel = f;
              GlStateManager.enableRescaleNormal();
              GlStateManager.enableBlend();
@@ -239,7 +212,7 @@
              RenderHelper.enableGUIStandardItemLighting();
  
              for (int l = 0; l < 9; ++l)
-@@ -761,7 +798,7 @@
+@@ -761,7 +771,7 @@
          this.mc.mcProfiler.endSection();
      }
  
@@ -248,7 +221,7 @@
      {
          Scoreboard scoreboard = objective.getScoreboard();
          Collection<Score> collection = scoreboard.getSortedScores(objective);
-@@ -819,11 +856,11 @@
+@@ -819,11 +829,11 @@
          }
      }
  
@@ -262,7 +235,7 @@
              int i = MathHelper.ceil(entityplayer.getHealth());
              boolean flag = this.healthUpdateCounter > (long)this.updateCounter && (this.healthUpdateCounter - (long)this.updateCounter) / 3L % 2L == 1L;
  
-@@ -978,7 +1015,7 @@
+@@ -978,7 +988,7 @@
                      }
                  }
              }
@@ -271,7 +244,7 @@
              Entity entity = entityplayer.getRidingEntity();
  
              if (entity == null || !(entity instanceof EntityLivingBase))
-@@ -1042,7 +1079,7 @@
+@@ -1042,7 +1052,7 @@
          }
      }
  
@@ -280,7 +253,7 @@
      {
          if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
          {
-@@ -1096,7 +1133,7 @@
+@@ -1096,7 +1106,7 @@
          }
      }
  
@@ -289,7 +262,7 @@
      {
          GlStateManager.disableDepth();
          GlStateManager.depthMask(false);
-@@ -1121,8 +1158,13 @@
+@@ -1121,8 +1131,13 @@
      /**
       * Renders a Vignette arount the entire screen that changes with light level.
       */
@@ -304,7 +277,7 @@
          if (Config.isVignetteEnabled())
          {
              lightLevel = 1.0F - lightLevel;
-@@ -1170,42 +1212,14 @@
+@@ -1170,42 +1185,14 @@
              GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
          }
      }
@@ -352,7 +325,7 @@
      {
          if (!stack.isEmpty())
          {
-@@ -1380,4 +1394,43 @@
+@@ -1380,4 +1367,43 @@
      {
          return this.overlayBoss;
      }

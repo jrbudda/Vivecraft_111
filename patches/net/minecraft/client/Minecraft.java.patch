@@ -314,7 +314,7 @@
 +	 * The minecriftVerString will be automatically updated by the build scripts, do not modify here.
 +	 * Modify minecriftversion.py in root minecrift dir.
 +	 */
-+    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-10pre2";
++    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-10pre6";
 +	/* end version */
 +	/** END MINECRIFT */
 +    
@@ -1617,7 +1617,7 @@
              }
          }
  
-@@ -2243,11 +2898,26 @@
+@@ -2243,22 +2898,41 @@
  
          if (flag)
          {
@@ -1649,8 +1649,12 @@
              if (this.currentScreen == null && this.gameSettings.keyBindCommand.isPressed())
              {
                  this.displayGuiScreen(new GuiChat("/"));
-@@ -2256,9 +2926,10 @@
+             }
+         }
  
++    	boolean nope = false;
++        if(climbTracker.isClimbeyClimb() && (this.objectMouseOver==null || this.objectMouseOver.entityHit==null)) nope = true;
++        
          if (this.player.isHandActive())
          {
 -            if (!this.gameSettings.keyBindUseItem.isKeyDown())
@@ -1662,7 +1666,7 @@
              }
  
              label472:
-@@ -2284,17 +2955,30 @@
+@@ -2284,17 +2958,27 @@
                  }
              }
          }
@@ -1673,12 +1677,10 @@
 -            {
 -                this.clickMouse();
 -            }
-+        	boolean nope = false;
-+            if(climbTracker.isClimbeyClimb() && (this.objectMouseOver==null || this.objectMouseOver.entityHit==null)) nope = true;
- 
+-
 -            while (this.gameSettings.keyBindUseItem.isPressed())
 +        	//VIVE SUPPORT HAND SWINGING
-+        	if (!nope && this.gameSettings.keyBindAttack.isKeyDown() && currentScreen == null)
++        	if (!nope && this.gameSettings.keyBindAttack.isPressed() && currentScreen == null)
 +        	{
 +        		this.clickMouse();
 +        		lastClick = true;
@@ -1712,7 +1714,7 @@
          }
  
 -        this.sendClickBlockToController(this.currentScreen == null && this.gameSettings.keyBindAttack.isKeyDown() && this.inGameHasFocus);
-+        //this.sendClickBlockToController(this.currentScreen == null && this.gameSettings.keyBindAttack.isKeyDown() && this.inGameHasFocus);
++       if(!(!(nope==false))) this.sendClickBlockToController(this.currentScreen == null && this.gameSettings.keyBindAttack.isKeyDown() && this.inGameHasFocus);
      }
  
      private void runTickMouse() throws IOException
