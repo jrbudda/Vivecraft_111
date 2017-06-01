@@ -2699,5 +2699,7 @@ public class MCOpenVR
 		offset=new Vector3f(0,0,0);
 	}
 
-	
+    public static boolean isVivecraftBinding(KeyBinding kb) {
+    	return kb == hotbarNext || kb == hotbarPrev || kb == rotateLeft || kb == rotateRight || kb == walkabout || kb == rotateFree || kb == quickTorch;
+    }
 }
