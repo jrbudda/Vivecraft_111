@@ -78,7 +78,7 @@
 +     	if(Main.katvr)
 +           	this.buttonList.add(new GuiButton(106, this.width / 2 + 100,this.height / 4  + var1, 98, 20, "Align KAT WALK"));
 +     	
-+     	var3.enabled = this.mc.isSingleplayer() && !this.mc.getIntegratedServer().getPublic();
++     	var3.enabled = this.mc.isSingleplayer() && !this.mc.getIntegratedServer().getPublic() && !Reflector.forgeExists();
      }
  
      /**

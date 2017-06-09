@@ -23,6 +23,7 @@ import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemBow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketCustomPayload;
+import net.minecraft.src.Reflector;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.Vec3d;
@@ -281,7 +282,11 @@ public class BowTracker {
 
     protected boolean isArrow(ItemStack stack)
     {
-        return stack.getItem() instanceof ItemArrow;
+        if(Reflector.forgeExists()){
+        	return stack.getItem() instanceof ItemArrow || stack.getItem().getClass().getName().toLowerCase().contains("arrow");
+        }else {
+        	return stack.getItem() instanceof ItemArrow;
+        }
     }
 	
 }
