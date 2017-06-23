@@ -1377,23 +1377,27 @@ public class MCOpenVR
 						mc.getConnection().sendPacket(new CPacketClientStatus(State.PERFORM_RESPAWN));
 						mc.displayGuiScreen((GuiScreen)null);		
 					}else {
+						
 						if(Display.isActive()){
 							KeyboardSimulator.robot.keyPress(KeyEvent.VK_ESCAPE); //window focus... yadda yadda
 							KeyboardSimulator.robot.keyRelease(KeyEvent.VK_ESCAPE); //window focus... yadda yadda
 						}
 						else 
 							mc.player.closeScreen();
+						
 						setKeyboardOverlayShowing(false, null);
 					}
-				}else
-					
-				if(!Main.kiosk)
-					if(Display.isActive()){
-						KeyboardSimulator.robot.keyPress(KeyEvent.VK_ESCAPE); //window focus... yadda yadda
-						KeyboardSimulator.robot.keyRelease(KeyEvent.VK_ESCAPE); //window focus... yadda yadda
+				}else{
+					if(!Main.kiosk){
+						if(Display.isActive()){
+							KeyboardSimulator.robot.keyPress(KeyEvent.VK_ESCAPE); //window focus... yadda yadda
+							KeyboardSimulator.robot.keyRelease(KeyEvent.VK_ESCAPE); //window focus... yadda yadda
+						}
+						else 
+							mc.displayInGameMenu();				
 					}
-					else 
-						mc.player.closeScreen();
+					setKeyboardOverlayShowing(false, null);
+				}
 			}
 		}
 		
@@ -2238,10 +2242,15 @@ public class MCOpenVR
 	static void onGuiScreenChanged(GuiScreen previousScreen, GuiScreen newScreen)
 	{
 		KeyBinding.unPressAllKeys();
-		KeyboardSimulator.robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-		KeyboardSimulator.robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
-		KeyboardSimulator.robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
-		KeyboardSimulator.robot.keyRelease(KeyEvent.VK_SHIFT);
+		if(Display.isActive()){
+			KeyboardSimulator.robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+			KeyboardSimulator.robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
+			KeyboardSimulator.robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
+			KeyboardSimulator.robot.keyRelease(KeyEvent.VK_SHIFT);		
+			for (VRControllerButtonMapping mapping : mc.vrSettings.buttonMappings) {
+				mapping.actuallyUnpress();
+			}
+		}
 		
 		if(newScreen == null 	|| (mc.player!=null && !mc.player.isEntityAlive())){
 			guiPos_Room = null;
