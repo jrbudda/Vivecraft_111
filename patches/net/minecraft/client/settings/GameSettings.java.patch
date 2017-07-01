@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/settings/GameSettings.java
 +++ b/net/minecraft/client/settings/GameSettings.java
-@@ -103,7 +103,7 @@
+@@ -107,7 +107,7 @@
      public float chatOpacity = 1.0F;
      public boolean snooperEnabled = true;
      public boolean fullScreen;
@@ -9,7 +9,7 @@
      public boolean useVbo = true;
      public boolean reducedDebugInfo;
      public boolean hideServerAddress;
-@@ -213,7 +213,7 @@
+@@ -217,7 +217,7 @@
      public boolean ofStars = true;
      public boolean ofSunMoon = true;
      public int ofVignette = 0;
@@ -18,7 +18,7 @@
      public boolean ofChunkUpdatesDynamic = false;
      public int ofTime = 0;
      public boolean ofClearWater = false;
-@@ -413,7 +413,7 @@
+@@ -417,7 +417,7 @@
                  this.mc.getTextureMapBlocks().setMipmapLevels(this.mipmapLevels);
                  this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
                  this.mc.getTextureMapBlocks().setBlurMipmapDirect(false, this.mipmapLevels > 0);
@@ -27,46 +27,7 @@
              }
          }
  
-@@ -1102,19 +1102,25 @@
- 
-                     for (KeyBinding keybinding : this.keyBindings)
-                     {
--                        if (s1.equals("key_" + keybinding.getKeyDescription()))
--                        {
--                            if (Reflector.KeyModifier_valueFromString.exists() && s2.indexOf(58) != -1)
--                            {
--                                String[] astring = s2.split(":");
--                                Object object = Reflector.call(Reflector.KeyModifier_valueFromString, new Object[] {astring[1]});
--                                Reflector.call(keybinding, Reflector.ForgeKeyBinding_setKeyModifierAndCode, new Object[] {object, Integer.valueOf(Integer.parseInt(astring[0]))});
--                            }
--                            else
--                            {
--                                keybinding.setKeyCode(Integer.parseInt(s2));
--                            }
--                        }
-+                    	if (s1.equals("key_" + keybinding.getKeyDescription()))
-+                    	{
-+                    		//FORGE
-+                    		if (Reflector.forgeExists()){
-+                    			if(s2.indexOf(':') != -1)
-+                    			{
-+                    				String[] astring = s2.split(":");
-+                    				Object object = Reflector.call(Reflector.KeyModifier_valueFromString, new Object[] {astring[1]});
-+                    				Reflector.call(keybinding, Reflector.ForgeKeyBinding_setKeyModifierAndCode, new Object[] {object, Integer.valueOf(Integer.parseInt(astring[0]))});
-+                    			}
-+                    			else
-+                    			{
-+                    				Reflector.call(keybinding, Reflector.ForgeKeyBinding_setKeyModifierAndCode, new Object[] {Reflector.getFieldValue(Reflector.KeyModifier_NONE), Integer.valueOf(Integer.parseInt(s2))});
-+                    			}
-+                    		}else{
-+                    			keybinding.setKeyCode(Integer.parseInt(s2));
-+                    		}
-+                    		//
-+                    	}
-                     }
- 
-                     for (SoundCategory soundcategory : SoundCategory.values())
-@@ -1181,9 +1187,9 @@
+@@ -1218,9 +1218,9 @@
      {
          if (Reflector.FMLClientHandler.exists())
          {
@@ -78,7 +39,7 @@
              {
                  return;
              }
-@@ -1267,7 +1273,7 @@
+@@ -1304,7 +1304,7 @@
                  if (Reflector.ForgeKeyBinding_getKeyModifier.exists())
                  {
                      String s = "key_" + keybinding.getKeyDescription() + ":" + keybinding.getKeyCode();
@@ -87,7 +48,7 @@
                      Object object2 = Reflector.getFieldValue(Reflector.KeyModifier_NONE);
                      printwriter.println(object1 != object2 ? s + ":" + object1 : s);
                  }
-@@ -1781,7 +1787,7 @@
+@@ -1818,7 +1818,7 @@
          {
              ++this.ofChunkUpdates;
  
@@ -96,7 +57,7 @@
              {
                  this.ofChunkUpdates = 1;
              }
-@@ -1885,18 +1891,18 @@
+@@ -1922,18 +1922,18 @@
  
          if (p_setOptionValueOF_1_ == GameSettings.Options.FAST_RENDER)
          {
@@ -124,7 +85,7 @@
  
              Config.updateFramebufferSize();
          }
-@@ -2696,7 +2702,7 @@
+@@ -2733,7 +2733,7 @@
                      if (astring[0].equals("ofChunkUpdates") && astring.length >= 2)
                      {
                          this.ofChunkUpdates = Integer.valueOf(astring[1]).intValue();
@@ -133,7 +94,7 @@
                      }
  
                      if (astring[0].equals("ofChunkUpdatesDynamic") && astring.length >= 2)
-@@ -2986,7 +2992,7 @@
+@@ -3023,7 +3023,7 @@
          this.guiScale = 0;
          this.particleSetting = 0;
          this.heldItemTooltips = true;
@@ -142,7 +103,7 @@
          this.forceUnicodeFont = false;
          this.ofFogType = 1;
          this.ofFogStart = 0.8F;
-@@ -2997,7 +3003,7 @@
+@@ -3034,7 +3034,7 @@
          this.ofSmoothWorld = Config.isSingleProcessor();
          this.ofLazyChunkLoading = Config.isSingleProcessor();
          this.ofFastMath = false;
@@ -151,7 +112,7 @@
          this.ofTranslucentBlocks = 0;
          this.ofDynamicFov = true;
          this.ofAlternateBlocks = true;
-@@ -3021,7 +3027,7 @@
+@@ -3058,7 +3058,7 @@
          this.ofStars = true;
          this.ofSunMoon = true;
          this.ofVignette = 0;
@@ -160,7 +121,7 @@
          this.ofChunkUpdatesDynamic = false;
          this.ofTime = 0;
          this.ofClearWater = false;
-@@ -3166,6 +3172,7 @@
+@@ -3203,6 +3203,7 @@
          }
      }
  
@@ -168,7 +129,7 @@
      public void onGuiClosed()
      {
          if (this.needsResourceRefresh)
-@@ -3174,6 +3181,7 @@
+@@ -3211,6 +3212,7 @@
              this.needsResourceRefresh = false;
          }
      }

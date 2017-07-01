@@ -23,21 +23,22 @@
  
      /** Has the current text being edited on the textbox. */
      private String text = "";
-@@ -518,7 +522,12 @@
+@@ -518,7 +522,13 @@
          if (this.canLoseFocus)
          {
              this.setFocused(flag);
 -        }
 +       }  else {
-+           	
-+            // VIVE START - show keyboard
-+    	   if(flag && this.canLoseFocus == true) MCOpenVR.setKeyboardOverlayShowing(true, this);           // VIVE END - show keyboard
-+ 	
++           		
 +         }
++        
++        // VIVE START - show keyboard
++	   if(flag && this.canLoseFocus == true) MCOpenVR.setKeyboardOverlayShowing(true, this);           // VIVE END - show keyboard
++
  
          if (this.isFocused && flag && mouseButton == 0)
          {
-@@ -564,8 +573,11 @@
+@@ -564,8 +574,11 @@
  
              if (!s.isEmpty())
              {
@@ -51,7 +52,7 @@
              }
  
              boolean flag2 = this.cursorPosition < this.text.length() || this.text.length() >= this.getMaxStringLength();
-@@ -724,6 +736,13 @@
+@@ -724,6 +737,13 @@
          }
  
          this.isFocused = isFocusedIn;

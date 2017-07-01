@@ -23,7 +23,7 @@
  import net.minecraft.client.renderer.texture.TextureAtlasSprite;
  import net.minecraft.client.renderer.texture.TextureMap;
  import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-@@ -57,65 +63,67 @@
+@@ -58,65 +64,67 @@
  
  public class GuiIngame extends Gui
  {
@@ -119,7 +119,7 @@
  
      public GuiIngame(Minecraft mcIn)
      {
-@@ -148,6 +156,7 @@
+@@ -149,6 +157,7 @@
          FontRenderer fontrenderer = this.getFontRenderer();
          GlStateManager.enableBlend();
  
@@ -127,7 +127,7 @@
          if (Config.isVignetteEnabled())
          {
              this.renderVignette(this.mc.player.getBrightness(partialTicks), scaledresolution);
-@@ -159,21 +168,13 @@
+@@ -160,21 +169,13 @@
          }
  
          ItemStack itemstack = this.mc.player.inventory.armorItemInSlot(3);
@@ -152,7 +152,7 @@
  
          if (this.mc.playerController.isSpectator())
          {
-@@ -183,20 +184,28 @@
+@@ -184,20 +185,28 @@
          {
              this.renderHotbar(scaledresolution, partialTicks);
          }
@@ -186,7 +186,7 @@
              this.renderPlayerStats(scaledresolution);
          }
  
-@@ -378,7 +387,7 @@
+@@ -379,7 +388,7 @@
          GlStateManager.enableAlpha();
      }
  
@@ -195,7 +195,7 @@
      {
          GameSettings gamesettings = this.mc.gameSettings;
  
-@@ -569,6 +578,7 @@
+@@ -570,6 +579,7 @@
              int j = 182;
              int k = 91;
              this.zLevel = -90.0F;
@@ -203,16 +203,16 @@
              this.drawTexturedModalRect(i - 91, sr.getScaledHeight() - 22, 0, 0, 182, 22);
              this.drawTexturedModalRect(i - 91 - 1 + entityplayer.inventory.currentItem * 20, sr.getScaledHeight() - 22 - 1, 0, 22, 24, 22);
  
-@@ -587,7 +597,7 @@
+@@ -588,7 +598,7 @@
              this.zLevel = f;
              GlStateManager.enableRescaleNormal();
              GlStateManager.enableBlend();
 -            GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 +            GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);          
              RenderHelper.enableGUIStandardItemLighting();
+             CustomItems.setRenderOffHand(false);
  
-             for (int l = 0; l < 9; ++l)
-@@ -761,7 +771,7 @@
+@@ -766,7 +776,7 @@
          this.mc.mcProfiler.endSection();
      }
  
@@ -221,7 +221,7 @@
      {
          Scoreboard scoreboard = objective.getScoreboard();
          Collection<Score> collection = scoreboard.getSortedScores(objective);
-@@ -819,11 +829,11 @@
+@@ -824,11 +834,11 @@
          }
      }
  
@@ -235,7 +235,7 @@
              int i = MathHelper.ceil(entityplayer.getHealth());
              boolean flag = this.healthUpdateCounter > (long)this.updateCounter && (this.healthUpdateCounter - (long)this.updateCounter) / 3L % 2L == 1L;
  
-@@ -978,7 +988,7 @@
+@@ -983,7 +993,7 @@
                      }
                  }
              }
@@ -244,7 +244,7 @@
              Entity entity = entityplayer.getRidingEntity();
  
              if (entity == null || !(entity instanceof EntityLivingBase))
-@@ -1042,7 +1052,7 @@
+@@ -1047,7 +1057,7 @@
          }
      }
  
@@ -253,7 +253,7 @@
      {
          if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
          {
-@@ -1096,7 +1106,7 @@
+@@ -1101,7 +1111,7 @@
          }
      }
  
@@ -262,22 +262,19 @@
      {
          GlStateManager.disableDepth();
          GlStateManager.depthMask(false);
-@@ -1121,8 +1131,13 @@
-     /**
-      * Renders a Vignette arount the entire screen that changes with light level.
+@@ -1128,6 +1138,11 @@
       */
--    private void renderVignette(float lightLevel, ScaledResolution scaledRes)
-+    protected void renderVignette(float lightLevel, ScaledResolution scaledRes)
+     private void renderVignette(float lightLevel, ScaledResolution scaledRes)
      {
-+        /** MINECRIFT **/
-+        if (this.mc.stereoProvider.isStereo())
-+            return;
-+        /** END MINECRIFT **/
-+    	
-         if (Config.isVignetteEnabled())
++    	/** MINECRIFT **/
++    	if (this.mc.stereoProvider.isStereo())
++    		return;
++    	/** END MINECRIFT **/
++
+         if (!Config.isVignetteEnabled())
          {
-             lightLevel = 1.0F - lightLevel;
-@@ -1170,42 +1185,14 @@
+             GlStateManager.enableDepth();
+@@ -1180,42 +1195,14 @@
              GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
          }
      }
@@ -325,7 +322,7 @@
      {
          if (!stack.isEmpty())
          {
-@@ -1380,4 +1367,43 @@
+@@ -1390,4 +1377,43 @@
      {
          return this.overlayBoss;
      }

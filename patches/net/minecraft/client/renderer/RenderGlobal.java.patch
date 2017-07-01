@@ -34,8 +34,8 @@
 +
  import shadersmod.client.Shaders;
  import shadersmod.client.ShadersRender;
- 
-@@ -200,7 +207,7 @@
+ import shadersmod.client.ShadowUtils;
+@@ -201,7 +208,7 @@
      public Set chunksToResortTransparency = new LinkedHashSet();
      public Set chunksToUpdateForced = new LinkedHashSet();
      private Deque visibilityDeque = new ArrayDeque();
@@ -44,7 +44,7 @@
      private List<ContainerLocalRenderInformation> renderInfosTileEntities = new ArrayList(1024);
      private List renderInfosNormal = new ArrayList(1024);
      private List renderInfosEntitiesNormal = new ArrayList(1024);
-@@ -391,7 +398,7 @@
+@@ -394,7 +401,7 @@
          }
      }
  
@@ -53,7 +53,7 @@
      {
          int i = 64;
          int j = 6;
-@@ -454,7 +461,7 @@
+@@ -457,7 +464,7 @@
          }
      }
  
@@ -62,7 +62,7 @@
      {
          Random random = new Random(10842L);
          worldRendererIn.begin(7, DefaultVertexFormats.POSITION);
-@@ -648,7 +655,7 @@
+@@ -651,7 +658,7 @@
  
          if (Reflector.MinecraftForgeClient_getRenderPass.exists())
          {
@@ -71,7 +71,7 @@
          }
  
          if (this.renderEntitiesStartupCounter > 0)
-@@ -748,6 +755,8 @@
+@@ -751,6 +758,8 @@
                              {
                                  boolean flag3 = this.mc.getRenderViewEntity() instanceof EntityLivingBase ? ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping() : false;
  
@@ -80,7 +80,7 @@
                                  if ((entity2 != this.mc.getRenderViewEntity() || this.mc.gameSettings.thirdPersonView != 0 || flag3) && (entity2.posY < 0.0D || entity2.posY >= 256.0D || this.world.isBlockLoaded(blockpos$pooledmutableblockpos.setPos(entity2))))
                                  {
                                      ++this.countEntitiesRendered;
-@@ -924,7 +933,7 @@
+@@ -927,7 +936,7 @@
  
                              if (Reflector.callBoolean(tileentity1, Reflector.ForgeTileEntity_shouldRenderInPass, new Object[] {Integer.valueOf(i)}))
                              {
@@ -89,7 +89,7 @@
  
                                  if (axisalignedbb == null || camera.isBoundingBoxInFrustum(axisalignedbb))
                                  {
-@@ -1111,10 +1120,12 @@
+@@ -1114,10 +1123,12 @@
          }
  
          this.mc.mcProfiler.endStartSection("culling");
@@ -104,7 +104,7 @@
          this.lastViewEntityX = viewEntity.posX;
          this.lastViewEntityY = viewEntity.posY;
          this.lastViewEntityZ = viewEntity.posZ;
-@@ -1199,8 +1210,11 @@
+@@ -1208,8 +1219,11 @@
  
                  if (set1.size() == 1)
                  {
@@ -118,7 +118,7 @@
                      set1.remove(enumfacing);
                  }
  
-@@ -1443,22 +1457,22 @@
+@@ -1452,22 +1466,22 @@
          }
      }
  
@@ -157,7 +157,7 @@
  
      public int renderBlockLayer(BlockRenderLayer blockLayerIn, double partialTicks, int pass, Entity entityIn)
      {
-@@ -1706,7 +1720,7 @@
+@@ -1717,7 +1731,7 @@
          if (Reflector.ForgeWorldProvider_getSkyRenderer.exists())
          {
              WorldProvider worldprovider = this.mc.world.provider;
@@ -166,7 +166,7 @@
  
              if (object != null)
              {
-@@ -1722,9 +1736,9 @@
+@@ -1733,9 +1747,9 @@
          else if (this.mc.world.provider.isSurfaceWorld())
          {
              GlStateManager.disableTexture2D();
@@ -178,7 +178,7 @@
              {
                  Shaders.disableTexture2D();
              }
-@@ -1732,7 +1746,7 @@
+@@ -1743,7 +1757,7 @@
              Vec3d vec3d = this.world.getSkyColor(this.mc.getRenderViewEntity(), partialTicks);
              vec3d = CustomColors.getSkyColor(vec3d, this.mc.world, this.mc.getRenderViewEntity().posX, this.mc.getRenderViewEntity().posY + 1.0D, this.mc.getRenderViewEntity().posZ);
  
@@ -187,7 +187,7 @@
              {
                  Shaders.setSkyColor(vec3d);
              }
-@@ -1757,14 +1771,14 @@
+@@ -1768,14 +1782,14 @@
              GlStateManager.depthMask(false);
              GlStateManager.enableFog();
  
@@ -204,7 +204,7 @@
              {
                  Shaders.preSkyList();
              }
-@@ -1788,7 +1802,7 @@
+@@ -1799,7 +1813,7 @@
  
              GlStateManager.disableFog();
  
@@ -213,7 +213,7 @@
              {
                  Shaders.disableFog();
              }
-@@ -1803,7 +1817,7 @@
+@@ -1814,7 +1828,7 @@
              {
                  GlStateManager.disableTexture2D();
  
@@ -222,7 +222,7 @@
                  {
                      Shaders.disableTexture2D();
                  }
-@@ -1846,7 +1860,7 @@
+@@ -1857,7 +1871,7 @@
  
              GlStateManager.enableTexture2D();
  
@@ -231,9 +231,9 @@
              {
                  Shaders.enableTexture2D();
              }
-@@ -1858,14 +1872,14 @@
+@@ -1869,14 +1883,14 @@
              GlStateManager.rotate(-90.0F, 0.0F, 1.0F, 0.0F);
-             CustomSky.renderSky(this.world, this.renderEngine, this.world.getCelestialAngle(partialTicks), f15);
+             CustomSky.renderSky(this.world, this.renderEngine, partialTicks);
  
 -            if (flag)
 +            if (shadersmod)
@@ -248,7 +248,7 @@
              {
                  Shaders.postCelestialRotate();
              }
-@@ -1905,7 +1919,7 @@
+@@ -1916,7 +1930,7 @@
  
              GlStateManager.disableTexture2D();
  
@@ -257,7 +257,7 @@
              {
                  Shaders.disableTexture2D();
              }
-@@ -1936,7 +1950,7 @@
+@@ -1947,7 +1961,7 @@
              GlStateManager.enableAlpha();
              GlStateManager.enableFog();
  
@@ -266,7 +266,7 @@
              {
                  Shaders.enableFog();
              }
-@@ -1944,7 +1958,7 @@
+@@ -1955,7 +1969,7 @@
              GlStateManager.popMatrix();
              GlStateManager.disableTexture2D();
  
@@ -275,7 +275,7 @@
              {
                  Shaders.disableTexture2D();
              }
-@@ -2024,7 +2038,7 @@
+@@ -2035,7 +2049,7 @@
              GlStateManager.popMatrix();
              GlStateManager.enableTexture2D();
  
@@ -284,7 +284,7 @@
              {
                  Shaders.enableTexture2D();
              }
-@@ -2040,7 +2054,7 @@
+@@ -2051,7 +2065,7 @@
              if (Reflector.ForgeWorldProvider_getCloudRenderer.exists())
              {
                  WorldProvider worldprovider = this.mc.world.provider;
@@ -293,7 +293,7 @@
  
                  if (object != null)
                  {
-@@ -2578,7 +2592,7 @@
+@@ -2591,7 +2605,7 @@
  
                          if (tileentity != null)
                          {
@@ -302,7 +302,7 @@
                          }
                      }
  
-@@ -3077,6 +3091,8 @@
+@@ -3090,6 +3104,8 @@
      public void playEvent(EntityPlayer player, int type, BlockPos blockPosIn, int data)
      {
          Random random = this.world.rand;
@@ -311,7 +311,7 @@
  
          switch (type)
          {
-@@ -3133,18 +3149,30 @@
+@@ -3146,18 +3162,30 @@
                  break;
  
              case 1011:
@@ -342,7 +342,7 @@
                  this.world.playSound(blockPosIn, SoundEvents.BLOCK_FENCE_GATE_CLOSE, SoundCategory.BLOCKS, 1.0F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
                  break;
  
-@@ -3165,14 +3193,26 @@
+@@ -3178,14 +3206,26 @@
                  break;
  
              case 1019:
@@ -369,7 +369,7 @@
                  this.world.playSound(blockPosIn, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
                  break;
  
-@@ -3201,10 +3241,17 @@
+@@ -3214,10 +3254,17 @@
                  break;
  
              case 1030:
@@ -387,7 +387,7 @@
                  this.world.playSound(blockPosIn, SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.BLOCKS, 0.3F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
                  break;
  
-@@ -3225,6 +3272,9 @@
+@@ -3238,6 +3285,9 @@
                  break;
  
              case 1036:
@@ -397,7 +397,7 @@
                  this.world.playSound(blockPosIn, SoundEvents.BLOCK_IRON_TRAPDOOR_CLOSE, SoundCategory.BLOCKS, 1.0F, this.world.rand.nextFloat() * 0.1F + 0.9F, false);
                  break;
  
-@@ -3264,6 +3314,9 @@
+@@ -3277,6 +3327,9 @@
                      {
                          soundtype = (SoundType)Reflector.call(block, Reflector.ForgeBlock_getSoundType, new Object[] {Block.getStateById(data), this.world, blockPosIn, null});
                      }

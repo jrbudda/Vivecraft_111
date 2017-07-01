@@ -10,7 +10,7 @@
 	"logging": {},
 	"libraries": [
 	{
-		"name": "net.minecraftforge:forge:1.11.2-13.20.0.2282",
+		"name": "net.minecraftforge:forge:1.11.2-13.20.0.2388",
 		"url": "http://files.minecraftforge.net/maven/"
 	},
 	{
@@ -182,7 +182,7 @@
 		"name": "net.aib42.mumblelink:JMumble:1.11"
 	},
 	{
-		"name": "optifine:OptiFine:1.11.2_HD_U_B5"
+		"name": "optifine:OptiFine:1.11.2_HD_U_C3"
 	}
 	]
 }

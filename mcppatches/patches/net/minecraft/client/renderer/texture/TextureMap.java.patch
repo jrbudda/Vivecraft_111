@@ -1,6 +1,6 @@
 --- a/net/minecraft/client/renderer/texture/TextureMap.java
 +++ b/net/minecraft/client/renderer/texture/TextureMap.java
-@@ -685,8 +685,9 @@
+@@ -747,8 +747,9 @@
      {
          Map map = new HashMap();
  

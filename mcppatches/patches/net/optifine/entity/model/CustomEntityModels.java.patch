@@ -1,14 +1,14 @@
 --- a/net/optifine/entity/model/CustomEntityModels.java
 +++ b/net/optifine/entity/model/CustomEntityModels.java
-@@ -16,6 +16,7 @@
+@@ -15,6 +15,7 @@
+ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
  import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
- import net.minecraft.entity.Entity;
  import net.minecraft.src.Config;
 +import net.minecraft.tileentity.TileEntity;
  import net.minecraft.util.ResourceLocation;
  import net.optifine.entity.model.anim.ModelResolver;
  import net.optifine.entity.model.anim.ModelUpdater;
-@@ -24,12 +25,12 @@
+@@ -23,12 +24,12 @@
  {
      private static boolean active = false;
      private static Map<Class, Render> originalEntityRenderMap = null;
@@ -23,7 +23,7 @@
  
          if (map == null)
          {
-@@ -104,9 +105,9 @@
+@@ -103,9 +104,9 @@
          }
      }
  

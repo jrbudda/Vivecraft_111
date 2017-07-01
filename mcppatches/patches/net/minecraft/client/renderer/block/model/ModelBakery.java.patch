@@ -1,0 +1,51 @@
+--- a/net/minecraft/client/renderer/block/model/ModelBakery.java
++++ b/net/minecraft/client/renderer/block/model/ModelBakery.java
+@@ -311,7 +311,7 @@
+     {
+         Reader reader = null;
+         IResource iresource = null;
+-        ModelBlock s2;
++        ModelBlock mb;
+ 
+         try
+         {
+@@ -353,7 +353,7 @@
+             }
+ 
+             ModelBlock modelblock = MODEL_ENTITY;
+-            s2 = modelblock;
++            mb = modelblock;
+         }
+         finally
+         {
+@@ -361,7 +361,7 @@
+             IOUtils.closeQuietly((Closeable)iresource);
+         }
+ 
+-        return s2;
++        return mb;
+     }
+ 
+     private ResourceLocation getModelLocation(ResourceLocation location)
+@@ -481,7 +481,7 @@
+ 
+         for (Entry<RegistryDelegate<Item>, Set<String>> entry : customVariantNames.entrySet())
+         {
+-            this.variantNames.put(((RegistryDelegate)entry.getKey()).get(), Lists.newArrayList(((Set)entry.getValue()).iterator()));
++            this.variantNames.put((Item) ((RegistryDelegate)entry.getKey()).get(), Lists.newArrayList(((Set)entry.getValue()).iterator()));
+         }
+     }
+ 
+@@ -704,12 +704,6 @@
+         return set;
+     }
+ 
+-    @Nullable
+-    public IBakedModel bakeModel(ModelBlock modelBlockIn, ModelRotation modelRotationIn, boolean uvLocked)
+-    {
+-        return this.bakeModel(modelBlockIn, modelRotationIn, uvLocked);
+-    }
+-
+     protected IBakedModel bakeModel(ModelBlock p_bakeModel_1_, ITransformation p_bakeModel_2_, boolean p_bakeModel_3_)
+     {
+         TextureAtlasSprite textureatlassprite = (TextureAtlasSprite)this.sprites.get(new ResourceLocation(p_bakeModel_1_.resolveTextureName("particle")));

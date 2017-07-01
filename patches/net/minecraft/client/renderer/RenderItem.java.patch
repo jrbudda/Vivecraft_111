@@ -104,7 +104,7 @@
          }
      }
  
-@@ -351,16 +401,16 @@
+@@ -361,16 +411,16 @@
          }
      }
  
@@ -124,16 +124,7 @@
      {
          if (!stack.isEmpty())
          {
-@@ -388,7 +438,7 @@
-                 }
-             }
- 
--            this.renderItem(stack, bakedmodel);
-+            this.renderItem(par1, stack, bakedmodel);
-             GlStateManager.cullFace(GlStateManager.CullFace.BACK);
-             GlStateManager.popMatrix();
-             GlStateManager.disableRescaleNormal();
-@@ -434,7 +484,7 @@
+@@ -446,7 +496,7 @@
              bakedmodel.getItemCameraTransforms().applyTransform(ItemCameraTransforms.TransformType.GUI);
          }
  
@@ -142,7 +133,7 @@
          GlStateManager.disableAlpha();
          GlStateManager.disableRescaleNormal();
          GlStateManager.disableLighting();
-@@ -1148,6 +1198,10 @@
+@@ -1160,6 +1210,10 @@
          this.registerItem(Items.DIAMOND_HORSE_ARMOR, "diamond_horse_armor");
          this.registerItem(Items.LEAD, "lead");
          this.registerItem(Items.NAME_TAG, "name_tag");

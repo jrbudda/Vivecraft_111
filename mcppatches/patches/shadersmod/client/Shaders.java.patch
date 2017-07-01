@@ -1,14 +1,25 @@
 --- a/shadersmod/client/Shaders.java
 +++ b/shadersmod/client/Shaders.java
-@@ -58,6 +58,7 @@
- import net.minecraft.util.text.TextComponentString;
+@@ -65,6 +65,7 @@
  import net.minecraft.world.World;
+ import org.apache.commons.io.IOUtils;
  import org.lwjgl.BufferUtils;
 +import org.lwjgl.opengl.ARBFragmentShader;
  import org.lwjgl.opengl.ARBShaderObjects;
  import org.lwjgl.opengl.ARBVertexShader;
  import org.lwjgl.opengl.ContextCapabilities;
-@@ -1650,8 +1651,9 @@
+@@ -874,8 +875,9 @@
+         Set set = props.keySet();
+         List<CustomTexture> list = new ArrayList();
+ 
+-        for (String s1 : set)
++        for (Object s0 : set)
+         {
++        	String s1 = (String) s0;
+             if (s1.startsWith(s))
+             {
+                 String s2 = s1.substring(s.length());
+@@ -1963,8 +1965,9 @@
              needResetModels = false;
              SMCLog.info("Reset model renderers");
  
@@ -19,7 +30,7 @@
                  if (render instanceof RenderLiving)
                  {
                      RenderLiving renderliving = (RenderLiving)render;
-@@ -3282,17 +3284,16 @@
+@@ -3676,17 +3679,16 @@
          checkGLError("end beginRender");
      }
  
@@ -43,7 +54,7 @@
                  boolean flag = shaderPackDimensions.contains(Integer.valueOf(i));
                  boolean flag1 = shaderPackDimensions.contains(Integer.valueOf(j));
  
-@@ -4256,7 +4257,6 @@
+@@ -4675,7 +4677,6 @@
      public static void setFog(GlStateManager.FogMode fogMode)
      {
          GlStateManager.setFog(fogMode);
@@ -51,7 +62,7 @@
  
          if (fogEnabled)
          {
-@@ -4421,8 +4421,9 @@
+@@ -4845,8 +4846,9 @@
                          Lang.loadLocaleData(inputstream, properties);
                          inputstream.close();
  

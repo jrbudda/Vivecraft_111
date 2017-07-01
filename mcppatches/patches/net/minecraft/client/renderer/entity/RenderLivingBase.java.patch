@@ -9,12 +9,3 @@
      }
  
      public ModelBase getMainModel()
-@@ -563,7 +563,7 @@
-             {
-                 Team.EnumVisible team$enumvisible = team.getNameTagVisibility();
- 
--                switch (null.$SwitchMap$net$minecraft$scoreboard$Team$EnumVisible[team$enumvisible.ordinal()])
-+                switch (team$enumvisible.ordinal())
-                 {
-                     case 1:
-                         return flag;
