@@ -9,4 +9,4 @@ of_file_extension = ".jar"
 mcp_version = "mcp935"
 mcp_uses_generics = True
 mcp_download_url = "http://www.modcoderpack.com/website/sites/default/files/releases/mcp935.zip"
-forge_version = "13.20.0.2388"
+forge_version = "13.20.1.2388"

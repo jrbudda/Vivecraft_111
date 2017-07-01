@@ -55,7 +55,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
     private static final String OF_JSON_NAME      = "1.11.2_HD_U_C3";
     private static final String OF_MD5            = "82f495594cd50e1fda7a8aa0246239fc";
     private static final String OF_VERSION_EXT    = ".jar";
-    private static final String FORGE_VERSION     = "13.20.0.2388";
+    private static final String FORGE_VERSION     = "13.20.1.2388";
     /* END OF DO NOT RENAME */
 
     private String mc_url = "https://s3.amazonaws.com/Minecraft.Download/versions/" + MINECRAFT_VERSION + "/" + MINECRAFT_VERSION +".jar";
