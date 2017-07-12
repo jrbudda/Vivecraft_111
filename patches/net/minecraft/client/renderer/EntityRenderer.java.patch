@@ -1210,7 +1210,7 @@
 +    		{
 +
 +    			this.mc.mcProfiler.startSection("renderWorld");
-+    			this.renderWorld(partialTicks, 0L);
++    			this.renderWorld(partialTicks, Long.MAX_VALUE);
 +    			this.mc.mcProfiler.endSection();
 +
 +    			if (OpenGlHelper.shadersSupported)
@@ -1474,6 +1474,10 @@
              return flag;
          }
      }
+-
+-    public void renderWorld(float partialTicks, long finishTimeNano)
+-    {
+-        this.updateLightmap(partialTicks);
 +    
 +    public void renderWorld(float partialTicks, long finishTimeNano) {
 +    	this.renderWorldPass(2, partialTicks, finishTimeNano);
@@ -1481,12 +1485,8 @@
 +    	
 +    	this.updateLightmap(partialTicks);
  
--    public void renderWorld(float partialTicks, long finishTimeNano)
--    {
--        this.updateLightmap(partialTicks);
--
--        if (this.mc.getRenderViewEntity() == null)
--        {
+         if (this.mc.getRenderViewEntity() == null)
+         {
 -            this.mc.setRenderViewEntity(this.mc.player);
 -        }
 -
@@ -1786,8 +1786,7 @@
 -        this.mc.mcProfiler.endStartSection("weather");
 -
 -        if (flag)
-+        if (this.mc.getRenderViewEntity() == null)
-         {
+-        {
 -            Shaders.beginWeather();
 +            this.mc.setRenderViewEntity(this.mc.player);
          }
@@ -2493,19 +2492,24 @@
              if (f5 < 0.0F)
              {
                  f5 = 0.0F;
-@@ -2276,8 +2477,9 @@
+@@ -2275,9 +2476,13 @@
+             this.fogColorGreen *= f11;
              this.fogColorBlue *= f11;
          }
- 
+-
 -        IBlockState iblockstate = ActiveRenderInfo.getBlockStateAtEntityViewpoint(this.mc.world, entity, partialTicks);
 -
-+        //IBlockState iblockstate = ActiveRenderInfo.getBlockStateAtEntityViewpoint(this.mc.world, entity, partialTicks);
++        
++        //Vivecraft for TE
++        IBlockState iblockstate;
 +        Vec3d pos = getEyeRenderPos(mc.currentPass);
++    	iblockstate = this.mc.world.getBlockState(new BlockPos(pos.xCoord, pos.yCoord, pos.zCoord));
++        //
 +        
          if (this.cloudFog)
          {
              Vec3d vec3d3 = world.getCloudColour(partialTicks);
-@@ -2285,7 +2487,7 @@
+@@ -2285,7 +2490,7 @@
              this.fogColorGreen = (float)vec3d3.yCoord;
              this.fogColorBlue = (float)vec3d3.zCoord;
          }
@@ -2514,7 +2518,7 @@
          {
              float f12 = 0.0F;
  
-@@ -2311,7 +2513,7 @@
+@@ -2311,7 +2516,7 @@
                  this.fogColorBlue = (float)vec3d4.zCoord;
              }
          }
@@ -2523,7 +2527,7 @@
          {
              this.fogColorRed = 0.6F;
              this.fogColorGreen = 0.1F;
-@@ -2389,16 +2591,15 @@
+@@ -2389,16 +2594,14 @@
              this.fogColorBlue = f7;
          }
  
@@ -2536,7 +2540,6 @@
 -            this.fogColorBlue = Reflector.callFloat(object, Reflector.EntityViewRenderEvent_FogColors_getBlue, new Object[0]);
 -        }
 +        if(Reflector.forgeExists()){ 
-+        	IBlockState iblockstate = this.mc.world.getBlockState(new BlockPos(pos.xCoord, pos.yCoord, pos.zCoord));
 +        	Object event = Reflector.newInstance(Reflector.EntityViewRenderEvent_FogColors_Constructor, this, entity, iblockstate, partialTicks, this.fogColorRed, this.fogColorGreen, this.fogColorBlue);
 +        	Reflector.postForgeBusEvent(event);
 +        	this.fogColorRed = Reflector.callFloat(event, Reflector.EntityViewRenderEvent_FogColors_getRed);
@@ -2548,7 +2551,7 @@
      }
  
      /**
-@@ -2412,7 +2613,13 @@
+@@ -2412,7 +2615,13 @@
          this.func_191514_d(false);
          GlStateManager.glNormal3f(0.0F, -1.0F, 0.0F);
          GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -2563,7 +2566,7 @@
          float f = -1.0F;
  
          if (Reflector.ForgeHooksClient_getFogDensity.exists())
-@@ -2472,7 +2679,7 @@
+@@ -2472,7 +2681,7 @@
  
              GlStateManager.setFogDensity(0.1F);
          }
@@ -2572,7 +2575,7 @@
          {
              if (Config.isShaders())
              {
-@@ -2504,7 +2711,7 @@
+@@ -2504,7 +2713,7 @@
                  GlStateManager.setFogDensity(0.02F);
              }
          }
@@ -2581,7 +2584,7 @@
          {
              if (Config.isShaders())
              {
-@@ -2566,7 +2773,7 @@
+@@ -2566,7 +2775,7 @@
                  Reflector.callVoid(Reflector.ForgeHooksClient_onFogRender, new Object[] {this, entity, iblockstate, Float.valueOf(partialTicks), Integer.valueOf(startCoords), Float.valueOf(f1)});
              }
          }
@@ -2590,7 +2593,7 @@
          GlStateManager.enableColorMaterial();
          GlStateManager.enableFog();
          GlStateManager.colorMaterial(1028, 4608);
-@@ -2750,10 +2957,12 @@
+@@ -2750,10 +2959,12 @@
              this.updatedWorld = world;
          }
  
@@ -2607,7 +2610,7 @@
      }
  
      private void frameFinish()
-@@ -2777,39 +2986,6 @@
+@@ -2777,39 +2988,6 @@
          }
      }
  
@@ -2647,7 +2650,7 @@
      public boolean setFxaaShader(int p_setFxaaShader_1_)
      {
          if (!OpenGlHelper.isFramebufferEnabled())
-@@ -2849,6 +3025,2385 @@
+@@ -2849,6 +3027,2390 @@
          }
      }
  
@@ -4408,6 +4411,11 @@
 +			renderCrosshair = false;
 +		}
 +		
++		if (mc.currentPass == renderPass.Third) //it doesn't look very good.
++		{
++			renderCrosshair = false;
++		}
++		
 +		// VIVE end
 +		
 +		if( this.mc.currentScreen == null && this.mc.gameSettings.thirdPersonView == 0 && renderCrosshair && !MCOpenVR.keyboardShowing && !mc.bowTracker.isDrawing)
@@ -5033,7 +5041,7 @@
      private void checkLoadVisibleChunks(Entity p_checkLoadVisibleChunks_1_, float p_checkLoadVisibleChunks_2_, ICamera p_checkLoadVisibleChunks_3_, boolean p_checkLoadVisibleChunks_4_)
      {
          if (this.loadVisibleChunks)
-@@ -2917,89 +5472,8 @@
+@@ -2917,89 +5479,8 @@
          Config.log("Finished loading visible chunks");
          RenderChunk.renderChunksUpdated = 0;
      }
