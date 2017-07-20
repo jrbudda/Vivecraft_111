@@ -314,7 +314,7 @@
 +	 * The minecriftVerString will be automatically updated by the build scripts, do not modify here.
 +	 * Modify minecriftversion.py in root minecrift dir.
 +	 */
-+    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-11r2";
++    public final String minecriftVerString = "Vivecraft 1.11.2 jrbudda-12b";
 +	/* end version */
 +	/** END MINECRIFT */
 +    
@@ -1881,7 +1881,7 @@
      public static boolean isFancyGraphicsEnabled()
      {
          return theMinecraft != null && theMinecraft.gameSettings.fancyGraphics;
-@@ -2624,8 +3389,16 @@
+@@ -2624,8 +3389,14 @@
      /**
       * Called when user clicked he's mouse middle button (pick block)
       */
@@ -1889,17 +1889,15 @@
 +    public void middleClickMouse() //VIVECRAFT PUBLIC
      {
 +    	
-+    	if(Reflector.forgeExists()){
-+    		if (Reflector.callBoolean(Reflector.ForgeHooks_onPickBlock, new Object[]{this.objectMouseOver,this.player,this.world}))
-+    		{
-+    			return;
-+    		}
++    	if(Reflector.forgeExists() && this.objectMouseOver != null){
++    		Reflector.call(Reflector.ForgeHooks_onPickBlock, new Object[]{this.objectMouseOver,this.player,this.world});
++			return;
 +    	}
 +    	
          if (this.objectMouseOver != null && this.objectMouseOver.typeOfHit != RayTraceResult.Type.MISS)
          {
              boolean flag = this.player.capabilities.isCreativeMode;
-@@ -2789,7 +3562,8 @@
+@@ -2789,7 +3560,8 @@
          }
      }
  
@@ -1909,7 +1907,7 @@
      {
          NBTTagCompound nbttagcompound = te.writeToNBT(new NBTTagCompound());
  
-@@ -3100,6 +3874,11 @@
+@@ -3100,6 +3872,11 @@
       */
      public static int getGLMaximumTextureSize()
      {
@@ -1921,7 +1919,7 @@
          for (int i = 16384; i > 0; i >>= 1)
          {
              GlStateManager.glTexImage2D(32868, 0, 6408, i, i, 0, 6408, 5121, (IntBuffer)null);
-@@ -3266,7 +4045,7 @@
+@@ -3266,7 +4043,7 @@
      }
  
      public void dispatchKeypresses()
@@ -1930,7 +1928,7 @@
          int i = Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey();
  
          if (i != 0 && !Keyboard.isRepeatEvent())
-@@ -3419,4 +4198,1209 @@
+@@ -3419,4 +4196,1209 @@
      {
          return this.player != null && this.player.hasReducedDebug() || this.gameSettings.reducedDebugInfo;
      }

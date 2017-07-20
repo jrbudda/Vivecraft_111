@@ -261,12 +261,11 @@ public class OpenVRPlayer implements IRoomscaleAdapter
     	   player.height = 1.8f;
     	   player.spEyeHeight = 0.12f;
        }
-
        
         // don't do teleport movement if on a server that doesn't have this mod installed
         if (getFreeMove()) {
         	
-        		if(player.movementInput.moveForward ==0) doPlayerMoveInRoom(player);
+        	if(player.movementInput.moveForward ==0 && player.movementInput.moveStrafe == 0) doPlayerMoveInRoom(player);
 	
 			  return; //let mc handle look direction movement
 			// controller vs gaze movement is handled in Entity.java > moveFlying
@@ -279,7 +278,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
         boolean doTeleport = false;
         Vec3d dest = null;
 
-        if (player.movementInput.moveForward != 0 && !player.isRiding()) //holding down Ltrigger
+        if ((player.movementInput.moveForward != 0 || player.movementInput.moveStrafe != 0) && !player.isRiding()) //holding down Ltrigger
         {
             dest = movementTeleportDestination;
 
