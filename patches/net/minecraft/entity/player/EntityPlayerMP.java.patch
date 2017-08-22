@@ -152,14 +152,14 @@
      {
 +    	
 +    	if(Reflector.forgeExists()){
-+    		if(Reflector.callBoolean(Reflector.ForgeHooks_onLivingDeath, new Object[]{this, cause}));
++    		if(Reflector.callBoolean(Reflector.ForgeHooks_onLivingDeath, new Object[]{this, cause}))
 +    			return;
 +    	}
 +    	
          boolean flag = this.world.getGameRules().getBoolean("showDeathMessages");
          this.connection.sendPacket(new SPacketCombatEvent(this.getCombatTracker(), SPacketCombatEvent.Event.ENTITY_DIED, flag));
  
-@@ -552,8 +596,32 @@
+@@ -552,8 +596,33 @@
  
          if (!this.world.getGameRules().getBoolean("keepInventory") && !this.isSpectator())
          {
@@ -167,8 +167,8 @@
 +        
 +        	//FORGE
 +        	if(Reflector.forgeExists()){
-+	        	Reflector.setFieldValue(Reflector.ForgeEntity_captureDrops, true);
-+	        	c = (ArrayList<EntityItem>) Reflector.getFieldValue(Reflector.ForgeEntity_capturedDrops);
++	        	Reflector.setFieldValue(this, Reflector.ForgeEntity_captureDrops, true);
++	        	c = (ArrayList<EntityItem>) Reflector.getFieldValue(this, Reflector.ForgeEntity_capturedDrops);
 +	        	c.clear();
 +        	}
 +        	///
@@ -178,10 +178,11 @@
 +
 +        	//FORGE
 +        	if(Reflector.forgeExists()){
-+	        	Reflector.setFieldValue(Reflector.ForgeEntity_captureDrops, false);
++	        	Reflector.setFieldValue(this, Reflector.ForgeEntity_captureDrops, false);
 +	
 +	        	Object event = Reflector.newInstance(Reflector.PlayerDropsEvent_Constructor, new Object[]{this, cause, c, this.recentlyHit > 0});
-+	        	if(!Reflector.postForgeBusEvent(event)){
++	        	boolean ret = Reflector.postForgeBusEvent(event);
++	        	if(!ret){
 +	        		for (net.minecraft.entity.item.EntityItem item : c)
 +	        		{
 +	        			this.world.spawnEntity(item);
@@ -192,7 +193,7 @@
          }
  
          for (ScoreObjective scoreobjective : this.world.getScoreboard().getObjectivesFromCriteria(IScoreCriteria.DEATH_COUNT))
-@@ -643,6 +711,13 @@
+@@ -643,6 +712,13 @@
      @Nullable
      public Entity changeDimension(int dimensionIn)
      {
@@ -206,7 +207,7 @@
          this.invulnerableDimensionChange = true;
  
          if (this.dimension == 1 && dimensionIn == 1)
-@@ -812,7 +887,13 @@
+@@ -812,7 +888,13 @@
          BlockPos blockpos = new BlockPos(i, j, k);
          IBlockState iblockstate = this.world.getBlockState(blockpos);
  
@@ -221,7 +222,7 @@
          {
              BlockPos blockpos1 = blockpos.down();
              IBlockState iblockstate1 = this.world.getBlockState(blockpos1);
-@@ -837,7 +918,7 @@
+@@ -837,7 +919,7 @@
      /**
       * get the next window id to use
       */
@@ -230,7 +231,7 @@
      {
          this.currentWindowId = this.currentWindowId % 100 + 1;
      }
-@@ -850,11 +931,17 @@
+@@ -850,11 +932,17 @@
          }
          else
          {
@@ -253,7 +254,7 @@
          }
      }
  
-@@ -901,6 +988,12 @@
+@@ -901,6 +989,12 @@
  
              this.openContainer.windowId = this.currentWindowId;
              this.openContainer.addListener(this);
@@ -266,7 +267,7 @@
          }
      }
  
-@@ -910,6 +1003,12 @@
+@@ -910,6 +1004,12 @@
          this.openContainer = new ContainerMerchant(this.inventory, villager, this.world);
          this.openContainer.windowId = this.currentWindowId;
          this.openContainer.addListener(this);
@@ -279,7 +280,7 @@
          IInventory iinventory = ((ContainerMerchant)this.openContainer).getMerchantInventory();
          ITextComponent itextcomponent = villager.getDisplayName();
          this.connection.sendPacket(new SPacketOpenWindow(this.currentWindowId, "minecraft:villager", itextcomponent, iinventory.getSizeInventory()));
-@@ -1029,6 +1128,12 @@
+@@ -1029,6 +1129,12 @@
      public void closeContainer()
      {
          this.openContainer.onContainerClosed(this);
@@ -292,7 +293,7 @@
          this.openContainer = this.inventoryContainer;
      }
  
-@@ -1063,6 +1168,13 @@
+@@ -1063,6 +1169,13 @@
      {
          if (stat != null)
          {
@@ -306,7 +307,7 @@
              this.statsFile.increaseStat(this, stat, amount);
  
              for (ScoreObjective scoreobjective : this.getWorldScoreboard().getObjectivesFromCriteria(stat.getCriteria()))
-@@ -1130,7 +1242,7 @@
+@@ -1130,7 +1243,7 @@
              super.onItemUseFinish();
          }
      }
@@ -315,7 +316,7 @@
      /**
       * Copies the values from the given player into this player if boolean par2 is true. Always clones Ender Chest
       * Inventory.
-@@ -1446,4 +1558,160 @@
+@@ -1446,4 +1559,160 @@
          this.setFlag(7, true);
          this.setFlag(7, false);
      }
