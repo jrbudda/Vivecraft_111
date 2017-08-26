@@ -10,7 +10,7 @@
 	"logging": {},
 	"libraries": [
 	{
-		"name": "net.minecraftforge:forge:1.11.2-13.20.1.2388",
+		"name": "net.minecraftforge:forge:1.11.2-13.20.1.2454",
 		"url": "http://files.minecraftforge.net/maven/"
 	},
 	{
