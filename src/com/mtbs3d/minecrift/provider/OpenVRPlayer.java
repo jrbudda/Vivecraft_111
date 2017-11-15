@@ -1078,7 +1078,7 @@ public class OpenVRPlayer implements IRoomscaleAdapter
 
     		if(emptySpotReq){
     			Vec3d dest = new Vec3d(bb.getCenter().xCoord, hitBlock.getY() + testClimb.getBoundingBox(mc.world, hitBlock).maxY, bb.getCenter().zCoord);
-    			float maxTeleportDist = 16.0f;		
+    			float maxTeleportDist = 8.0f;		
 
     			if (start.distanceTo(dest)  > maxTeleportDist) return false;
 
