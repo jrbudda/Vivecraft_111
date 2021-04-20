@@ -76,7 +76,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
     private String[] forgeVersions = null;
     private boolean forgeVersionInstalled = false;
     private static final String FULL_FORGE_VERSION = MINECRAFT_VERSION + "-" + FORGE_VERSION;
-    private String forge_url = "http://files.minecraftforge.net/maven/net/minecraftforge/forge/" + FULL_FORGE_VERSION + "/forge-" + FULL_FORGE_VERSION + "-installer.jar";
+    private String forge_url = "http://maven.minecraftforge.net/maven/net/minecraftforge/forge/" + FULL_FORGE_VERSION + "/forge-" + FULL_FORGE_VERSION + "-installer.jar";
     private File forgeInstaller = new File(tempDir + "/forge-" + FULL_FORGE_VERSION + "-installer.jar");
     private JTextField selectedDirText;
     private JLabel infoLabel;
