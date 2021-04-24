@@ -64,7 +64,7 @@ public class Installer extends JPanel  implements PropertyChangeListener
 
 	private static final String DEFAULT_PROFILE_NAME = "Vivecraft " + MINECRAFT_VERSION;
 	private static final String DEFAULT_PROFILE_NAME_FORGE = "Vivecraft-Forge " + MINECRAFT_VERSION;
-	private static final String GITHUB_LINK = "https://github.com/jrbudda/Vivecraft_112";
+	private static final String GITHUB_LINK = "https://github.com/jrbudda/Vivecraft_111";
 	private static final String HOMEPAGE_LINK = "http://www.vivecraft.org";
 	private static final String DONATION_LINK = "https://www.patreon.com/jrbudda";
 
