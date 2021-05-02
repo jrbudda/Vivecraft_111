@@ -9,39 +9,16 @@
  import java.util.Collections;
  import java.util.Map;
  import javax.annotation.Nullable;
-@@ -117,10 +119,12 @@
- import net.minecraft.util.math.Vec3d;
- import net.minecraft.world.World;
- import net.optifine.entity.model.CustomEntityModels;
-+import net.minecraft.client.renderer.entity.RenderPlayerVR;
- 
- public class RenderManager
- {
--    private final Map<Class, Render> entityRenderMap = Maps. < Class ,Render> newHashMap();
-+	//Forge make public
-+    public final Map<Class, Render> entityRenderMap = Maps. < Class ,Render> newHashMap();
-     private final Map<String, RenderPlayer> skinMap = Maps.<String, RenderPlayer>newHashMap();
-     private final RenderPlayer playerRenderer;
- 
-@@ -241,10 +245,12 @@
-         this.skinMap.put("slim", new RenderPlayer(this, true));
-         PlayerItemsLayer.register(this.skinMap);
- 
-+        //Forge
-         if (Reflector.RenderingRegistry_loadEntityRenderers.exists())
-         {
-             Reflector.call(Reflector.RenderingRegistry_loadEntityRenderers, new Object[] {this, this.entityRenderMap});
-         }
-+        ///
-     }
- 
-     public void setRenderPosition(double renderPosXIn, double renderPosYIn, double renderPosZIn)
-@@ -267,19 +273,27 @@
-         return (Render<T>) render;
-     }
+@@ -153,6 +155,8 @@
+     public Entity renderEntity = null;
+     public Render renderRender = null;
  
 +    RenderPlayerVR n;
 +    
+     public RenderManager(TextureManager renderEngineIn, RenderItem itemRendererIn)
+     {
+         this.renderEngine = renderEngineIn;
+@@ -270,16 +274,22 @@
      @Nullable
      public <T extends Entity> Render<T> getEntityRenderObject(T entityIn)
      {
@@ -74,7 +51,7 @@
      }
  
      public void cacheActiveRenderInfo(World worldIn, FontRenderer textRendererIn, Entity livingPlayerIn, Entity pointedEntityIn, GameSettings optionsIn, float partialTicks)
-@@ -572,8 +586,10 @@
+@@ -572,8 +582,10 @@
          return this.entityRenderMap;
      }
  

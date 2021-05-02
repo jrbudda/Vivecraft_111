@@ -1,11 +1,10 @@
 --- a/net/minecraft/client/renderer/entity/layers/LayerHeldItem.java
 +++ b/net/minecraft/client/renderer/entity/layers/LayerHeldItem.java
-@@ -1,13 +1,26 @@
+@@ -1,13 +1,24 @@
  package net.minecraft.client.renderer.entity.layers;
  
 +import java.util.UUID;
 +
-+import com.mtbs3d.minecrift.gameplay.BowTracker;
 +import com.mtbs3d.minecrift.render.PlayerModelController;
 +import com.mtbs3d.minecrift.render.PlayerModelController.RotInfo;
 +
@@ -20,20 +19,17 @@
  import net.minecraft.entity.EntityLivingBase;
 +import net.minecraft.entity.player.EntityPlayer;
 +import net.minecraft.init.Items;
-+import net.minecraft.item.ItemBow;
  import net.minecraft.item.ItemStack;
  import net.minecraft.util.EnumHandSide;
 +import net.minecraft.util.math.Vec3d;
  
  public class LayerHeldItem implements LayerRenderer<EntityLivingBase>
  {
-@@ -45,19 +58,93 @@
+@@ -45,18 +56,91 @@
      {
          if (!p_188358_2_.isEmpty())
          {
--            GlStateManager.pushMatrix();
--            this.translateToHand(handSide);
- 
++
 +            
 +            boolean vr =false;;
 +            RotInfo rotinfo = null;
@@ -47,25 +43,23 @@
 +            	}
 +            }
 +            
-+            if(handSide == EnumHandSide.LEFT && vr && BowTracker.isHoldingBow(p_188358_1_)){
++            if(handSide == EnumHandSide.LEFT && vr && p_188358_1_.getHeldItemMainhand().getItem() == Items.BOW ){
 +            	return;
 +            }
 +            
-+            GlStateManager.pushMatrix();
+             GlStateManager.pushMatrix();
 +            
+             this.translateToHand(handSide);
+ 
              if (p_188358_1_.isSneaking())
              {
                  GlStateManager.translate(0.0F, 0.2F, 0.0F);
              }
 -
-+            
-+            this.translateToHand(handSide);
-+            
              GlStateManager.rotate(-90.0F, 1.0F, 0.0F, 0.0F);
              GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
              boolean flag = handSide == EnumHandSide.LEFT;
 -            GlStateManager.translate((float)(flag ? -1 : 1) / 16.0F, 0.125F, -0.625F);
--            Minecraft.getMinecraft().getItemRenderer().renderItemSide(p_188358_1_, p_188358_2_, p_188358_3_, flag);
 +            //VIVECRAFT
 +
 +            
@@ -74,7 +68,7 @@
 +            }
 +            else{
 +    			GlStateManager.translate((float)(flag ? -1 : 1) / 16.0F, 0.125F,  -.2125f);
-+            	if(BowTracker.isBow(p_188358_2_) && !rotinfo.seated){
++            	if(p_188358_2_.getItem() == Items.BOW && !rotinfo.seated){
 +      
 +              		Vec3d diff = rotinfo.leftArmPos.subtract(rotinfo.rightArmPos);
 +            		double ltor = Math.atan2(-diff.xCoord, diff.zCoord) + Math.PI/2;   
@@ -103,7 +97,7 @@
 +    				}
 +    				
 +					GlStateManager.translate(0, 0.155F, -0.215F);
-+		            Minecraft.getMinecraft().getItemRenderer().renderItemSide(0, p_188358_1_, p_188358_2_, p_188358_3_, flag);
++		            Minecraft.getMinecraft().getItemRenderer().renderItemSide(p_188358_1_, p_188358_2_, p_188358_3_, flag);
 +		            GlStateManager.popMatrix();
 +			
 +
@@ -122,7 +116,6 @@
 +            }
 +
 +            //
-+            Minecraft.getMinecraft().getItemRenderer().renderItemSide(0, p_188358_1_, p_188358_2_, p_188358_3_, flag);
+             Minecraft.getMinecraft().getItemRenderer().renderItemSide(p_188358_1_, p_188358_2_, p_188358_3_, flag);
              GlStateManager.popMatrix();
          }
-     }

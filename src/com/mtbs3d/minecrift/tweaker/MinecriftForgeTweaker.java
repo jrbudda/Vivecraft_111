@@ -16,7 +16,7 @@ public class MinecriftForgeTweaker implements ITweaker
     public void injectIntoClassLoader(LaunchClassLoader classLoader)
     {
         dbg("MinecriftForgeTweaker: injectIntoClassLoader");
-        classLoader.addTransformerExclusion("com.mtbs3d.minecrift.asm.");
+        //classLoader.addTransformerExclusion("com.mtbs3d.minecrift.asm.");
     }
 
     public String getLaunchTarget()
