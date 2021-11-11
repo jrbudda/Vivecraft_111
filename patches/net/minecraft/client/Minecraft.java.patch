@@ -536,7 +536,7 @@
 +			this.ingameGUI.getChatGUI().printChatMessage(chatText);
 +		}
 +	}
-+    public final String minecriftVerString = "Vivecraft 1.11.2-NONVR Companion-7r7";
++    public final String minecriftVerString = "Vivecraft 1.11.2-NONVR Companion-7r8";
 +	// FORGE
 +	public ItemColors getItemColors()
 +	{
